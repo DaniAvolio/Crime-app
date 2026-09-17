@@ -1,1 +1,14 @@
-/* You can add global styles to this file, and also import other style files */
+/* Reset di base per un'app full-page: senza questo, <app-root> e i componenti
+   instradati sono elementi sconosciuti (display: inline di default), quindi
+   classi Tailwind come h-screen/w-full non hanno un contenitore a cui
+   ancorarsi correttamente. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+app-root {
+  display: block;
+  height: 100%;
+}
