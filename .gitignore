@@ -1,0 +1,11 @@
+# File di sistema/OS
+.DS_Store
+Thumbs.db
+
+# IDE (a livello di repo, oltre a quanto già ignorato in backend/ e frontend/)
+.idea/
+*.iml
+
+# Variabili d'ambiente locali (mai committare credenziali reali)
+.env
+.env.local
