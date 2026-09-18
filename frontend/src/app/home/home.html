@@ -1,20 +1,105 @@
-<main class="flex h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-  <h1 class="text-4xl font-bold text-blue-700">Crime App</h1>
-  <p class="max-w-md text-lg text-gray-600">
-    Segnala e ricevi notifiche di eventi di sicurezza pubblica vicino a te.
-  </p>
-  <div class="mt-4 flex gap-3">
-    <a
-      routerLink="/mappa"
-      class="rounded-lg bg-blue-700 px-7 py-3 font-semibold text-white hover:bg-blue-800"
-    >
-      Apri la mappa
-    </a>
-    <a
-      routerLink="/categorie"
-      class="rounded-lg border border-blue-700 px-7 py-3 font-semibold text-blue-700 hover:bg-blue-50"
-    >
-      Gestione categorie
-    </a>
-  </div>
+<main class="min-h-screen bg-ink font-body text-paper">
+  <header class="flex items-center justify-between border-b border-line px-6 py-4 sm:px-10">
+    <span class="font-display text-lg font-semibold tracking-tight">Crime App</span>
+    <nav class="flex items-center gap-6 text-sm text-muted">
+      <a routerLink="/mappa" class="transition-colors hover:text-paper">Mappa</a>
+      <a routerLink="/categorie" class="transition-colors hover:text-paper">Categorie</a>
+    </nav>
+  </header>
+
+  <section
+    class="mx-auto grid max-w-5xl gap-12 px-6 py-16 sm:px-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:py-24"
+  >
+    <div>
+      <h1 class="font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
+        Segnala quello che succede nel tuo quartiere.
+      </h1>
+      <p class="mt-5 max-w-md text-base leading-relaxed text-muted">
+        Crime App raccoglie segnalazioni di sicurezza pubblica su una mappa condivisa. Ogni
+        segnalazione scade da sola quando non è più utile.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <a
+          routerLink="/mappa"
+          class="rounded-sm bg-beacon px-6 py-3 text-sm font-medium text-ink transition-colors hover:bg-amber-300"
+        >
+          Apri la mappa →
+        </a>
+        <a
+          routerLink="/categorie"
+          class="rounded-sm border border-line px-6 py-3 text-sm font-medium text-paper transition-colors hover:border-muted"
+        >
+          Sfoglia le categorie
+        </a>
+      </div>
+    </div>
+
+    <div class="rounded-sm border border-line bg-panel">
+      <div class="flex items-center justify-between border-b border-line px-5 py-3">
+        <span class="text-sm text-muted">Categorie attive</span>
+        <span class="font-data text-sm text-paper">
+          {{ caricamentoCompletato() ? categorie().length : '···' }}
+        </span>
+      </div>
+
+      @if (categorie().length > 0) {
+        <ul>
+          @for (categoria of categorie(); track categoria.id; let i = $index) {
+            <li
+              class="flex items-center gap-3 px-5 py-3"
+              [class.border-b]="i < categorie().length - 1"
+              [class.border-line]="i < categorie().length - 1"
+            >
+              <span class="relative flex h-1.5 w-1.5 shrink-0">
+                @if (i === 0) {
+                  <span
+                    class="absolute h-full w-full animate-ping rounded-full bg-beacon opacity-60"
+                  ></span>
+                }
+                <span class="relative h-1.5 w-1.5 rounded-full bg-beacon"></span>
+              </span>
+              <svg
+                [lucideIcon]="iconaRisolta(categoria.icona)"
+                class="h-4 w-4 shrink-0 text-muted"
+              ></svg>
+              <span class="truncate text-sm text-paper">{{ categoria.nome }}</span>
+            </li>
+          }
+        </ul>
+      } @else if (caricamentoCompletato()) {
+        <p class="px-5 py-6 text-sm text-muted">Le categorie non sono disponibili al momento.</p>
+      } @else {
+        <p class="px-5 py-6 text-sm text-muted">Caricamento in corso…</p>
+      }
+    </div>
+  </section>
+
+  <section class="border-t border-line px-6 py-16 sm:px-10">
+    <div class="mx-auto max-w-3xl">
+      <h2 class="font-display text-xl font-semibold">Come funziona</h2>
+
+      <ol class="mt-8 divide-y divide-line border-t border-line">
+        @for (fase of fasiCiclo; track fase.numero) {
+          <li class="grid grid-cols-[auto_1fr] gap-5 py-6">
+            <span class="font-data text-sm text-beacon">{{ fase.numero }}</span>
+            <div>
+              <h3 class="font-medium text-paper">{{ fase.titolo }}</h3>
+              <p class="mt-1 text-sm leading-relaxed text-muted">{{ fase.descrizione }}</p>
+            </div>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <footer
+    class="flex flex-col gap-3 border-t border-line px-6 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-10"
+  >
+    <p>Crime App — segnalazioni di sicurezza pubblica gestite dalla community.</p>
+    <nav class="flex items-center gap-4">
+      <a routerLink="/mappa" class="transition-colors hover:text-paper">Mappa</a>
+      <a routerLink="/categorie" class="transition-colors hover:text-paper">Categorie</a>
+    </nav>
+  </footer>
 </main>

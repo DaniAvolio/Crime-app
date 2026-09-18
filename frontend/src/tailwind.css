@@ -1,1 +1,19 @@
 @import 'tailwindcss';
+
+/*
+ * Token della sezione "dispatch" della homepage: nomi dedicati (display/body/data,
+ * ink/panel/paper/...) invece di sovrascrivere --font-sans o i colori di default,
+ * cosi il resto dell'app (categorie, mappa) resta sul tema Tailwind standard.
+ */
+@theme {
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-data: 'IBM Plex Mono', monospace;
+
+  --color-ink: #12161d;
+  --color-panel: #1b212b;
+  --color-line: #303947;
+  --color-paper: #ece7da;
+  --color-muted: #8b93a1;
+  --color-beacon: #e2a33b;
+}
