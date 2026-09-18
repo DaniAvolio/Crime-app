@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "mappa": "Map",
+    "categorie": "Categories"
+  },
+  "home": {
+    "hero": {
+      "titolo": "Report what's happening in your neighborhood.",
+      "sottotitolo": "Crime App collects public safety reports on a shared map. Each report expires on its own once it's no longer useful.",
+      "ctaMappa": "Open the map",
+      "ctaCategorie": "Browse categories"
+    },
+    "pannello": {
+      "titolo": "Active categories",
+      "caricamento": "Loading…",
+      "vuoto": "Categories aren't available right now."
+    },
+    "comeFunziona": {
+      "titolo": "How it works",
+      "fase1": {
+        "titolo": "Open the map and pick a spot",
+        "descrizione": "Mark where the event happened and choose the most fitting category."
+      },
+      "fase2": {
+        "titolo": "The report stays visible until it expires",
+        "descrizione": "Each category has a validity period: once it's over, the report disappears on its own."
+      },
+      "fase3": {
+        "titolo": "The community moderates abuse",
+        "descrizione": "Suspicious reports can be flagged and are reviewed by the platform's moderators."
+      }
+    },
+    "footer": {
+      "tagline": "Crime App — public safety reports maintained by the community."
+    }
+  }
+}

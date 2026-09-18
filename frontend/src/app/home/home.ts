@@ -1,20 +1,21 @@
+import { NgClass } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { CategoriaApi } from '../categorie/categoria-api';
 import { Categoria } from '../models/categoria.model';
 import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-categoria';
 
 interface FaseCiclo {
   numero: string;
-  titolo: string;
-  descrizione: string;
+  chiave: 'fase1' | 'fase2' | 'fase3';
 }
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, LucideDynamicIcon],
+  imports: [RouterLink, LucideDynamicIcon, TranslocoDirective, NgClass],
   templateUrl: './home.html',
 })
 export class Home implements OnInit {
@@ -25,23 +26,9 @@ export class Home implements OnInit {
   protected readonly caricamentoCompletato = signal(false);
 
   protected readonly fasiCiclo: readonly FaseCiclo[] = [
-    {
-      numero: '01',
-      titolo: 'Apri la mappa e scegli un punto',
-      descrizione: "Indica dove è successo l'evento e seleziona la categoria più adatta.",
-    },
-    {
-      numero: '02',
-      titolo: 'La segnalazione resta visibile fino alla scadenza',
-      descrizione:
-        'Ogni categoria ha una durata di validità: passato quel tempo, la segnalazione sparisce da sola.',
-    },
-    {
-      numero: '03',
-      titolo: 'La community modera gli abusi',
-      descrizione:
-        'Le segnalazioni sospette possono essere segnalate e vengono riviste da chi gestisce la piattaforma.',
-    },
+    { numero: '01', chiave: 'fase1' },
+    { numero: '02', chiave: 'fase2' },
+    { numero: '03', chiave: 'fase3' },
   ];
 
   ngOnInit(): void {

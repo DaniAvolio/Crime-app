@@ -58,9 +58,8 @@ export class Categorie implements OnInit {
     }
     const payload: CategoriaRequest = this.form.getRawValue();
     const id = this.idInModifica();
-    const richiesta = id === null
-      ? this.categoriaApi.crea(payload)
-      : this.categoriaApi.aggiorna(id, payload);
+    const richiesta =
+      id === null ? this.categoriaApi.crea(payload) : this.categoriaApi.aggiorna(id, payload);
 
     this.errore.set(null);
     richiesta.subscribe({

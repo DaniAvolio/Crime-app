@@ -1,125 +1,177 @@
-<main class="mx-auto max-w-3xl px-6 py-10">
-  <h1 class="mb-6 text-2xl font-bold text-blue-700">Gestione categorie</h1>
+<main class="min-h-screen bg-white text-gray-900 dark:bg-ink dark:text-paper">
+  <div class="mx-auto max-w-3xl px-6 py-10">
+    <h1 class="mb-6 text-2xl font-bold text-blue-700 dark:text-blue-400">Gestione categorie</h1>
 
-  @if (errore()) {
-    <div class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-      {{ errore() }}
-    </div>
-  }
-
-  <form [formGroup]="form" (ngSubmit)="inviaForm()" class="mb-8 rounded-lg border border-gray-200 p-4">
-    <h2 class="mb-3 font-semibold text-gray-800">
-      {{ idInModifica() === null ? 'Nuova categoria' : 'Modifica categoria' }}
-    </h2>
-
-    <div class="mb-3">
-      <label class="mb-1 block text-sm font-medium text-gray-700">Nome</label>
-      <input
-        type="text"
-        formControlName="nome"
-        class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-      />
-    </div>
-
-    <div class="mb-3">
-      <label class="mb-1 block text-sm font-medium text-gray-700">Descrizione</label>
-      <input
-        type="text"
-        formControlName="descrizione"
-        class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-      />
-    </div>
-
-    <div class="mb-3">
-      <label class="mb-1 block text-sm font-medium text-gray-700">Icona</label>
-      <input
-        type="text"
-        formControlName="icona"
-        list="icone-disponibili"
-        placeholder="es. bell"
-        class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-      />
-      <datalist id="icone-disponibili">
-        @for (nomeIcona of nomiIconeDisponibili; track nomeIcona) {
-          <option [value]="nomeIcona"></option>
-        }
-      </datalist>
-      <p class="mt-1 text-xs text-gray-400">
-        Nome di un'icona <a href="https://lucide.dev/icons" target="_blank" class="underline">Lucide</a>, es. bell, siren, shield-alert.
-      </p>
-    </div>
-
-    <div class="mb-4">
-      <label class="mb-1 block text-sm font-medium text-gray-700">Durata validità (ore)</label>
-      <input
-        type="number"
-        formControlName="durataValiditaOre"
-        class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-      />
-    </div>
-
-    <div class="flex gap-2">
-      <button
-        type="submit"
-        class="rounded bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+    @if (errore()) {
+      <div
+        class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
       >
-        {{ idInModifica() === null ? 'Crea' : 'Salva' }}
-      </button>
+        {{ errore() }}
+      </div>
+    }
 
-      @if (idInModifica() !== null) {
+    <form
+      [formGroup]="form"
+      (ngSubmit)="inviaForm()"
+      class="mb-8 rounded-lg border border-gray-200 p-4 dark:border-line"
+    >
+      <h2 class="mb-3 font-semibold text-gray-800 dark:text-paper">
+        {{ idInModifica() === null ? 'Nuova categoria' : 'Modifica categoria' }}
+      </h2>
+
+      <div class="mb-3">
+        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">Nome</label>
+        <input
+          type="text"
+          formControlName="nome"
+          class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+          Descrizione
+        </label>
+        <input
+          type="text"
+          formControlName="descrizione"
+          class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">Icona</label>
+        <input
+          type="text"
+          formControlName="icona"
+          list="icone-disponibili"
+          placeholder="es. bell"
+          class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+        />
+        <datalist id="icone-disponibili">
+          @for (nomeIcona of nomiIconeDisponibili; track nomeIcona) {
+            <option [value]="nomeIcona"></option>
+          }
+        </datalist>
+        <p class="mt-1 text-xs text-gray-400 dark:text-muted">
+          Nome di un'icona
+          <a
+            href="https://lucide.dev/icons"
+            target="_blank"
+            class="underline hover:text-gray-600 dark:hover:text-paper"
+          >
+            Lucide </a
+          >, es. bell, siren, shield-alert.
+        </p>
+      </div>
+
+      <div class="mb-4">
+        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+          Durata validità (ore)
+        </label>
+        <input
+          type="number"
+          formControlName="durataValiditaOre"
+          class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+        />
+      </div>
+
+      <div class="flex gap-2">
         <button
-          type="button"
-          (click)="annullaModifica()"
-          class="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+          type="submit"
+          class="rounded bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
         >
-          Annulla
+          {{ idInModifica() === null ? 'Crea' : 'Salva' }}
         </button>
-      }
-    </div>
-  </form>
 
-  @if (caricando()) {
-    <p class="text-sm text-gray-500">Caricamento...</p>
-  } @else if (categorie().length === 0) {
-    <p class="text-sm text-gray-500">Nessuna categoria presente.</p>
-  } @else {
-    <table class="w-full border-collapse text-sm">
-      <thead>
-        <tr class="border-b border-gray-200 text-left text-gray-500">
-          <th class="py-2"></th>
-          <th class="py-2">Nome</th>
-          <th class="py-2">Durata (ore)</th>
-          <th class="py-2">Stato</th>
-          <th class="py-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (categoria of categorie(); track categoria.id) {
-          <tr class="border-b border-gray-100">
-            <td class="py-2">
-              <svg [lucideIcon]="iconaRisolta(categoria.icona)" class="h-5 w-5 text-gray-600"></svg>
-            </td>
-            <td class="py-2">{{ categoria.nome }}</td>
-            <td class="py-2">{{ categoria.durataValiditaOre }}</td>
-            <td class="py-2">
-              @if (categoria.attiva) {
-                <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">Attiva</span>
-              } @else {
-                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">Disattivata</span>
-              }
-            </td>
-            <td class="py-2 text-right whitespace-nowrap">
-              <button (click)="modifica(categoria)" class="mr-3 text-blue-700 hover:underline">Modifica</button>
-              @if (categoria.attiva) {
-                <button (click)="disattiva(categoria)" class="mr-3 text-amber-600 hover:underline">Disattiva</button>
-              } @else {
-                <button (click)="riattiva(categoria)" class="mr-3 text-green-700 hover:underline">Riattiva</button>
-              }
-              <button (click)="elimina(categoria)" class="text-red-600 hover:underline">Elimina</button>
-            </td>
-          </tr>
+        @if (idInModifica() !== null) {
+          <button
+            type="button"
+            (click)="annullaModifica()"
+            class="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-line dark:text-muted dark:hover:bg-panel"
+          >
+            Annulla
+          </button>
         }
-      </tbody>
-    </table>
-  }
+      </div>
+    </form>
+
+    @if (caricando()) {
+      <p class="text-sm text-gray-500 dark:text-muted">Caricamento...</p>
+    } @else if (categorie().length === 0) {
+      <p class="text-sm text-gray-500 dark:text-muted">Nessuna categoria presente.</p>
+    } @else {
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr
+            class="border-b border-gray-200 text-left text-gray-500 dark:border-line dark:text-muted"
+          >
+            <th class="py-2"></th>
+            <th class="py-2">Nome</th>
+            <th class="py-2">Durata (ore)</th>
+            <th class="py-2">Stato</th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (categoria of categorie(); track categoria.id) {
+            <tr class="border-b border-gray-100 dark:border-line">
+              <td class="py-2">
+                <svg
+                  [lucideIcon]="iconaRisolta(categoria.icona)"
+                  class="h-5 w-5 text-gray-600 dark:text-muted"
+                ></svg>
+              </td>
+              <td class="py-2">{{ categoria.nome }}</td>
+              <td class="py-2">{{ categoria.durataValiditaOre }}</td>
+              <td class="py-2">
+                @if (categoria.attiva) {
+                  <span
+                    class="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                  >
+                    Attiva
+                  </span>
+                } @else {
+                  <span
+                    class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-panel dark:text-muted"
+                  >
+                    Disattivata
+                  </span>
+                }
+              </td>
+              <td class="py-2 text-right whitespace-nowrap">
+                <button
+                  (click)="modifica(categoria)"
+                  class="mr-3 text-blue-700 hover:underline dark:text-blue-400"
+                >
+                  Modifica
+                </button>
+                @if (categoria.attiva) {
+                  <button
+                    (click)="disattiva(categoria)"
+                    class="mr-3 text-amber-600 hover:underline dark:text-beacon"
+                  >
+                    Disattiva
+                  </button>
+                } @else {
+                  <button
+                    (click)="riattiva(categoria)"
+                    class="mr-3 text-green-700 hover:underline dark:text-green-400"
+                  >
+                    Riattiva
+                  </button>
+                }
+                <button
+                  (click)="elimina(categoria)"
+                  class="text-red-600 hover:underline dark:text-red-400"
+                >
+                  Elimina
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
 </main>

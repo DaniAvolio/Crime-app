@@ -1,0 +1,71 @@
+<header
+  *transloco="let t"
+  class="sticky top-0 z-50 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 text-gray-900 dark:border-line dark:bg-ink dark:text-paper sm:px-10"
+>
+  <a routerLink="/" class="font-display text-lg font-semibold tracking-tight">Crime App</a>
+
+  <nav class="flex items-center gap-6 text-sm text-gray-500 dark:text-muted">
+    <a
+      routerLink="/mappa"
+      routerLinkActive="text-gray-900 dark:text-paper"
+      class="transition-colors hover:text-gray-900 dark:hover:text-paper"
+    >
+      {{ t('nav.mappa') }}
+    </a>
+    <a
+      routerLink="/categorie"
+      routerLinkActive="text-gray-900 dark:text-paper"
+      class="transition-colors hover:text-gray-900 dark:hover:text-paper"
+    >
+      {{ t('nav.categorie') }}
+    </a>
+  </nav>
+
+  <div class="relative">
+    <button
+      type="button"
+      (click)="toggleImpostazioni()"
+      [attr.aria-expanded]="pannelloAperto()"
+      aria-label="Impostazioni"
+      class="flex h-8 w-8 items-center justify-center rounded-sm text-gray-500 transition-colors hover:bg-black/5 hover:text-gray-900 dark:text-muted dark:hover:bg-white/10 dark:hover:text-paper"
+    >
+      <svg lucideIcon="settings" class="h-4 w-4"></svg>
+    </button>
+
+    @if (pannelloAperto()) {
+      <div
+        class="absolute top-full right-0 z-50 mt-2 w-56 rounded-sm border border-gray-200 bg-white p-3 shadow-lg dark:border-line dark:bg-panel"
+      >
+        <div class="flex items-center justify-between px-1 pb-3">
+          <span class="text-xs font-medium text-gray-400 dark:text-muted">Lingua</span>
+          <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-muted">
+            <button
+              type="button"
+              (click)="impostaLingua('it')"
+              [ngClass]="{ 'text-gray-900 dark:text-paper': linguaAttiva() === 'it' }"
+              class="rounded-sm px-2 py-1 transition-colors hover:text-gray-900 dark:hover:text-paper"
+            >
+              IT
+            </button>
+            <span class="text-gray-300 dark:text-line">/</span>
+            <button
+              type="button"
+              (click)="impostaLingua('en')"
+              [ngClass]="{ 'text-gray-900 dark:text-paper': linguaAttiva() === 'en' }"
+              class="rounded-sm px-2 py-1 transition-colors hover:text-gray-900 dark:hover:text-paper"
+            >
+              EN
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="flex items-center justify-between border-t border-gray-200 px-1 pt-3 dark:border-line"
+        >
+          <span class="text-xs font-medium text-gray-400 dark:text-muted">Tema</span>
+          <app-theme-toggle />
+        </div>
+      </div>
+    }
+  </div>
+</header>

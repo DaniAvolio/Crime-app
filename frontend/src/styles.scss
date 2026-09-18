@@ -6,9 +6,27 @@ html,
 body {
   height: 100%;
   margin: 0;
+  background-color: #ffffff;
 }
 
 app-root {
   display: block;
   height: 100%;
+}
+
+/* Il contenitore instradato (es. la mappa Leaflet) deve poter ereditare l'altezza
+   riservata dal layout flex di app.html invece di restare inline senza dimensioni. */
+app-mappa {
+  display: block;
+  height: 100%;
+}
+
+/* Sfondo e color-scheme nativa (scrollbar, controlli di sistema) coerenti col tema scelto. */
+html.dark {
+  color-scheme: dark;
+  background-color: var(--color-ink);
+
+  body {
+    background-color: var(--color-ink);
+  }
 }

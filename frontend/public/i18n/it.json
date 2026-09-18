@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "mappa": "Mappa",
+    "categorie": "Categorie"
+  },
+  "home": {
+    "hero": {
+      "titolo": "Segnala quello che succede nel tuo quartiere.",
+      "sottotitolo": "Crime App raccoglie segnalazioni di sicurezza pubblica su una mappa condivisa. Ogni segnalazione scade da sola quando non è più utile.",
+      "ctaMappa": "Apri la mappa",
+      "ctaCategorie": "Sfoglia le categorie"
+    },
+    "pannello": {
+      "titolo": "Categorie attive",
+      "caricamento": "Caricamento in corso…",
+      "vuoto": "Le categorie non sono disponibili al momento."
+    },
+    "comeFunziona": {
+      "titolo": "Come funziona",
+      "fase1": {
+        "titolo": "Apri la mappa e scegli un punto",
+        "descrizione": "Indica dove è successo l'evento e seleziona la categoria più adatta."
+      },
+      "fase2": {
+        "titolo": "La segnalazione resta visibile fino alla scadenza",
+        "descrizione": "Ogni categoria ha una durata di validità: passato quel tempo, la segnalazione sparisce da sola."
+      },
+      "fase3": {
+        "titolo": "La community modera gli abusi",
+        "descrizione": "Le segnalazioni sospette possono essere segnalate e vengono riviste da chi gestisce la piattaforma."
+      }
+    },
+    "footer": {
+      "tagline": "Crime App — segnalazioni di sicurezza pubblica gestite dalla community."
+    }
+  }
+}

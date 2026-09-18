@@ -1,44 +1,40 @@
-<main class="min-h-screen bg-ink font-body text-paper">
-  <header class="flex items-center justify-between border-b border-line px-6 py-4 sm:px-10">
-    <span class="font-display text-lg font-semibold tracking-tight">Crime App</span>
-    <nav class="flex items-center gap-6 text-sm text-muted">
-      <a routerLink="/mappa" class="transition-colors hover:text-paper">Mappa</a>
-      <a routerLink="/categorie" class="transition-colors hover:text-paper">Categorie</a>
-    </nav>
-  </header>
-
+<main
+  *transloco="let t"
+  class="min-h-screen bg-white font-body text-gray-900 dark:bg-ink dark:text-paper"
+>
   <section
     class="mx-auto grid max-w-5xl gap-12 px-6 py-16 sm:px-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:py-24"
   >
     <div>
       <h1 class="font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
-        Segnala quello che succede nel tuo quartiere.
+        {{ t('home.hero.titolo') }}
       </h1>
-      <p class="mt-5 max-w-md text-base leading-relaxed text-muted">
-        Crime App raccoglie segnalazioni di sicurezza pubblica su una mappa condivisa. Ogni
-        segnalazione scade da sola quando non è più utile.
+      <p class="mt-5 max-w-md text-base leading-relaxed text-gray-500 dark:text-muted">
+        {{ t('home.hero.sottotitolo') }}
       </p>
 
       <div class="mt-8 flex flex-wrap items-center gap-4">
         <a
           routerLink="/mappa"
-          class="rounded-sm bg-beacon px-6 py-3 text-sm font-medium text-ink transition-colors hover:bg-amber-300"
+          class="rounded-sm bg-beacon px-6 py-3 text-sm font-medium text-ink transition-opacity hover:opacity-90"
         >
-          Apri la mappa →
+          {{ t('home.hero.ctaMappa') }} <span aria-hidden="true">→</span>
         </a>
         <a
           routerLink="/categorie"
-          class="rounded-sm border border-line px-6 py-3 text-sm font-medium text-paper transition-colors hover:border-muted"
+          class="rounded-sm border border-gray-300 px-6 py-3 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50 dark:border-line dark:text-paper dark:hover:bg-panel"
         >
-          Sfoglia le categorie
+          {{ t('home.hero.ctaCategorie') }}
         </a>
       </div>
     </div>
 
-    <div class="rounded-sm border border-line bg-panel">
-      <div class="flex items-center justify-between border-b border-line px-5 py-3">
-        <span class="text-sm text-muted">Categorie attive</span>
-        <span class="font-data text-sm text-paper">
+    <div class="rounded-sm border border-gray-200 bg-gray-50 dark:border-line dark:bg-panel">
+      <div
+        class="flex items-center justify-between border-b border-gray-200 px-5 py-3 dark:border-line"
+      >
+        <span class="text-sm text-gray-500 dark:text-muted">{{ t('home.pannello.titolo') }}</span>
+        <span class="font-data text-sm text-gray-900 dark:text-paper">
           {{ caricamentoCompletato() ? categorie().length : '···' }}
         </span>
       </div>
@@ -48,8 +44,9 @@
           @for (categoria of categorie(); track categoria.id; let i = $index) {
             <li
               class="flex items-center gap-3 px-5 py-3"
-              [class.border-b]="i < categorie().length - 1"
-              [class.border-line]="i < categorie().length - 1"
+              [ngClass]="{
+                'border-b border-gray-200 dark:border-line': i < categorie().length - 1,
+              }"
             >
               <span class="relative flex h-1.5 w-1.5 shrink-0">
                 @if (i === 0) {
@@ -61,31 +58,43 @@
               </span>
               <svg
                 [lucideIcon]="iconaRisolta(categoria.icona)"
-                class="h-4 w-4 shrink-0 text-muted"
+                class="h-4 w-4 shrink-0 text-gray-400 dark:text-muted"
               ></svg>
-              <span class="truncate text-sm text-paper">{{ categoria.nome }}</span>
+              <span class="truncate text-sm text-gray-900 dark:text-paper">
+                {{ categoria.nome }}
+              </span>
             </li>
           }
         </ul>
       } @else if (caricamentoCompletato()) {
-        <p class="px-5 py-6 text-sm text-muted">Le categorie non sono disponibili al momento.</p>
+        <p class="px-5 py-6 text-sm text-gray-500 dark:text-muted">
+          {{ t('home.pannello.vuoto') }}
+        </p>
       } @else {
-        <p class="px-5 py-6 text-sm text-muted">Caricamento in corso…</p>
+        <p class="px-5 py-6 text-sm text-gray-500 dark:text-muted">
+          {{ t('home.pannello.caricamento') }}
+        </p>
       }
     </div>
   </section>
 
-  <section class="border-t border-line px-6 py-16 sm:px-10">
+  <section class="border-t border-gray-200 px-6 py-16 dark:border-line sm:px-10">
     <div class="mx-auto max-w-3xl">
-      <h2 class="font-display text-xl font-semibold">Come funziona</h2>
+      <h2 class="font-display text-xl font-semibold">{{ t('home.comeFunziona.titolo') }}</h2>
 
-      <ol class="mt-8 divide-y divide-line border-t border-line">
-        @for (fase of fasiCiclo; track fase.numero) {
+      <ol
+        class="mt-8 divide-y divide-gray-200 border-t border-gray-200 dark:divide-line dark:border-line"
+      >
+        @for (fase of fasiCiclo; track fase.chiave) {
           <li class="grid grid-cols-[auto_1fr] gap-5 py-6">
-            <span class="font-data text-sm text-beacon">{{ fase.numero }}</span>
+            <span class="font-data text-sm text-amber-600 dark:text-beacon">{{ fase.numero }}</span>
             <div>
-              <h3 class="font-medium text-paper">{{ fase.titolo }}</h3>
-              <p class="mt-1 text-sm leading-relaxed text-muted">{{ fase.descrizione }}</p>
+              <h3 class="font-medium text-gray-900 dark:text-paper">
+                {{ t('home.comeFunziona.' + fase.chiave + '.titolo') }}
+              </h3>
+              <p class="mt-1 text-sm leading-relaxed text-gray-500 dark:text-muted">
+                {{ t('home.comeFunziona.' + fase.chiave + '.descrizione') }}
+              </p>
             </div>
           </li>
         }
@@ -94,12 +103,8 @@
   </section>
 
   <footer
-    class="flex flex-col gap-3 border-t border-line px-6 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-10"
+    class="border-t border-gray-200 px-6 py-6 text-sm text-gray-500 dark:border-line dark:text-muted sm:px-10"
   >
-    <p>Crime App — segnalazioni di sicurezza pubblica gestite dalla community.</p>
-    <nav class="flex items-center gap-4">
-      <a routerLink="/mappa" class="transition-colors hover:text-paper">Mappa</a>
-      <a routerLink="/categorie" class="transition-colors hover:text-paper">Categorie</a>
-    </nav>
+    <p>{{ t('home.footer.tagline') }}</p>
   </footer>
 </main>

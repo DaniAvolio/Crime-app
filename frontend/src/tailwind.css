@@ -1,9 +1,17 @@
 @import 'tailwindcss';
 
 /*
- * Token della sezione "dispatch" della homepage: nomi dedicati (display/body/data,
+ * Dark mode a classe: la variante `dark:` si attiva quando l'elemento (o un suo
+ * antenato) ha la classe `.dark` sull'<html>, impostata da TemaService — non dal solo
+ * prefers-color-scheme del sistema, cosi l'utente puo scegliere esplicitamente il tema.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Token della palette "dispatch" (usata dalla homepage e come palette dark-mode
+ * per le altre pagine tramite le varianti dark:*): nomi dedicati (display/body/data,
  * ink/panel/paper/...) invece di sovrascrivere --font-sans o i colori di default,
- * cosi il resto dell'app (categorie, mappa) resta sul tema Tailwind standard.
+ * cosi il resto dell'app resta sul tema Tailwind standard in modalita chiara.
  */
 @theme {
   --font-display: 'Space Grotesk', sans-serif;
