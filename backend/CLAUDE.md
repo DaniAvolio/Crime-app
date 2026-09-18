@@ -1,0 +1,69 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Repository layout
+
+This is one repo (`Crime-app/`) with three parts, each versioned independently:
+
+- `backend/` — Spring Boot 4.1.1 REST API (Java 21). This is the working directory for this CLAUDE.md.
+- `frontend/` — Angular 22 standalone app.
+- `docker-compose.yml` (repo root) — local PostGIS database + pgAdmin.
+
+Crime App lets users report observable public-safety events ("segnalazioni") on a map, scoped by category, with automatic expiry and abuse-based moderation.
+
+## Commands
+
+### Backend (run from `backend/`)
+
+```bash
+./mvnw spring-boot:run          # start the API (localhost:8080), needs the DB running
+./mvnw test                     # run all tests
+./mvnw test -Dtest=ClassName    # run a single test class
+./mvnw clean package            # build the jar
+```
+
+Database (repo root, needed before starting the backend):
+
+```bash
+docker compose up -d db         # PostGIS on localhost:5432 (db: crimeapp, user: crimeapp_user)
+docker compose up -d pgadmin    # optional, pgAdmin on localhost:5050
+```
+
+Schema is managed entirely by Flyway migrations in `src/main/resources/db/migration/`; Hibernate is set to `ddl-auto: validate` (it never generates DDL). Any schema change goes through a new `V{n}__description.sql` migration, and the corresponding JPA entity must be kept in sync or the app fails to start.
+
+### Frontend (run from `frontend/`)
+
+```bash
+ng serve      # dev server on localhost:4200, proxies API calls to localhost:8080/api
+ng build      # production build to dist/
+ng test       # unit tests via Vitest
+```
+
+## Backend architecture
+
+Standard layered structure per feature: `entity` → `repository` (Spring Data JPA) → `service` → `mapper` (entity ↔ DTO, manual, no MapStruct) → `controller` (`@RestController`, routes under `/api/...`). DTOs are Java records; entities are never returned directly from controllers. Follow the `Categoria` slice (`entity/Categoria.java`, `repository/CategoriaRepository.java`, `service/CategoriaService.java`, `mapper/CategoriaMapper.java`, `controller/CategoriaController.java`, `dto/CategoriaDto.java` + `CategoriaRequest.java`) as the template for adding new resources.
+
+Domain naming is Italian throughout (entities, fields, endpoints, variables) — match this convention for new code rather than mixing in English names.
+
+Key domain entities (`entity/`):
+- `Utente` — user accounts.
+- `Categoria` — a **table**, not an enum, by design: admin-configurable taxonomy of report types without a redeploy. Each category has `durataValiditaOre` (validity duration in hours), used to compute a report's expiry at creation time.
+- `Segnalazione` — a report: has an author (`autore`, never null — anonymity is display-only via the `anonima` flag), a `Categoria`, a PostGIS `Point` (`posizione`, geography SRID 4326), and a state machine driven by `StatoSegnalazione`: `ATTIVA -> SCADUTA` (scheduled job, expiry per category) | `ATTIVA -> SOSPESA` (automatic, abuse threshold reached) | `ATTIVA -> RIMOSSA` (admin or author) | `SOSPESA -> ATTIVA|RIMOSSA` (admin only). There is no blocking human review step before a report goes live — only a reactive one (moderation happens after publication, via abuse reports and admin action).
+- `SegnalazioneAbuso` — one abuse report per (user, report) pair, unique-constrained.
+- `EventoModerazione` — audit trail of every state transition on a `Segnalazione` (previous/new state, actor type: `SISTEMA`/`AUTORE`/`ADMIN`).
+- `PreferenzeNotifica`, `DeviceToken` — per-user notification preferences and push tokens.
+
+Error handling is centralized in `exception/GlobalExceptionHandler.java` (`@RestControllerAdvice`): new controllers automatically get consistent error responses (`ErrorResponse`) without reimplementing exception handling. Existing mappings: `RisorsaNonTrovataException` → 404, `ConflittoException` → 409, `DataIntegrityViolationException` (e.g. FK violation on delete) → 409, `MethodArgumentNotValidException` → 400 with field messages joined. Reuse these exception types for new resources instead of introducing per-controller error handling.
+
+`config/SecurityConfig.java` currently permits all requests and disables CSRF — explicitly a **temporary** state until real authentication is implemented (see class Javadoc). It also configures CORS to allow only `http://localhost:4200`, which must be restricted to the real frontend origin before going to production. Don't assume any endpoint is actually protected yet.
+
+## Frontend architecture
+
+Angular 22, standalone components (no NgModules), routes declared flat in `app.routes.ts`. Global providers (router, `HttpClient`, Lucide icon set) are wired in `app.config.ts`.
+
+Feature folders under `src/app/` mirror backend resources (e.g. `categorie/`) and follow this pattern: an injectable `*Api` service (`providedIn: 'root'`) wrapping `HttpClient` calls against `environment.apiUrl`, a component using Angular `signal()`s for local state (no NgRx/store), and `ReactiveFormsModule` for forms. `categorie/` is the reference implementation for adding a new CRUD feature.
+
+Shared domain types live in `src/app/models/` (one file per entity, mirroring the backend entities, plus a barrel `index.ts`). `environments/environment.ts` / `environment.production.ts` hold `apiUrl`.
+
+Notable libraries: `@bluehalo/ngx-leaflet` + `leaflet` for the map view (`mappa/`), `@lucide/angular` for icons — icon components must be explicitly registered in `shared/icone-categoria.ts` and provided via `provideLucideIcons(...)` in `app.config.ts` before they can be referenced by kebab-case name elsewhere (e.g. a category's `icona` field). Styling uses Tailwind CSS v4 (via `@tailwindcss/postcss`). Prettier is configured with `printWidth: 100`, single quotes, and the Angular parser for `.html` templates.
