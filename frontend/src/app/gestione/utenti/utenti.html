@@ -1,0 +1,179 @@
+<main class="min-h-screen bg-white text-gray-900 dark:bg-ink dark:text-paper">
+  <div class="mx-auto max-w-4xl px-6 py-10">
+    <h1 class="mb-6 text-2xl font-bold text-blue-700 dark:text-blue-400">Gestione utenti</h1>
+
+    @if (errore()) {
+      <div
+        class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+      >
+        {{ errore() }}
+      </div>
+    }
+
+    <form
+      [formGroup]="form"
+      (ngSubmit)="inviaForm()"
+      class="mb-8 rounded-lg border border-gray-200 p-4 dark:border-line"
+    >
+      <h2 class="mb-3 font-semibold text-gray-800 dark:text-paper">
+        {{ idInModifica() === null ? 'Nuovo utente' : 'Modifica utente' }}
+      </h2>
+
+      <div class="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">Nome</label>
+          <input
+            type="text"
+            formControlName="nome"
+            class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+          />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+            Cognome
+          </label>
+          <input
+            type="text"
+            formControlName="cognome"
+            class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+          />
+        </div>
+      </div>
+
+      @if (idInModifica() === null) {
+        <div class="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+              Email
+            </label>
+            <input
+              type="email"
+              formControlName="email"
+              class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+            />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+              Password
+            </label>
+            <input
+              type="password"
+              formControlName="password"
+              class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+            />
+          </div>
+        </div>
+      }
+
+      <div class="flex gap-2">
+        <button
+          type="submit"
+          class="rounded bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
+        >
+          {{ idInModifica() === null ? 'Crea' : 'Salva' }}
+        </button>
+
+        @if (idInModifica() !== null) {
+          <button
+            type="button"
+            (click)="annullaModifica()"
+            class="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-line dark:text-muted dark:hover:bg-panel"
+          >
+            Annulla
+          </button>
+        }
+      </div>
+    </form>
+
+    @if (caricando()) {
+      <p class="text-sm text-gray-500 dark:text-muted">Caricamento...</p>
+    } @else if (utenti().length === 0) {
+      <p class="text-sm text-gray-500 dark:text-muted">Nessun utente presente.</p>
+    } @else {
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr
+            class="border-b border-gray-200 text-left text-gray-500 dark:border-line dark:text-muted"
+          >
+            <th class="py-2">Nome</th>
+            <th class="py-2">Cognome</th>
+            <th class="py-2">Email</th>
+            <th class="py-2">Identità</th>
+            <th class="py-2">Fiducia</th>
+            <th class="py-2">Stato</th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (utente of utenti(); track utente.id) {
+            <tr class="border-b border-gray-100 dark:border-line">
+              <td class="py-2">{{ utente.nome }}</td>
+              <td class="py-2">{{ utente.cognome }}</td>
+              <td class="py-2">{{ utente.email }}</td>
+              <td class="py-2">
+                @if (utente.identitaVerificata) {
+                  <span
+                    class="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                  >
+                    Verificata
+                  </span>
+                } @else {
+                  <span
+                    class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-panel dark:text-muted"
+                  >
+                    Non verificata
+                  </span>
+                }
+              </td>
+              <td class="py-2">{{ utente.punteggioFiducia }}</td>
+              <td class="py-2">
+                @if (utente.attivo) {
+                  <span
+                    class="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                  >
+                    Attivo
+                  </span>
+                } @else {
+                  <span
+                    class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-panel dark:text-muted"
+                  >
+                    Disattivato
+                  </span>
+                }
+              </td>
+              <td class="py-2 text-right whitespace-nowrap">
+                <button
+                  (click)="modifica(utente)"
+                  class="mr-3 text-blue-700 hover:underline dark:text-blue-400"
+                >
+                  Modifica
+                </button>
+                @if (utente.attivo) {
+                  <button
+                    (click)="disattiva(utente)"
+                    class="mr-3 text-amber-600 hover:underline dark:text-beacon"
+                  >
+                    Disattiva
+                  </button>
+                } @else {
+                  <button
+                    (click)="riattiva(utente)"
+                    class="mr-3 text-green-700 hover:underline dark:text-green-400"
+                  >
+                    Riattiva
+                  </button>
+                }
+                <button
+                  (click)="elimina(utente)"
+                  class="text-red-600 hover:underline dark:text-red-400"
+                >
+                  Elimina
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</main>

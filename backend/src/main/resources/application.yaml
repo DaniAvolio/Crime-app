@@ -14,3 +14,11 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+crimeapp:
+  moderazione:
+    # Numero di segnalazioni di abuso oltre il quale una Segnalazione viene sospesa automaticamente.
+    soglia-abusi: 5
+  segnalazioni:
+    # Intervallo (ms) del job che porta in SCADUTA le segnalazioni ATTIVA con data di scadenza passata.
+    scadenza-job-rate-ms: 300000

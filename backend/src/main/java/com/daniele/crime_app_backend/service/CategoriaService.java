@@ -87,7 +87,7 @@ public class CategoriaService {
                 });
     }
 
-    private Categoria recuperaOLancia(Long id) {
+    Categoria recuperaOLancia(Long id) {
         return categoriaRepository.findById(id)
                 .orElseThrow(() -> new RisorsaNonTrovataException("Categoria non trovata con id: " + id));
     }

@@ -5,19 +5,15 @@ export enum StatoSegnalazione {
   RIMOSSA = 'RIMOSSA',
 }
 
-export interface Posizione {
-  lat: number;
-  lng: number;
-}
-
 export interface Segnalazione {
   id: number;
+  autoreId: number;
   categoriaId: number;
+  categoriaNome: string;
   descrizione: string;
-  posizione: Posizione;
-  /** L'autore reale non è mai esposto se anonima=true: solo il flag lato UI. */
+  lat: number;
+  lng: number;
   anonima: boolean;
-  autoreNome?: string; // presente solo se anonima=false
   stato: StatoSegnalazione;
   dataCreazione: string;
   dataScadenza: string;

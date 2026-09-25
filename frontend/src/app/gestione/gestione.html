@@ -1,0 +1,21 @@
+<main class="min-h-screen bg-white text-gray-900 dark:bg-ink dark:text-paper">
+  <div class="mx-auto max-w-4xl px-6 py-10">
+    <h1 class="mb-6 text-2xl font-bold text-blue-700 dark:text-blue-400">Gestione</h1>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      @for (voce of voci; track voce.percorso) {
+        <a
+          [routerLink]="voce.percorso"
+          class="rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50 dark:border-line dark:hover:bg-panel"
+        >
+          <svg
+            [lucideIcon]="voce.icona"
+            class="mb-2 h-6 w-6 text-blue-700 dark:text-blue-400"
+          ></svg>
+          <h2 class="mb-1 font-semibold text-gray-900 dark:text-paper">{{ voce.titolo }}</h2>
+          <p class="text-sm text-gray-500 dark:text-muted">{{ voce.descrizione }}</p>
+        </a>
+      }
+    </div>
+  </div>
+</main>

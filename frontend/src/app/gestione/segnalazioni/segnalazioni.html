@@ -1,0 +1,206 @@
+<main class="min-h-screen bg-white text-gray-900 dark:bg-ink dark:text-paper">
+  <div class="mx-auto max-w-5xl px-6 py-10">
+    <h1 class="mb-6 text-2xl font-bold text-blue-700 dark:text-blue-400">Gestione segnalazioni</h1>
+
+    @if (errore()) {
+      <div
+        class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+      >
+        {{ errore() }}
+      </div>
+    }
+
+    <form
+      [formGroup]="form"
+      (ngSubmit)="inviaForm()"
+      class="mb-8 rounded-lg border border-gray-200 p-4 dark:border-line"
+    >
+      <h2 class="mb-3 font-semibold text-gray-800 dark:text-paper">Nuova segnalazione</h2>
+
+      <div class="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+            Categoria
+          </label>
+          <select
+            formControlName="categoriaId"
+            class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+          >
+            <option [ngValue]="null">Seleziona categoria</option>
+            @for (categoria of categorie(); track categoria.id) {
+              <option [ngValue]="categoria.id">{{ categoria.nome }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+            Autore
+          </label>
+          <select
+            formControlName="autoreId"
+            class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+          >
+            <option [ngValue]="null">Seleziona autore</option>
+            @for (utente of utenti(); track utente.id) {
+              <option [ngValue]="utente.id">{{ utente.nome }} {{ utente.cognome }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+          Descrizione
+        </label>
+        <textarea
+          formControlName="descrizione"
+          rows="3"
+          class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+        ></textarea>
+      </div>
+
+      <div class="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+            Latitudine
+          </label>
+          <input
+            type="number"
+            step="any"
+            formControlName="lat"
+            class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+          />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+            Longitudine
+          </label>
+          <input
+            type="number"
+            step="any"
+            formControlName="lng"
+            class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+          />
+        </div>
+      </div>
+
+      <label class="mb-4 flex items-center gap-2 text-sm text-gray-700 dark:text-muted">
+        <input type="checkbox" formControlName="anonima" />
+        Anonima
+      </label>
+
+      <button
+        type="submit"
+        class="rounded bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
+      >
+        Crea
+      </button>
+    </form>
+
+    <div class="mb-4 flex items-center gap-2">
+      <label class="text-sm font-medium text-gray-700 dark:text-muted">Filtra per stato</label>
+      <select
+        (change)="cambiaFiltro($any($event.target).value)"
+        class="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+      >
+        <option value="">Tutte</option>
+        <option [value]="StatoSegnalazione.ATTIVA">Attiva</option>
+        <option [value]="StatoSegnalazione.SCADUTA">Scaduta</option>
+        <option [value]="StatoSegnalazione.SOSPESA">Sospesa</option>
+        <option [value]="StatoSegnalazione.RIMOSSA">Rimossa</option>
+      </select>
+    </div>
+
+    @if (caricando()) {
+      <p class="text-sm text-gray-500 dark:text-muted">Caricamento...</p>
+    } @else if (segnalazioni().length === 0) {
+      <p class="text-sm text-gray-500 dark:text-muted">Nessuna segnalazione presente.</p>
+    } @else {
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr
+            class="border-b border-gray-200 text-left text-gray-500 dark:border-line dark:text-muted"
+          >
+            <th class="py-2">Id</th>
+            <th class="py-2">Categoria</th>
+            <th class="py-2">Descrizione</th>
+            <th class="py-2">Anonima</th>
+            <th class="py-2">Stato</th>
+            <th class="py-2">Creata</th>
+            <th class="py-2">Scade</th>
+            <th class="py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (segnalazione of segnalazioni(); track segnalazione.id) {
+            <tr class="border-b border-gray-100 dark:border-line">
+              <td class="py-2">{{ segnalazione.id }}</td>
+              <td class="py-2">{{ segnalazione.categoriaNome }}</td>
+              <td class="max-w-xs truncate py-2">{{ segnalazione.descrizione }}</td>
+              <td class="py-2">{{ segnalazione.anonima ? 'Sì' : 'No' }}</td>
+              <td class="py-2">
+                @switch (segnalazione.stato) {
+                  @case (StatoSegnalazione.ATTIVA) {
+                    <span
+                      class="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                    >
+                      Attiva
+                    </span>
+                  }
+                  @case (StatoSegnalazione.SCADUTA) {
+                    <span
+                      class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-panel dark:text-muted"
+                    >
+                      Scaduta
+                    </span>
+                  }
+                  @case (StatoSegnalazione.SOSPESA) {
+                    <span
+                      class="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700 dark:bg-amber-900/40 dark:text-beacon"
+                    >
+                      Sospesa
+                    </span>
+                  }
+                  @case (StatoSegnalazione.RIMOSSA) {
+                    <span
+                      class="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                    >
+                      Rimossa
+                    </span>
+                  }
+                }
+              </td>
+              <td class="py-2 whitespace-nowrap">
+                {{ segnalazione.dataCreazione | slice: 0 : 10 }}
+              </td>
+              <td class="py-2 whitespace-nowrap">
+                {{ segnalazione.dataScadenza | slice: 0 : 10 }}
+              </td>
+              <td class="py-2 text-right whitespace-nowrap">
+                @if (segnalazione.stato === StatoSegnalazione.ATTIVA) {
+                  <button
+                    (click)="rimuovi(segnalazione)"
+                    class="text-red-600 hover:underline dark:text-red-400"
+                  >
+                    Rimuovi
+                  </button>
+                }
+                @if (
+                  segnalazione.stato === StatoSegnalazione.SOSPESA ||
+                  segnalazione.stato === StatoSegnalazione.RIMOSSA
+                ) {
+                  <button
+                    (click)="riattiva(segnalazione)"
+                    class="text-green-700 hover:underline dark:text-green-400"
+                  >
+                    Riattiva
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</main>
