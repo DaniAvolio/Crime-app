@@ -1,0 +1,57 @@
+<section
+  *transloco="let t"
+  class="absolute inset-x-0 bottom-[var(--altezza-navbar-mappa)] top-0 z-[1050] overflow-y-auto bg-white text-neutral-900 dark:bg-ink dark:text-paper"
+  aria-labelledby="titolo-lista-segnalazioni"
+>
+  <div class="mx-auto max-w-2xl px-4 pb-6 pt-5 sm:px-6 sm:pb-28">
+    <h2 id="titolo-lista-segnalazioni" class="font-display text-xl font-semibold">
+      {{ t('mappa.lista.titolo') }}
+    </h2>
+    <p class="mt-1 text-sm text-neutral-500 dark:text-muted">
+      {{
+        t(riferimentoUtente() ? 'mappa.lista.ordineDaTe' : 'mappa.lista.ordineDaCentro', {
+          numero: voci().length,
+        })
+      }}
+    </p>
+
+    @if (voci().length === 0) {
+      <p class="mt-10 text-center text-neutral-600 dark:text-muted">
+        {{ t('mappa.lista.vuota') }}
+      </p>
+    } @else {
+      <ul class="mt-4 divide-y divide-neutral-200 dark:divide-line">
+        @for (voce of voci(); track voce.segnalazione.id) {
+          <li>
+            <button
+              type="button"
+              class="flex w-full items-start gap-3 py-3.5 text-left transition-colors hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:hover:bg-panel"
+              (click)="seleziona.emit(voce.segnalazione)"
+            >
+              <span
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-allerta text-white"
+                aria-hidden="true"
+              >
+                <svg [lucideIcon]="icona(voce.segnalazione.categoriaId)" class="h-5 w-5"></svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="flex items-baseline justify-between gap-3">
+                  <span class="truncate font-medium">{{ voce.segnalazione.categoriaNome }}</span>
+                  <span class="shrink-0 text-sm tabular-nums text-neutral-500 dark:text-muted">
+                    {{ distanza(voce.metri) }}
+                  </span>
+                </span>
+                <span class="mt-0.5 block truncate text-sm text-neutral-600 dark:text-muted">
+                  {{ voce.segnalazione.descrizione }}
+                </span>
+                <span class="mt-0.5 block text-xs text-neutral-500 dark:text-muted">
+                  {{ tempoFa(voce.segnalazione.dataCreazione) }}
+                </span>
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</section>

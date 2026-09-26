@@ -82,15 +82,51 @@ html.dark {
   }
 }
 
-/* Altezza della navbar in basso nella pagina mappa: il pannello di dettaglio e i controlli
-   in basso si appoggiano sopra di essa. 0 finché la navbar non esiste. */
+/* Altezza della navbar in basso nella pagina mappa: pannelli, lista e controlli in basso si
+   appoggiano sopra di essa. Su desktop la navbar è una pillola flottante e non riserva spazio. */
 :root {
   --altezza-navbar-mappa: 0px;
 }
 
-/* Su mobile il pannello di dettaglio sale dal basso all'apertura. */
+.mappa-con-navbar {
+  --altezza-navbar-mappa: calc(4rem + env(safe-area-inset-bottom));
+
+  /* Attribuzione e controlli in basso di Leaflet sopra la navbar, non coperti da essa. */
+  .leaflet-bottom {
+    bottom: var(--altezza-navbar-mappa);
+  }
+
+  @media (min-width: 640px) {
+    --altezza-navbar-mappa: 0px;
+  }
+}
+
+/* Pin trascinabile della nuova segnalazione: punta in basso sul punto esatto. */
+.pin-nuova-segnalazione {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
+  border: 3px solid #ffffff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background-color: var(--color-allerta);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.4);
+  cursor: grab;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    transform: rotate(45deg);
+  }
+}
+
+/* Su mobile i pannelli della mappa salgono dal basso all'apertura. */
 @media (max-width: 639px) {
-  .pannello-dettaglio {
+  .pannello-mappa {
     animation: pannello-sale 200ms ease-out;
   }
 }
@@ -102,7 +138,7 @@ html.dark {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pannello-dettaglio {
+  .pannello-mappa {
     animation: none;
     transition: none;
   }

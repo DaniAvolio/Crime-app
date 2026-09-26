@@ -60,6 +60,52 @@
       },
       "espandi": "Show all details",
       "riduci": "Show fewer details"
+    },
+    "navbar": {
+      "etichetta": "Map actions",
+      "soccorsi": "Emergency",
+      "segnala": "Report",
+      "lista": "List",
+      "mappa": "Map"
+    },
+    "soccorsi": {
+      "titolo": "Call 112?",
+      "testo": "112 is the single emergency number for police, fire brigade and ambulance. Call it if someone is in danger.",
+      "chiama": "Call 112",
+      "annulla": "Cancel",
+      "daComputer": "You can't call from a computer: dial 112 on your phone."
+    },
+    "nuova": {
+      "titolo": "New report",
+      "annulla": "Cancel report",
+      "posizioneUtente": "At your current location. Drag the pin to adjust it.",
+      "posizionePin": "At the pin. Drag it to move it.",
+      "pin": "Location of the new report",
+      "categoria": "What's happening?",
+      "categorieNonDisponibili": "Categories aren't available right now. Try again shortly.",
+      "erroreCategoria": "Choose a category.",
+      "descrizione": "Description",
+      "descrizionePlaceholder": "What did you see, and where exactly?",
+      "erroreDescrizione": "Write a short description.",
+      "anonima": "Post anonymously",
+      "anonimaAiuto": "Your name won't be shown to other people.",
+      "pubblica": "Post report",
+      "invio": "Posting…",
+      "pubblicata": "Report posted.",
+      "errore": "We couldn't post your report. Check your connection and try again.",
+      "miaPosizione": "My location",
+      "scarto": {
+        "domanda": "Discard this report?",
+        "testo": "What you've entered will be lost.",
+        "scarta": "Discard",
+        "continua": "Keep editing"
+      }
+    },
+    "lista": {
+      "titolo": "Reports nearby",
+      "ordineDaTe": "{{ numero }} active in the map area, closest to you first.",
+      "ordineDaCentro": "{{ numero }} active in the map area, closest to the center first.",
+      "vuota": "No active reports in this area. Move the map to look elsewhere."
     }
   }
 }

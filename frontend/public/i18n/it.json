@@ -60,6 +60,52 @@
       },
       "espandi": "Mostra tutti i dettagli",
       "riduci": "Riduci dettagli"
+    },
+    "navbar": {
+      "etichetta": "Azioni mappa",
+      "soccorsi": "Soccorsi",
+      "segnala": "Segnala",
+      "lista": "Lista",
+      "mappa": "Mappa"
+    },
+    "soccorsi": {
+      "titolo": "Chiamare il 112?",
+      "testo": "Il 112 è il numero unico per le emergenze: polizia, carabinieri, vigili del fuoco e ambulanza. Chiamalo se qualcuno è in pericolo.",
+      "chiama": "Chiama il 112",
+      "annulla": "Annulla",
+      "daComputer": "Dal computer non puoi chiamare: componi il 112 dal telefono."
+    },
+    "nuova": {
+      "titolo": "Nuova segnalazione",
+      "annulla": "Annulla segnalazione",
+      "posizioneUtente": "Nella tua posizione attuale. Trascina il pin per correggerla.",
+      "posizionePin": "Nel punto del pin. Trascinalo per spostarlo.",
+      "pin": "Posizione della nuova segnalazione",
+      "categoria": "Cosa sta succedendo?",
+      "categorieNonDisponibili": "Le categorie non sono disponibili al momento. Riprova tra poco.",
+      "erroreCategoria": "Scegli una categoria.",
+      "descrizione": "Descrizione",
+      "descrizionePlaceholder": "Cosa hai visto, e dove esattamente?",
+      "erroreDescrizione": "Scrivi una breve descrizione.",
+      "anonima": "Pubblica in forma anonima",
+      "anonimaAiuto": "Il tuo nome non sarà mostrato agli altri utenti.",
+      "pubblica": "Pubblica segnalazione",
+      "invio": "Pubblicazione in corso…",
+      "pubblicata": "Segnalazione pubblicata.",
+      "errore": "Non riusciamo a pubblicare la segnalazione. Controlla la connessione e riprova.",
+      "miaPosizione": "La mia posizione",
+      "scarto": {
+        "domanda": "Scartare la segnalazione?",
+        "testo": "Quello che hai inserito andrà perso.",
+        "scarta": "Scarta",
+        "continua": "Continua"
+      }
+    },
+    "lista": {
+      "titolo": "Segnalazioni in zona",
+      "ordineDaTe": "{{ numero }} attive nell’area della mappa, dalla più vicina a te.",
+      "ordineDaCentro": "{{ numero }} attive nell’area della mappa, dalla più vicina al centro.",
+      "vuota": "Nessuna segnalazione attiva in quest’area. Sposta la mappa per cercare altrove."
     }
   }
 }

@@ -16,7 +16,7 @@
       <div class="mt-8 flex flex-wrap items-center gap-4">
         <a
           routerLink="/mappa"
-          class="rounded-sm bg-beacon px-6 py-3 text-sm font-medium text-ink transition-opacity hover:opacity-90"
+          class="rounded-sm bg-allerta px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
           {{ t('home.hero.ctaMappa') }} <span aria-hidden="true">→</span>
         </a>
@@ -51,10 +51,10 @@
               <span class="relative flex h-1.5 w-1.5 shrink-0">
                 @if (i === 0) {
                   <span
-                    class="absolute h-full w-full animate-ping rounded-full bg-beacon opacity-60"
+                    class="absolute h-full w-full animate-ping rounded-full bg-allerta opacity-60"
                   ></span>
                 }
-                <span class="relative h-1.5 w-1.5 rounded-full bg-beacon"></span>
+                <span class="relative h-1.5 w-1.5 rounded-full bg-allerta"></span>
               </span>
               <svg
                 [lucideIcon]="iconaRisolta(categoria.icona)"
@@ -87,7 +87,7 @@
       >
         @for (fase of fasiCiclo; track fase.chiave) {
           <li class="grid grid-cols-[auto_1fr] gap-5 py-6">
-            <span class="font-data text-sm text-amber-600 dark:text-beacon">{{ fase.numero }}</span>
+            <span class="font-data text-sm text-allerta dark:text-red-400">{{ fase.numero }}</span>
             <div>
               <h3 class="font-medium text-gray-900 dark:text-paper">
                 {{ t('home.comeFunziona.' + fase.chiave + '.titolo') }}

@@ -1,5 +1,16 @@
 import { NgClass } from '@angular/common';
-import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LeafletDirective } from '@bluehalo/ngx-leaflet';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
@@ -16,6 +27,7 @@ import {
   Map as LeafletMap,
   MaplibreGL,
   MapOptions,
+  Marker,
   marker,
 } from 'leaflet';
 import { maplibreGL } from '@maplibre/maplibre-gl-leaflet';
@@ -27,6 +39,12 @@ import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Segnalazione, StatoSegnalazione } from '../models/segnalazione.model';
 import { NOME_ICONA_FALLBACK, svgIcona } from '../shared/icone-categoria';
 import { Tema, TemaService } from '../shared/tema';
+import { Categoria } from '../models/categoria.model';
+import { formattaData, formattaDistanza } from './formattazione';
+import { ListaSegnalazioni } from './lista-segnalazioni';
+import { NavbarMappa, VistaMappa } from './navbar-mappa';
+import { NuovaSegnalazione } from './nuova-segnalazione';
+import { Soccorsi } from './soccorsi';
 
 // Le icone di default di Leaflet puntano a percorsi relativi al CSS che il
 // bundler di Angular non risolve: le ripuntiamo verso gli asset statici
@@ -61,8 +79,8 @@ const RAGGIO_INCERTEZZA_METRI = 100;
 /** Stesso breakpoint di `sm:` di Tailwind: sotto, il dettaglio è un pannello dal basso. */
 const MEDIA_MOBILE = '(max-width: 639px)';
 const SOGLIA_TRASCINAMENTO_PX = 40;
-/** Distanza minima dai bordi della mappa per considerare visibile il marker selezionato. */
-const MARGINE_PX = 48;
+/** Aprendo una segnalazione da uno zoom più lontano di così, ci si avvicina prima di centrarla. */
+const ZOOM_MINIMO_CENTRATURA = 15;
 
 interface AreaVisibile {
   centro: LatLng;
@@ -97,9 +115,18 @@ function ignoraIconeMancanti(sfondo: MaplibreGL): void {
 @Component({
   selector: 'app-mappa',
   standalone: true,
-  imports: [LeafletDirective, TranslocoDirective, LucideDynamicIcon, NgClass],
+  imports: [
+    LeafletDirective,
+    TranslocoDirective,
+    LucideDynamicIcon,
+    NgClass,
+    NavbarMappa,
+    Soccorsi,
+    NuovaSegnalazione,
+    ListaSegnalazioni,
+  ],
   templateUrl: './mappa.html',
-  host: { '(document:keydown.escape)': 'chiudiDettaglio()' },
+  host: { '(document:keydown.escape)': 'gestisciEscape()' },
 })
 export class Mappa {
   /** Chiave i18n dell'avviso da mostrare se la posizione non è disponibile. */
@@ -133,20 +160,48 @@ export class Mappa {
     if (!segnalazione || !posizione) {
       return null;
     }
-    const metri = posizione.distanceTo([segnalazione.lat, segnalazione.lng]);
-    return metri < 1000 ? `${Math.round(metri / 10) * 10} m` : `${(metri / 1000).toFixed(1)} km`;
+    return formattaDistanza(posizione.distanceTo([segnalazione.lat, segnalazione.lng]));
   });
+
+  /** Vista attiva, scelta dalla navbar in basso. */
+  protected readonly vista = signal<VistaMappa>('mappa');
+  /** Pannello aperto dalla navbar (il dettaglio segnalazione è governato da `selezionata`). */
+  protected readonly pannello = signal<'nuova' | 'soccorsi' | null>(null);
+
+  protected readonly categorie = signal<Categoria[]>([]);
+  protected readonly categorieAttive = computed(() => this.categorie().filter((c) => c.attiva));
+
+  /** Punto della nuova segnalazione: parte dalla posizione dell'utente, si sposta col pin. */
+  protected readonly posizioneNuova = signal<LatLng | null>(null);
+  protected readonly pinSpostato = signal(false);
+  /** Id dell'ultima segnalazione pubblicata, per confermarlo nel suo pannello di dettaglio. */
+  protected readonly idAppenaPubblicata = signal<number | null>(null);
+
+  /** Su mobile pulsante "torna a me" e avvisi lasciano spazio ai pannelli dal basso. */
+  protected readonly pannelloInBassoAperto = computed(
+    () => this.selezionata() !== null || this.pannello() === 'nuova',
+  );
+
+  /** Da dove la lista misura le distanze: l'utente se la posizione è nota, sennò il centro mappa. */
+  protected readonly riferimentoLista = computed(
+    () => this.posizioneUtente() ?? this.centroMappa(),
+  );
+  private readonly centroMappa = signal(latLng(45.3181, 8.8589));
+  private pinNuova: Marker | null = null;
 
   private readonly tema = inject(TemaService);
   private readonly transloco = inject(TranslocoService);
   private readonly segnalazioneApi = inject(SegnalazioneApi);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly formNuova = viewChild(NuovaSegnalazione);
 
   /** Id (e non oggetto) così l'esito del voto non si azzera quando la segnalazione aperta si aggiorna. */
   private readonly idSelezionata = computed(() => this.selezionata()?.id ?? null);
 
   /** categoriaId -> nome icona Lucide, per disegnare il marker con l'icona della categoria. */
-  private readonly iconePerCategoria = signal(new Map<number, string>());
+  protected readonly iconePerCategoria = signal(new Map<number, string>());
   private readonly areaRichiesta = new Subject<AreaVisibile>();
   private readonly livelloSegnalazioni = layerGroup();
 
@@ -226,6 +281,40 @@ export class Mappa {
       }
     });
 
+    // Pin trascinabile della nuova segnalazione: esiste solo mentre il form è aperto.
+    effect(() => {
+      const map = this.mappa();
+      const posizione = this.posizioneNuova();
+      if (!map || this.pannello() !== 'nuova' || !posizione) {
+        this.pinNuova?.remove();
+        this.pinNuova = null;
+        return;
+      }
+      if (this.pinNuova) {
+        this.pinNuova.setLatLng(posizione);
+        return;
+      }
+      this.pinNuova = marker(posizione, {
+        draggable: true,
+        autoPan: true,
+        zIndexOffset: 2000,
+        title: this.transloco.translate('mappa.nuova.pin'),
+        alt: this.transloco.translate('mappa.nuova.pin'),
+        icon: divIcon({
+          className: '',
+          html: `<span class="pin-nuova-segnalazione">${svgIcona('plus')}</span>`,
+          iconSize: [40, 40],
+          // La punta della goccia (angolo ruotato di 45°) sta ~28px sotto il centro.
+          iconAnchor: [20, 48],
+        }),
+      })
+        .on('dragend', () => {
+          this.posizioneNuova.set(this.pinNuova!.getLatLng());
+          this.pinSpostato.set(true);
+        })
+        .addTo(map);
+    });
+
     // debounce: un trascinamento produce molti moveend; switchMap scarta le risposte superate.
     this.areaRichiesta
       .pipe(
@@ -251,10 +340,12 @@ export class Mappa {
       .elenca()
       .pipe(takeUntilDestroyed())
       .subscribe({
-        next: (categorie) =>
+        next: (categorie) => {
+          this.categorie.set(categorie);
           this.iconePerCategoria.set(
             new Map(categorie.map((c) => [c.id, c.icona ?? NOME_ICONA_FALLBACK])),
-          ),
+          );
+        },
         // Senza categorie i marker usano l'icona di fallback: non serve un avviso dedicato.
         error: () => {},
       });
@@ -277,8 +368,19 @@ export class Mappa {
     setTimeout(() => map.invalidateSize(), 250);
     this.mappa.set(map);
     this.livelloSegnalazioni.addTo(map);
-    map.on('moveend', () => this.richiediSegnalazioni(map));
-    map.on('click', () => this.selezionata.set(null));
+    map.on('moveend', () => {
+      this.centroMappa.set(map.getCenter());
+      this.richiediSegnalazioni(map);
+    });
+    // Un tocco sulla mappa chiude il pannello aperto, come per il dettaglio. Il form può avere
+    // dati non inviati: decide lui se chiudere subito o chiedere conferma.
+    map.on('click', () => {
+      if (this.pannello() === 'nuova') {
+        this.formNuova()?.richiediChiusura();
+      } else {
+        this.selezionata.set(null);
+      }
+    });
     this.richiediSegnalazioni(map);
     this.seguiPosizioneUtente(map);
   }
@@ -291,28 +393,52 @@ export class Mappa {
     this.selezionata.set(null);
   }
 
-  /**
-   * Su mobile il dettaglio è un pannello dal basso: la mappa si sposta perché il marker
-   * resti visibile sopra il pannello invece di finirci sotto.
-   */
+  /** Apre il dettaglio e porta la segnalazione al centro della mappa rimasta visibile. */
   private apriDettaglio(segnalazione: Segnalazione): void {
-    this.selezionata.set(segnalazione);
-    this.pannelloEspanso.set(false);
-    const map = this.mappa();
-    if (!map || !matchMedia(MEDIA_MOBILE).matches) {
+    // Con il form aperto un tocco su un marker vale come un tocco sulla mappa: chiede di chiudere.
+    if (this.pannello() === 'nuova') {
+      this.formNuova()?.richiediChiusura();
       return;
     }
-    const { x: larghezza, y: altezza } = map.getSize();
-    const punto = map.latLngToContainerPoint([segnalazione.lat, segnalazione.lng]);
-    // Zona visibile: sotto il bordo alto, sopra il pannello (~45% dell'altezza), lontano dai lati.
-    const fuoriX = punto.x < MARGINE_PX || punto.x > larghezza - MARGINE_PX;
-    const fuoriY = punto.y < MARGINE_PX || punto.y > altezza * 0.45;
-    if (fuoriX || fuoriY) {
-      const riduciMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      map.panBy([fuoriX ? punto.x - larghezza / 2 : 0, fuoriY ? punto.y - altezza * 0.3 : 0], {
-        animate: !riduciMovimento,
-      });
+    this.selezionata.set(segnalazione);
+    this.pannelloEspanso.set(false);
+    this.centraNellaZonaLibera(latLng(segnalazione.lat, segnalazione.lng));
+  }
+
+  /**
+   * Centra `posizione` nella parte di mappa non coperta: sopra il pannello e la navbar su
+   * mobile, a sinistra del pannello laterale su desktop. Le misure si leggono dopo il render,
+   * quando il pannello appena aperto esiste; offsetTop/offsetLeft ignorano l'animazione
+   * d'ingresso (transform), che falserebbe getBoundingClientRect.
+   */
+  private centraNellaZonaLibera(posizione: LatLng, zoomMinimo = ZOOM_MINIMO_CENTRATURA): void {
+    const map = this.mappa();
+    if (!map) {
+      return;
     }
+    if (map.getZoom() < zoomMinimo) {
+      map.setView(posizione, zoomMinimo, { animate: false });
+    }
+    afterNextRender(
+      () => {
+        const radice = this.host.nativeElement;
+        const pannello = radice.querySelector<HTMLElement>('.pannello-mappa');
+        const navbar = radice.querySelector<HTMLElement>('app-navbar-mappa nav');
+        const { x: larghezza, y: altezza } = map.getSize();
+        const mobile = matchMedia(MEDIA_MOBILE).matches;
+        const bordoDestro = !mobile && pannello ? pannello.offsetLeft : larghezza;
+        const bordoBasso = Math.min(
+          navbar ? navbar.offsetTop : altezza,
+          mobile && pannello ? pannello.offsetTop : altezza,
+        );
+        const punto = map.latLngToContainerPoint(posizione);
+        const riduciMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        map.panBy([punto.x - bordoDestro / 2, punto.y - bordoBasso / 2], {
+          animate: !riduciMovimento,
+        });
+      },
+      { injector: this.injector },
+    );
   }
 
   // Maniglia del pannello su mobile: tap alterna compatto/espanso; trascinando in su si
@@ -408,10 +534,77 @@ export class Mappa {
   }
 
   protected formattaData(iso: string): string {
-    return new Intl.DateTimeFormat(this.transloco.getActiveLang(), {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(new Date(iso));
+    return formattaData(iso, this.transloco.getActiveLang());
+  }
+
+  protected cambiaVista(vista: VistaMappa): void {
+    this.vista.set(vista);
+    if (vista === 'lista') {
+      this.selezionata.set(null);
+    }
+  }
+
+  protected apriSoccorsi(): void {
+    this.pannello.set('soccorsi');
+  }
+
+  protected chiudiPannello(): void {
+    this.pannello.set(null);
+  }
+
+  /** Il form parte con il pin sulla posizione dell'utente, o sul centro mappa se non è nota. */
+  protected apriNuovaSegnalazione(): void {
+    const map = this.mappa();
+    if (!map) {
+      return;
+    }
+    const posizione = this.posizioneUtente() ?? map.getCenter();
+    this.vista.set('mappa');
+    this.selezionata.set(null);
+    this.posizioneNuova.set(posizione);
+    this.pinSpostato.set(false);
+    this.pannello.set('nuova');
+    this.centraNellaZonaLibera(posizione);
+  }
+
+  /** Dal form: riporta il pin (e la mappa) sulla posizione GPS dell'utente. */
+  protected riportaPinSuUtente(): void {
+    const posizione = this.posizioneUtente();
+    if (!posizione) {
+      return;
+    }
+    this.posizioneNuova.set(posizione);
+    this.pinSpostato.set(false);
+    this.centraNellaZonaLibera(posizione);
+  }
+
+  /** Esc: chiude il dettaglio o, con il form aperto, chiede di chiuderlo (come un tocco sulla mappa). */
+  protected gestisciEscape(): void {
+    if (this.pannello() === 'nuova') {
+      this.formNuova()?.richiediChiusura();
+    } else {
+      this.chiudiDettaglio();
+    }
+  }
+
+  protected segnalazionePubblicata(segnalazione: Segnalazione): void {
+    this.pannello.set(null);
+    this.segnalazioni.update((elenco) => [segnalazione, ...elenco]);
+    this.idAppenaPubblicata.set(segnalazione.id);
+    this.apriDettaglio(segnalazione);
+  }
+
+  /** Dalla lista: torna alla mappa, centra la segnalazione e ne apre il dettaglio. */
+  protected selezionaDaLista(segnalazione: Segnalazione): void {
+    const map = this.mappa();
+    this.vista.set('mappa');
+    if (map) {
+      map.setView([segnalazione.lat, segnalazione.lng], Math.max(map.getZoom(), 16), {
+        animate: false,
+      });
+    }
+    this.pannello.set(null);
+    this.apriDettaglio(segnalazione);
   }
 
   protected iconaCategoria(categoriaId: number): string {

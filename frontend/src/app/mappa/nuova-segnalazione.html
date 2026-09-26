@@ -1,0 +1,161 @@
+<section
+  #pannello
+  *transloco="let t"
+  class="pannello-mappa max-sm:max-h-[62%]"
+  aria-labelledby="titolo-nuova-segnalazione"
+  [style.transform]="spostamento() ? 'translateY(' + spostamento() + 'px)' : null"
+>
+  <!-- Solo mobile: trascinando in giù si chiude il form (con conferma se ci sono dati). -->
+  <div
+    class="mx-auto flex h-7 w-20 cursor-grab touch-none items-center justify-center sm:hidden"
+    aria-hidden="true"
+    (pointerdown)="iniziaTrascinamento($event)"
+    (pointermove)="trascina($event)"
+    (pointerup)="terminaTrascinamento($event)"
+    (pointercancel)="terminaTrascinamento($event)"
+  >
+    <span class="h-1.5 w-10 rounded-full bg-neutral-300 dark:bg-line"></span>
+  </div>
+
+  <header class="flex items-start gap-3">
+    <h2
+      id="titolo-nuova-segnalazione"
+      class="flex-1 font-display text-lg font-semibold leading-tight"
+    >
+      {{ t('mappa.nuova.titolo') }}
+    </h2>
+    <button
+      type="button"
+      class="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-muted dark:hover:bg-ink"
+      [attr.aria-label]="t('mappa.nuova.annulla')"
+      (click)="richiediChiusura()"
+    >
+      <svg lucideIcon="x" class="h-5 w-5" aria-hidden="true"></svg>
+    </button>
+  </header>
+
+  @if (confermaScarto()) {
+    <div
+      role="alert"
+      class="mt-3 rounded-md border border-allerta/40 bg-allerta/5 p-3 text-sm dark:bg-allerta/10"
+    >
+      <p class="font-medium">{{ t('mappa.nuova.scarto.domanda') }}</p>
+      <p class="mt-0.5 text-neutral-600 dark:text-muted">{{ t('mappa.nuova.scarto.testo') }}</p>
+      <div class="mt-3 flex gap-2">
+        <button
+          type="button"
+          class="h-10 flex-1 rounded-md bg-allerta font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          (click)="annulla.emit()"
+        >
+          {{ t('mappa.nuova.scarto.scarta') }}
+        </button>
+        <button
+          #continua
+          type="button"
+          class="h-10 flex-1 rounded-md border border-neutral-300 bg-white font-medium transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:hover:bg-ink"
+          (click)="continuaAScrivere()"
+        >
+          {{ t('mappa.nuova.scarto.continua') }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="mt-2 flex items-start gap-3">
+    <p class="flex flex-1 items-start gap-1.5 text-sm text-neutral-500 dark:text-muted">
+      <svg lucideIcon="map-pin" class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true"></svg>
+      {{ t(suPosizioneUtente() ? 'mappa.nuova.posizioneUtente' : 'mappa.nuova.posizionePin') }}
+    </p>
+    @if (posizioneUtenteNota()) {
+      <button
+        type="button"
+        class="flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-neutral-300 px-3 text-sm font-medium text-blue-600 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-line dark:text-paper dark:hover:bg-ink"
+        (click)="riportaSuUtente.emit()"
+      >
+        <svg lucideIcon="locate-fixed" class="h-4 w-4" aria-hidden="true"></svg>
+        {{ t('mappa.nuova.miaPosizione') }}
+      </button>
+    }
+  </div>
+
+  <form class="mt-4 flex flex-col gap-5" [formGroup]="form" (ngSubmit)="pubblica()" novalidate>
+    <fieldset>
+      <legend class="text-sm font-medium">{{ t('mappa.nuova.categoria') }}</legend>
+      @if (categorie().length === 0) {
+        <p class="mt-2 text-sm text-neutral-500 dark:text-muted">
+          {{ t('mappa.nuova.categorieNonDisponibili') }}
+        </p>
+      } @else {
+        <div class="mt-2 grid grid-cols-3 gap-2">
+          @for (categoria of categorie(); track categoria.id) {
+            <label
+              class="flex cursor-pointer flex-col items-center gap-1.5 rounded-md border border-neutral-200 px-1 py-2.5 text-center text-xs leading-tight transition-colors hover:bg-neutral-50 has-[:checked]:border-allerta has-[:checked]:bg-allerta/10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-600 dark:border-line dark:hover:bg-ink"
+            >
+              <input
+                type="radio"
+                class="sr-only"
+                formControlName="categoriaId"
+                [value]="categoria.id"
+              />
+              <svg
+                [lucideIcon]="iconaCategoria(categoria.icona)"
+                class="h-5 w-5"
+                aria-hidden="true"
+              ></svg>
+              {{ categoria.nome }}
+            </label>
+          }
+        </div>
+      }
+      @if (form.controls.categoriaId.touched && form.controls.categoriaId.invalid) {
+        <p class="mt-1.5 text-sm text-allerta">{{ t('mappa.nuova.erroreCategoria') }}</p>
+      }
+    </fieldset>
+
+    <div>
+      <label for="descrizione-segnalazione" class="text-sm font-medium">
+        {{ t('mappa.nuova.descrizione') }}
+      </label>
+      <textarea
+        id="descrizione-segnalazione"
+        formControlName="descrizione"
+        rows="4"
+        [attr.maxlength]="lunghezzaMassima"
+        [placeholder]="t('mappa.nuova.descrizionePlaceholder')"
+        class="mt-2 block w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-2 text-[15px] leading-relaxed placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-ink dark:placeholder:text-muted"
+      ></textarea>
+      <div class="mt-1 flex items-start justify-between gap-3 text-sm">
+        <p class="text-allerta">
+          @if (form.controls.descrizione.touched && form.controls.descrizione.invalid) {
+            {{ t('mappa.nuova.erroreDescrizione') }}
+          }
+        </p>
+        <p class="shrink-0 tabular-nums text-neutral-500 dark:text-muted">
+          {{ caratteriUsati() }}/{{ lunghezzaMassima }}
+        </p>
+      </div>
+    </div>
+
+    <label class="flex cursor-pointer items-start gap-3 text-sm">
+      <input type="checkbox" formControlName="anonima" class="mt-0.5 h-4 w-4 accent-allerta" />
+      <span>
+        {{ t('mappa.nuova.anonima') }}
+        <span class="block text-neutral-500 dark:text-muted">{{
+          t('mappa.nuova.anonimaAiuto')
+        }}</span>
+      </span>
+    </label>
+
+    @if (errore()) {
+      <p role="alert" class="text-sm text-allerta">{{ t('mappa.nuova.errore') }}</p>
+    }
+
+    <button
+      type="submit"
+      class="h-12 rounded-md bg-allerta font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+      [disabled]="invio()"
+    >
+      {{ t(invio() ? 'mappa.nuova.invio' : 'mappa.nuova.pubblica') }}
+    </button>
+  </form>
+</section>

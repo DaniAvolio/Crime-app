@@ -23,6 +23,22 @@
   --color-line: #303947;
   --color-paper: #ece7da;
   --color-muted: #8b93a1;
+  /* Ambra: solo avvisi/stati di attenzione (es. "Sospesa", "Disattiva"), non come accento. */
   --color-beacon: #e2a33b;
+  /* Colore principale dell'app: CTA, marker, badge delle segnalazioni. */
   --color-allerta: #dc2626;
+}
+
+/*
+ * Pannelli della pagina mappa (dettaglio segnalazione, nuova segnalazione). Mobile: dal basso,
+ * appoggiati sopra la navbar (--altezza-navbar-mappa). Desktop: in alto a destra.
+ */
+@layer components {
+  .pannello-mappa {
+    @apply absolute inset-x-0 bottom-[var(--altezza-navbar-mappa)] z-[1100] overflow-y-auto overscroll-contain rounded-t-2xl border-t border-neutral-200 bg-white px-5 pt-1 pb-5 text-neutral-900 shadow-[0_-4px_20px_rgb(0_0_0/0.15)] transition-[max-height] duration-200 sm:inset-x-auto sm:top-4 sm:right-4 sm:bottom-auto sm:max-h-[calc(100%-2rem)] sm:w-96 sm:rounded-xl sm:border sm:pt-4 sm:pb-6 dark:border-line dark:bg-panel dark:text-paper;
+  }
+
+  .voce-navbar-mappa {
+    @apply flex h-full flex-col items-center justify-start gap-1 pt-2.5 text-xs font-medium transition-colors hover:text-neutral-900 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-blue-600 sm:justify-center sm:pt-0 dark:hover:text-paper;
+  }
 }
