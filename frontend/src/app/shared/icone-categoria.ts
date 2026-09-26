@@ -14,6 +14,7 @@ import {
   LucideHandFist,
   LucideHome,
   LucideLightbulb,
+  LucideLocateFixed,
   LucideMapPin,
   LucideMoon,
   LucidePackage,
@@ -29,6 +30,7 @@ import {
   LucideVolume2,
   LucideWine,
   LucideWrench,
+  LucideX,
 } from '@lucide/angular';
 
 /**
@@ -53,6 +55,7 @@ export const ICONE_CATEGORIA_DISPONIBILI = [
   LucideHandFist,
   LucideHome,
   LucideLightbulb,
+  LucideLocateFixed,
   LucideMapPin,
   LucideMoon,
   LucidePackage,
@@ -68,6 +71,7 @@ export const ICONE_CATEGORIA_DISPONIBILI = [
   LucideVolume2,
   LucideWine,
   LucideWrench,
+  LucideX,
 ] as const;
 
 /** Nomi (kebab-case) delle icone disponibili: usati per il suggerimento nel form e per validare l'input. */
@@ -77,3 +81,24 @@ export const NOMI_ICONE_DISPONIBILI: readonly string[] = ICONE_CATEGORIA_DISPONI
 
 /** Icona mostrata quando il valore salvato non corrisponde a nessuna icona disponibile. */
 export const NOME_ICONA_FALLBACK = 'circle-help';
+
+type NodoIcona = readonly [string, Record<string, unknown>, (readonly NodoIcona[])?];
+
+function nodoInSvg([tag, attributi, figli]: NodoIcona): string {
+  const attr = Object.entries(attributi)
+    .map(([nome, valore]) => `${nome}="${valore}"`)
+    .join(' ');
+  return `<${tag} ${attr}>${(figli ?? []).map(nodoInSvg).join('')}</${tag}>`;
+}
+
+/**
+ * Markup SVG di un'icona registrata, per contesti fuori dai template Angular
+ * (es. i divIcon dei marker Leaflet). Nomi non registrati ricadono su NOME_ICONA_FALLBACK.
+ */
+export function svgIcona(nome: string | null | undefined, classe = ''): string {
+  const icona =
+    ICONE_CATEGORIA_DISPONIBILI.find((c) => c.icon.name === nome) ??
+    ICONE_CATEGORIA_DISPONIBILI.find((c) => c.icon.name === NOME_ICONA_FALLBACK)!;
+  const contenuto = (icona.icon.node as readonly NodoIcona[]).map(nodoInSvg).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${classe}" aria-hidden="true">${contenuto}</svg>`;
+}

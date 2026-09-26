@@ -37,6 +37,8 @@ Feature folders under `src/app/` mirror backend resources (e.g. `categorie/`) an
 
 Shared domain types live in `src/app/models/`: one file per entity, mirroring the backend JPA entities, plus a barrel `index.ts` that re-exports them all. `src/environments/environment.ts` / `environment.production.ts` hold `apiUrl` (`http://localhost:8080/api` in dev, `/api` in production, swapped via `fileReplacements` in `angular.json`).
 
+Logging: use `LoggerService` (`src/app/shared/logger.ts`, `debug`/`info`/`warn`/`error`) instead of calling `console.*` directly. The minimum level comes from `environment.logLevel` (`debug` in dev, `warn` in production). Unhandled errors are routed to it by `LoggerErrorHandler` and failed HTTP calls by `httpLoggingInterceptor`, both registered in `app.config.ts`, so API services don't need to log errors themselves.
+
 Domain naming is Italian throughout (component/service names, form fields, model properties) to match the backend — keep new code consistent with this rather than mixing in English names.
 
 ### Notable libraries

@@ -33,5 +33,22 @@
     "footer": {
       "tagline": "Crime App — public safety reports maintained by the community."
     }
+  },
+  "mappa": {
+    "posizione": {
+      "negata": "Location not shared, so the map shows a default area. You can turn it on in your browser settings.",
+      "nonDisponibile": "We can't detect your location, so the map shows a default area.",
+      "chiudi": "Dismiss",
+      "centra": "Go to my location"
+    },
+    "segnalazioni": {
+      "errore": "We can't load reports right now. Move the map to try again."
+    },
+    "dettaglio": {
+      "chiudi": "Close details",
+      "distanza": "{{ distanza }} from you",
+      "creata": "Reported",
+      "scade": "Expires"
+    }
   }
 }

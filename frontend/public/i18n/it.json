@@ -33,5 +33,22 @@
     "footer": {
       "tagline": "Crime App — segnalazioni di sicurezza pubblica gestite dalla community."
     }
+  },
+  "mappa": {
+    "posizione": {
+      "negata": "Posizione non condivisa: la mappa mostra un'area predefinita. Puoi attivarla dalle impostazioni del browser.",
+      "nonDisponibile": "Non riusciamo a rilevare la tua posizione. La mappa mostra un'area predefinita.",
+      "chiudi": "Chiudi",
+      "centra": "Torna alla mia posizione"
+    },
+    "segnalazioni": {
+      "errore": "Non riusciamo a caricare le segnalazioni. Riprova spostando la mappa."
+    },
+    "dettaglio": {
+      "chiudi": "Chiudi dettaglio",
+      "distanza": "A {{ distanza }} da te",
+      "creata": "Segnalata il",
+      "scade": "Scade il"
+    }
   }
 }

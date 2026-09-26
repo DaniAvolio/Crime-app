@@ -1,0 +1,454 @@
+2026-09-27T00:28:26.857+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] c.d.c.CrimeAppBackendApplication         : Starting CrimeAppBackendApplication using Java 21.0.12.1 with PID 26752 (C:\Users\Dani\Progetti\Crime-app\backend\target\classes started by Dani in C:\Users\Dani\Progetti\Crime-app)
+2026-09-27T00:28:26.861+02:00 DEBUG 26752 --- [crime-app-backend] [restartedMain] c.d.c.CrimeAppBackendApplication         : Running with Spring Boot v4.1.1, Spring v7.0.9
+2026-09-27T00:28:26.861+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] c.d.c.CrimeAppBackendApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-09-27T00:28:26.908+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-09-27T00:28:26.908+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-09-27T00:28:27.493+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-09-27T00:28:27.555+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 54 ms. Found 7 JPA repository interfaces.
+2026-09-27T00:28:28.086+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-09-27T00:28:28.099+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-27T00:28:28.099+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-27T00:28:28.135+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1227 ms
+2026-09-27T00:28:28.179+02:00 DEBUG 26752 --- [crime-app-backend] [restartedMain] c.d.c.config.RequestLoggingFilter        : Filter 'requestLoggingFilter' configured for use
+2026-09-27T00:28:28.373+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-09-27T00:28:28.526+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@60b1fd11
+2026-09-27T00:28:28.528+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-09-27T00:28:28.549+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/crimeapp (PostgreSQL 16.4)
+2026-09-27T00:28:28.624+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.f.core.internal.command.DbValidate     : Successfully validated 1 migration (execution time 00:00.027s)
+2026-09-27T00:28:28.666+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 1
+2026-09-27T00:28:28.670+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-09-27T00:28:28.755+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-09-27T00:28:28.824+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.5.Final
+2026-09-27T00:28:28.834+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.h.spatial.integration.SpatialService   : HHH80000001: Hibernate Spatial integration enabled: true
+2026-09-27T00:28:29.184+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5432/crimeapp]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.4
+	Default catalog/schema: crimeapp/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-09-27T00:28:29.576+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-09-27T00:28:30.842+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-09-27T00:28:30.906+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-09-27T00:28:30.984+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-09-27T00:28:31.321+02:00  WARN 26752 --- [crime-app-backend] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-09-27T00:28:31.392+02:00  WARN 26752 --- [crime-app-backend] [restartedMain] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 3a11a330-a236-4a38-a122-d33fb62f2c18
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-09-27T00:28:31.398+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-09-27T00:28:31.806+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-09-27T00:28:31.811+02:00  INFO 26752 --- [crime-app-backend] [restartedMain] c.d.c.CrimeAppBackendApplication         : Started CrimeAppBackendApplication in 5.467 seconds (process running for 6.019)
+2026-09-27T00:28:32.190+02:00 DEBUG 26752 --- [crime-app-backend] [scheduling-1] org.hibernate.SQL                        : select s1_0.id,s1_0.anonima,s1_0.autore_id,s1_0.categoria_id,s1_0.data_creazione,s1_0.data_rimozione,s1_0.data_scadenza,s1_0.descrizione,s1_0.posizione,s1_0.stato from segnalazione s1_0 where s1_0.stato=? and s1_0.data_scadenza<?
+2026-09-27T00:28:32.758+02:00 DEBUG 26752 --- [crime-app-backend] [scheduling-1] org.hibernate.SQL                        : insert into evento_moderazione (amministratore_id,data_evento,motivazione,segnalazione_id,stato_nuovo,stato_precedente,tipo_attore) values (?,?,?,?,?,?,?)
+2026-09-27T00:28:32.778+02:00 DEBUG 26752 --- [crime-app-backend] [scheduling-1] org.hibernate.SQL                        : update segnalazione set anonima=?,autore_id=?,categoria_id=?,data_rimozione=?,data_scadenza=?,descrizione=?,posizione=?,stato=? where id=?
+2026-09-27T00:28:32.789+02:00  INFO 26752 --- [crime-app-backend] [scheduling-1] c.d.c.service.SegnalazioneScadenzaJob    : Segnalazioni scadute automaticamente: 1
+2026-09-27T00:29:28.945+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-27T00:29:28.945+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-09-27T00:29:28.946+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-09-27T00:29:29.018+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:29:29.042+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (60 ms)
+2026-09-27T00:29:40.485+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:29:40.489+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-2] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (9 ms)
+2026-09-27T00:29:42.217+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:29:42.220+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-3] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (7 ms)
+2026-09-27T00:29:44.380+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:29:44.385+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-4] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (8 ms)
+2026-09-27T00:29:44.951+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:29:44.967+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-5] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0824&lng=7.6853&raggioMetri=2384 -> 200 (45 ms)
+2026-09-27T00:29:46.319+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:29:46.323+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-6] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (8 ms)
+2026-09-27T00:29:47.101+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:29:47.105+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-7] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (6 ms)
+2026-09-27T00:29:47.409+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:29:47.414+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-8] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0824&lng=7.6853&raggioMetri=2384 -> 200 (5 ms)
+2026-09-27T00:29:50.244+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:29:50.248+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-9] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.07042923286664&lng=7.719697952270508&raggioMetri=19066 -> 200 (7 ms)
+2026-09-27T00:29:56.009+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:29:56.012+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-10] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.045752865439304&lng=7.919769287109376&raggioMetri=19070 -> 200 (6 ms)
+2026-09-27T00:29:58.525+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:29:58.528+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685301303863526&raggioMetri=2384 -> 200 (6 ms)
+2026-09-27T00:30:01.491+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:01.496+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-2] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685301303863526&raggioMetri=2053 -> 200 (11 ms)
+2026-09-27T00:30:04.550+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:04.555+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-3] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.079111931677154&lng=7.695236206054688&raggioMetri=2054 -> 200 (9 ms)
+2026-09-27T00:30:05.551+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:05.555+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-4] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.07726336986954&lng=7.707338333129884&raggioMetri=2054 -> 200 (7 ms)
+2026-09-27T00:30:07.566+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:07.569+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-5] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.058774462568685&lng=7.73240089416504&raggioMetri=2054 -> 200 (5 ms)
+2026-09-27T00:30:19.563+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:19.567+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-6] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.06983820965862&lng=7.748022075407423&raggioMetri=2054 -> 200 (6 ms)
+2026-09-27T00:30:28.206+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:28.210+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-7] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.06983820965862&lng=7.748011346571364&raggioMetri=1797 -> 200 (7 ms)
+2026-09-27T00:30:36.579+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:36.583+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-8] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.05866836141897&lng=7.722541093826295&raggioMetri=1798 -> 200 (7 ms)
+2026-09-27T00:30:37.827+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:37.831+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-9] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685290575027467&raggioMetri=1797 -> 200 (6 ms)
+2026-09-27T00:30:49.248+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:49.251+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-10] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685290575027467&raggioMetri=1797 -> 200 (5 ms)
+2026-09-27T00:30:51.192+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:51.194+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685290575027467&raggioMetri=1797 -> 200 (5 ms)
+2026-09-27T00:30:52.108+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:30:52.113+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-2] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685290575027467&raggioMetri=1797 -> 200 (9 ms)
+2026-09-27T00:32:51.061+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:32:51.065+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-4] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.07918769113124&lng=7.682114839553834&raggioMetri=1797 -> 200 (8 ms)
+2026-09-27T00:32:51.511+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:32:51.514+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-5] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.081945266886095&lng=7.6841211318969735&raggioMetri=7184 -> 200 (4 ms)
+2026-09-27T00:32:53.010+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:32:53.012+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-6] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.07894526052455&lng=7.683316469192506&raggioMetri=1797 -> 200 (5 ms)
+2026-09-27T00:32:53.555+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:32:53.558+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-7] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08188466225595&lng=7.684496641159058&raggioMetri=1797 -> 200 (7 ms)
+2026-09-27T00:32:54.037+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:32:54.043+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-8] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0829300831154&lng=7.685438096523286&raggioMetri=450 -> 200 (8 ms)
+2026-09-27T00:32:54.767+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:32:54.770+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-9] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08280887588021&lng=7.685234248638154&raggioMetri=450 -> 200 (7 ms)
+2026-09-27T00:33:20.013+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:33:20.016+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-10] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08209677818017&lng=7.682565450668336&raggioMetri=1797 -> 200 (6 ms)
+2026-09-27T00:33:21.945+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select u1_0.id,u1_0.attivo,u1_0.cognome,u1_0.data_aggiornamento,u1_0.data_registrazione,u1_0.email,u1_0.identita_verificata,u1_0.nome,u1_0.password_hash,u1_0.punteggio_fiducia from utente u1_0
+2026-09-27T00:33:21.945+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:33:21.946+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : select s1_0.id,s1_0.anonima,s1_0.autore_id,s1_0.categoria_id,s1_0.data_creazione,s1_0.data_rimozione,s1_0.data_scadenza,s1_0.descrizione,s1_0.posizione,s1_0.stato from segnalazione s1_0
+2026-09-27T00:33:21.950+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (8 ms)
+2026-09-27T00:33:21.956+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select pn1_0.id,pn1_0.notifiche_attive,pn1_0.notifiche_solo_categorie_preferite,pn1_0.raggio_notifica_metri,pn1_0.utente_id from preferenze_notifica pn1_0 where pn1_0.utente_id=?
+2026-09-27T00:33:21.960+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select pn1_0.id,pn1_0.notifiche_attive,pn1_0.notifiche_solo_categorie_preferite,pn1_0.raggio_notifica_metri,pn1_0.utente_id from preferenze_notifica pn1_0 where pn1_0.utente_id=?
+2026-09-27T00:33:21.962+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select pn1_0.id,pn1_0.notifiche_attive,pn1_0.notifiche_solo_categorie_preferite,pn1_0.raggio_notifica_metri,pn1_0.utente_id from preferenze_notifica pn1_0 where pn1_0.utente_id=?
+2026-09-27T00:33:21.964+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select pn1_0.id,pn1_0.notifiche_attive,pn1_0.notifiche_solo_categorie_preferite,pn1_0.raggio_notifica_metri,pn1_0.utente_id from preferenze_notifica pn1_0 where pn1_0.utente_id=?
+2026-09-27T00:33:21.965+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select pn1_0.id,pn1_0.notifiche_attive,pn1_0.notifiche_solo_categorie_preferite,pn1_0.raggio_notifica_metri,pn1_0.utente_id from preferenze_notifica pn1_0 where pn1_0.utente_id=?
+2026-09-27T00:33:21.966+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select pn1_0.id,pn1_0.notifiche_attive,pn1_0.notifiche_solo_categorie_preferite,pn1_0.raggio_notifica_metri,pn1_0.utente_id from preferenze_notifica pn1_0 where pn1_0.utente_id=?
+2026-09-27T00:33:21.968+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select pn1_0.id,pn1_0.notifiche_attive,pn1_0.notifiche_solo_categorie_preferite,pn1_0.raggio_notifica_metri,pn1_0.utente_id from preferenze_notifica pn1_0 where pn1_0.utente_id=?
+2026-09-27T00:33:21.969+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select pn1_0.id,pn1_0.notifiche_attive,pn1_0.notifiche_solo_categorie_preferite,pn1_0.raggio_notifica_metri,pn1_0.utente_id from preferenze_notifica pn1_0 where pn1_0.utente_id=?
+2026-09-27T00:33:21.970+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:33:21.972+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:33:21.975+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-2] c.d.c.config.RequestLoggingFilter        : GET /api/utenti -> 200 (33 ms)
+2026-09-27T00:33:21.976+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-3] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni -> 200 (33 ms)
+2026-09-27T00:33:31.818+02:00 DEBUG 26752 --- [crime-app-backend] [scheduling-1] org.hibernate.SQL                        : select s1_0.id,s1_0.anonima,s1_0.autore_id,s1_0.categoria_id,s1_0.data_creazione,s1_0.data_rimozione,s1_0.data_scadenza,s1_0.descrizione,s1_0.posizione,s1_0.stato from segnalazione s1_0 where s1_0.stato=? and s1_0.data_scadenza<?
+2026-09-27T00:34:08.646+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : select u1_0.id,u1_0.attivo,u1_0.cognome,u1_0.data_aggiornamento,u1_0.data_registrazione,u1_0.email,u1_0.identita_verificata,u1_0.nome,u1_0.password_hash,pn1_0.id,pn1_0.notifiche_attive,pn1_0.notifiche_solo_categorie_preferite,pn1_0.raggio_notifica_metri,pn1_0.utente_id,u1_0.punteggio_fiducia from utente u1_0 left join preferenze_notifica pn1_0 on u1_0.id=pn1_0.utente_id where u1_0.id=?
+2026-09-27T00:34:08.649+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:08.653+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : insert into segnalazione (anonima,autore_id,categoria_id,data_creazione,data_rimozione,data_scadenza,descrizione,posizione,stato) values (?,?,?,?,?,?,?,?,?)
+2026-09-27T00:34:08.662+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-5] c.d.c.config.RequestLoggingFilter        : POST /api/segnalazioni -> 201 (52 ms)
+2026-09-27T00:34:08.670+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select s1_0.id,s1_0.anonima,s1_0.autore_id,s1_0.categoria_id,s1_0.data_creazione,s1_0.data_rimozione,s1_0.data_scadenza,s1_0.descrizione,s1_0.posizione,s1_0.stato from segnalazione s1_0
+2026-09-27T00:34:08.673+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:08.674+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:08.675+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:08.678+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-6] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni -> 200 (10 ms)
+2026-09-27T00:34:16.011+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:34:16.019+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-7] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (12 ms)
+2026-09-27T00:34:16.456+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:16.494+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:16.497+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-8] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0824&lng=7.6853&raggioMetri=1796 -> 200 (47 ms)
+2026-09-27T00:34:21.087+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:21.090+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:21.093+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-9] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.080581647158354&lng=7.666075229644776&raggioMetri=7184 -> 200 (11 ms)
+2026-09-27T00:34:22.208+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:22.238+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:22.242+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-2] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.060972227819875&lng=7.635540962219239&raggioMetri=7187 -> 200 (37 ms)
+2026-09-27T00:34:23.493+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:23.512+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-3] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0873388214942&lng=7.4056434631347665&raggioMetri=20000 -> 200 (24 ms)
+2026-09-27T00:34:25.030+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:25.032+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:25.034+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-4] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.09679146394738&lng=7.6665687561035165&raggioMetri=20000 -> 200 (7 ms)
+2026-09-27T00:34:31.930+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:31.935+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-5] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.21687321093267&lng=7.233810424804688&raggioMetri=20000 -> 200 (7 ms)
+2026-09-27T00:34:37.531+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:37.534+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:37.538+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-6] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.09242890029916&lng=7.49095916748047&raggioMetri=20000 -> 200 (11 ms)
+2026-09-27T00:34:43.964+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:43.967+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:43.970+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-7] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685290575027467&raggioMetri=1797 -> 200 (9 ms)
+2026-09-27T00:34:47.799+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:47.802+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:47.806+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-8] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685290575027467&raggioMetri=1797 -> 200 (10 ms)
+2026-09-27T00:34:48.509+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:48.511+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:48.515+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-9] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0801384637393&lng=7.686779201030732&raggioMetri=450 -> 200 (9 ms)
+2026-09-27T00:34:49.312+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:49.314+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:49.317+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-10] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08205890039431&lng=7.685958445072175&raggioMetri=450 -> 200 (8 ms)
+2026-09-27T00:34:49.884+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:49.887+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:49.890+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08228806061507&lng=7.685648649930955&raggioMetri=225 -> 200 (9 ms)
+2026-09-27T00:34:50.228+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:50.231+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:50.235+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-2] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08285622248707&lng=7.685206085443498&raggioMetri=225 -> 200 (10 ms)
+2026-09-27T00:34:51.216+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:51.219+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:51.221+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-3] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0831062119207&lng=7.68502101302147&raggioMetri=225 -> 200 (8 ms)
+2026-09-27T00:34:54.207+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:34:54.210+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:34:54.213+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-4] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08299068663655&lng=7.684991508722306&raggioMetri=225 -> 200 (9 ms)
+2026-09-27T00:35:15.213+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:35:15.215+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:35:15.218+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-5] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.083134619741685&lng=7.684945911169053&raggioMetri=225 -> 200 (8 ms)
+2026-09-27T00:35:22.872+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:35:22.876+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:35:22.883+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-6] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08308159179776&lng=7.683150172233582&raggioMetri=899 -> 200 (15 ms)
+2026-09-27T00:35:24.998+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:35:25.001+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:35:25.004+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-7] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685290575027467&raggioMetri=1797 -> 200 (9 ms)
+2026-09-27T00:36:16.052+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:36:16.061+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-8] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (14 ms)
+2026-09-27T00:36:19.290+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:36:19.295+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-9] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.318116063033926&lng=8.858842849731447&raggioMetri=14304 -> 200 (8 ms)
+2026-09-27T00:36:36.010+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:36:36.013+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:36:36.017+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-10] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0824&lng=7.6853&raggioMetri=1796 -> 200 (10 ms)
+2026-09-27T00:36:39.017+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:36:39.026+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (14 ms)
+2026-09-27T00:37:26.901+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:37:26.909+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-2] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (13 ms)
+2026-09-27T00:37:46.836+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:37:46.840+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-3] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (7 ms)
+2026-09-27T00:38:31.817+02:00 DEBUG 26752 --- [crime-app-backend] [scheduling-1] org.hibernate.SQL                        : select s1_0.id,s1_0.anonima,s1_0.autore_id,s1_0.categoria_id,s1_0.data_creazione,s1_0.data_rimozione,s1_0.data_scadenza,s1_0.descrizione,s1_0.posizione,s1_0.stato from segnalazione s1_0 where s1_0.stato=? and s1_0.data_scadenza<?
+2026-09-27T00:39:52.528+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:39:52.540+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-5] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (17 ms)
+2026-09-27T00:39:53.104+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:39:53.108+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:39:53.112+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-6] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0824&lng=7.6853&raggioMetri=1796 -> 200 (12 ms)
+2026-09-27T00:39:55.529+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:39:55.531+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:39:55.534+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-7] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.080536192606914&lng=7.696233987808228&raggioMetri=1797 -> 200 (8 ms)
+2026-09-27T00:39:56.664+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:39:56.667+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-8] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08033922246615&lng=7.710653543472291&raggioMetri=1797 -> 200 (7 ms)
+2026-09-27T00:39:58.518+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:39:58.521+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-9] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.083627019727416&lng=7.736102342605592&raggioMetri=1797 -> 200 (6 ms)
+2026-09-27T00:39:59.773+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:39:59.775+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:39:59.778+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-10] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082399799562914&lng=7.685290575027467&raggioMetri=1797 -> 200 (10 ms)
+2026-09-27T00:40:10.023+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:10.026+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:10.028+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082407375076905&lng=7.685290575027467&raggioMetri=1728 -> 200 (8 ms)
+2026-09-27T00:40:14.902+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:14.906+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:14.910+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-2] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082407375076905&lng=7.685301303863526&raggioMetri=838 -> 200 (11 ms)
+2026-09-27T00:40:17.975+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:40:17.979+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-3] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (7 ms)
+2026-09-27T00:40:20.296+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0
+2026-09-27T00:40:20.300+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-4] c.d.c.config.RequestLoggingFilter        : GET /api/categorie -> 200 (7 ms)
+2026-09-27T00:40:20.602+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:20.609+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:20.612+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-5] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0824&lng=7.6853&raggioMetri=838 -> 200 (10 ms)
+2026-09-27T00:40:21.684+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:21.687+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:21.689+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-6] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0824&lng=7.6853&raggioMetri=838 -> 200 (8 ms)
+2026-09-27T00:40:26.882+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:26.885+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-7] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:26.889+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-7] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08030134351508&lng=7.687425613403321&raggioMetri=838 -> 200 (10 ms)
+2026-09-27T00:40:27.425+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:27.427+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-8] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:27.430+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-8] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.0825285831639&lng=7.683262825012208&raggioMetri=838 -> 200 (12 ms)
+2026-09-27T00:40:45.463+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:45.466+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-9] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:45.468+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-9] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082998262072174&lng=7.6859450340271005&raggioMetri=838 -> 200 (10 ms)
+2026-09-27T00:40:48.808+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:48.811+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-10] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:48.813+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-10] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08421031883427&lng=7.685365676879884&raggioMetri=837 -> 200 (8 ms)
+2026-09-27T00:40:50.886+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:50.888+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-1] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:50.891+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-1] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08369898552368&lng=7.68519401550293&raggioMetri=419 -> 200 (13 ms)
+2026-09-27T00:40:52.135+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:52.138+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-2] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:52.141+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-2] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08296227874402&lng=7.68546760082245&raggioMetri=210 -> 200 (9 ms)
+2026-09-27T00:40:52.886+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:52.889+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-3] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:52.892+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-3] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082977429621806&lng=7.685408592224122&raggioMetri=210 -> 200 (8 ms)
+2026-09-27T00:40:54.256+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:54.258+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-4] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:54.261+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-4] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082407375076905&lng=7.685301303863526&raggioMetri=838 -> 200 (11 ms)
+2026-09-27T00:40:55.103+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:55.105+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-5] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:55.107+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-5] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.082407375076905&lng=7.685301303863526&raggioMetri=838 -> 200 (8 ms)
+2026-09-27T00:40:56.324+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : SELECT * FROM segnalazione s
+WHERE s.stato = 'ATTIVA'
+  AND ST_DWithin(s.posizione, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)
+
+2026-09-27T00:40:56.326+02:00 DEBUG 26752 --- [crime-app-backend] [http-nio-8080-exec-6] org.hibernate.SQL                        : select c1_0.id,c1_0.attiva,c1_0.descrizione,c1_0.durata_validita_ore,c1_0.icona,c1_0.nome from categoria c1_0 where c1_0.id=?
+2026-09-27T00:40:56.329+02:00  INFO 26752 --- [crime-app-backend] [http-nio-8080-exec-6] c.d.c.config.RequestLoggingFilter        : GET /api/segnalazioni/vicine?lat=45.08380125255193&lng=7.683820724487306&raggioMetri=837 -> 200 (11 ms)

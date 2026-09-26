@@ -7,11 +7,13 @@ import com.daniele.crime_app_backend.exception.ConflittoException;
 import com.daniele.crime_app_backend.exception.RisorsaNonTrovataException;
 import com.daniele.crime_app_backend.mapper.CategoriaMapper;
 import com.daniele.crime_app_backend.repository.CategoriaRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 public class CategoriaService {
@@ -43,8 +45,9 @@ public class CategoriaService {
     @Transactional
     public CategoriaDto crea(CategoriaRequest request) {
         verificaNomeLibero(request.nome(), null);
-        Categoria categoria = categoriaMapper.toEntity(request);
-        return categoriaMapper.toDto(categoriaRepository.save(categoria));
+        Categoria categoria = categoriaRepository.save(categoriaMapper.toEntity(request));
+        log.info("Categoria creata: id={}, nome={}", categoria.getId(), categoria.getNome());
+        return categoriaMapper.toDto(categoria);
     }
 
     @Transactional
@@ -52,6 +55,7 @@ public class CategoriaService {
         Categoria categoria = recuperaOLancia(id);
         verificaNomeLibero(request.nome(), id);
         categoriaMapper.aggiornaEntity(categoria, request);
+        log.info("Categoria aggiornata: id={}", id);
         return categoriaMapper.toDto(categoria);
     }
 
@@ -59,12 +63,14 @@ public class CategoriaService {
     public void disattiva(Long id) {
         Categoria categoria = recuperaOLancia(id);
         categoria.setAttiva(false);
+        log.info("Categoria disattivata: id={}", id);
     }
 
     @Transactional
     public void riattiva(Long id) {
         Categoria categoria = recuperaOLancia(id);
         categoria.setAttiva(true);
+        log.info("Categoria riattivata: id={}", id);
     }
 
     /**
@@ -77,6 +83,7 @@ public class CategoriaService {
     public void eliminaDefinitivamente(Long id) {
         Categoria categoria = recuperaOLancia(id);
         categoriaRepository.delete(categoria);
+        log.info("Eliminazione definitiva categoria richiesta: id={}", id);
     }
 
     private void verificaNomeLibero(String nome, Long idEscluso) {

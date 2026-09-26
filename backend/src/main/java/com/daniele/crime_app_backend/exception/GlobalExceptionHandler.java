@@ -1,7 +1,10 @@
 package com.daniele.crime_app_backend.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,21 +19,25 @@ import java.util.stream.Collectors;
  * nuovo controller (Utente, Segnalazione, ...) eredita automaticamente le
  * stesse risposte di errore senza doverle riscrivere.
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RisorsaNonTrovataException.class)
     public ResponseEntity<ErrorResponse> gestisciNonTrovata(RisorsaNonTrovataException ex) {
+        log.warn("Risorsa non trovata: {}", ex.getMessage());
         return costruisci(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     @ExceptionHandler(ConflittoException.class)
     public ResponseEntity<ErrorResponse> gestisciConflitto(ConflittoException ex) {
+        log.warn("Conflitto: {}", ex.getMessage());
         return costruisci(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> gestisciIntegrita(DataIntegrityViolationException ex) {
+        log.warn("Violazione di integrità dei dati: {}", ex.getMostSpecificCause().getMessage());
         return costruisci(HttpStatus.CONFLICT,
                 "Impossibile completare l'operazione: la risorsa è collegata ad altri dati esistenti.");
     }
@@ -40,7 +47,25 @@ public class GlobalExceptionHandler {
         String messaggio = ex.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
+        log.warn("Validazione fallita: {}", messaggio);
         return costruisci(HttpStatus.BAD_REQUEST, messaggio);
+    }
+
+    /**
+     * Rete di sicurezza per tutto ciò che non ha un handler dedicato. Le eccezioni
+     * MVC di Spring (body illeggibile, metodo non supportato, rotta inesistente, ...)
+     * portano già il proprio status e restano errori del client; tutto il resto è
+     * un errore imprevisto: viene loggato con stack trace e non espone dettagli.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> gestisciGenerica(Exception ex, HttpServletRequest request) {
+        if (ex instanceof org.springframework.web.ErrorResponse erroreSpring) {
+            HttpStatusCode status = erroreSpring.getStatusCode();
+            log.warn("{} {} -> {}: {}", request.getMethod(), request.getRequestURI(), status.value(), ex.getMessage());
+            return costruisci(HttpStatus.valueOf(status.value()), erroreSpring.getBody().getDetail());
+        }
+        log.error("Errore non gestito su {} {}", request.getMethod(), request.getRequestURI(), ex);
+        return costruisci(HttpStatus.INTERNAL_SERVER_ERROR, "Errore interno del server.");
     }
 
     private ResponseEntity<ErrorResponse> costruisci(HttpStatus status, String messaggio) {

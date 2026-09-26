@@ -1,6 +1,94 @@
-<div
-  class="h-full w-full"
-  leaflet
-  [leafletOptions]="options"
-  (leafletMapReady)="onMapReady($event)"
-></div>
+<div class="relative h-full w-full" *transloco="let t">
+  <div
+    class="h-full w-full"
+    leaflet
+    [leafletOptions]="options"
+    (leafletMapReady)="onMapReady($event)"
+  ></div>
+
+  @if (posizioneUtente()) {
+    <button
+      type="button"
+      class="absolute bottom-8 right-3 z-[1000] flex h-11 w-11 items-center justify-center rounded-md border border-neutral-300 bg-white text-blue-600 shadow-md transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:text-paper dark:hover:bg-ink"
+      [attr.aria-label]="t('mappa.posizione.centra')"
+      [title]="t('mappa.posizione.centra')"
+      (click)="centraSuPosizione()"
+    >
+      <svg lucideIcon="locate-fixed" class="h-5 w-5" aria-hidden="true"></svg>
+    </button>
+  }
+
+  <div
+    class="pointer-events-none absolute bottom-6 left-4 right-16 z-[1000] flex max-w-md flex-col gap-2 sm:right-auto"
+  >
+    @if (erroreSegnalazioni()) {
+      <p
+        role="status"
+        class="pointer-events-auto rounded-md border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-md dark:border-line dark:bg-panel dark:text-paper"
+      >
+        {{ t('mappa.segnalazioni.errore') }}
+      </p>
+    }
+
+    @if (avvisoPosizione(); as chiave) {
+      <div
+        role="status"
+        class="pointer-events-auto flex items-start gap-3 rounded-md border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-md dark:border-line dark:bg-panel dark:text-paper"
+      >
+        <p class="flex-1">{{ t(chiave) }}</p>
+        <button
+          type="button"
+          class="shrink-0 font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+          (click)="chiudiAvviso()"
+        >
+          {{ t('mappa.posizione.chiudi') }}
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (selezionata(); as segnalazione) {
+    <section
+      class="absolute inset-x-0 bottom-0 z-[1100] max-h-[70%] overflow-y-auto rounded-t-2xl border-t border-neutral-200 bg-white px-5 pb-6 pt-4 text-neutral-900 shadow-[0_-4px_20px_rgb(0_0_0/0.15)] sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:w-96 sm:rounded-xl sm:border dark:border-line dark:bg-panel dark:text-paper"
+      [attr.aria-label]="segnalazione.categoriaNome"
+    >
+      <header class="flex items-start gap-3">
+        <span
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-beacon text-ink"
+          aria-hidden="true"
+        >
+          <svg [lucideIcon]="iconaCategoria(segnalazione.categoriaId)" class="h-5 w-5"></svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <h2 class="font-display text-lg font-semibold leading-tight">
+            {{ segnalazione.categoriaNome }}
+          </h2>
+          @if (distanzaSelezionata(); as distanza) {
+            <p class="text-sm text-neutral-500 dark:text-muted">
+              {{ t('mappa.dettaglio.distanza', { distanza }) }}
+            </p>
+          }
+        </div>
+        <button
+          type="button"
+          class="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-muted dark:hover:bg-ink"
+          [attr.aria-label]="t('mappa.dettaglio.chiudi')"
+          (click)="chiudiDettaglio()"
+        >
+          <svg lucideIcon="x" class="h-5 w-5" aria-hidden="true"></svg>
+        </button>
+      </header>
+
+      <p class="mt-4 whitespace-pre-line text-[15px] leading-relaxed">
+        {{ segnalazione.descrizione }}
+      </p>
+
+      <dl class="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+        <dt class="text-neutral-500 dark:text-muted">{{ t('mappa.dettaglio.creata') }}</dt>
+        <dd>{{ formattaData(segnalazione.dataCreazione) }}</dd>
+        <dt class="text-neutral-500 dark:text-muted">{{ t('mappa.dettaglio.scade') }}</dt>
+        <dd>{{ formattaData(segnalazione.dataScadenza) }}</dd>
+      </dl>
+    </section>
+  }
+</div>

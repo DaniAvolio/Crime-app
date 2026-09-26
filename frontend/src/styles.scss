@@ -30,3 +30,49 @@ html.dark {
     background-color: var(--color-ink);
   }
 }
+
+/* Marker delle segnalazioni sulla mappa: HTML generato per i divIcon di Leaflet, fuori dai
+   template Angular, quindi gli stili vanno qui e non nel componente. Colore "beacon" della
+   palette, distinto dal pallino blu della posizione dell'utente. */
+.marker-segnalazione {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  box-sizing: border-box;
+  border: 2px solid #ffffff;
+  border-radius: 9999px;
+  background-color: var(--color-beacon);
+  color: var(--color-ink);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+  transition: transform 120ms ease-out;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.marker-segnalazione--attiva {
+  transform: scale(1.25);
+  box-shadow:
+    0 0 0 3px var(--color-ink),
+    0 2px 8px rgb(0 0 0 / 0.45);
+}
+
+.leaflet-marker-icon:focus-visible {
+  outline: none;
+
+  .marker-segnalazione {
+    box-shadow:
+      0 0 0 3px #2563eb,
+      0 1px 4px rgb(0 0 0 / 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marker-segnalazione {
+    transition: none;
+  }
+}
