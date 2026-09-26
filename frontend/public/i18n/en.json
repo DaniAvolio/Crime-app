@@ -48,7 +48,18 @@
       "chiudi": "Close details",
       "distanza": "{{ distanza }} from you",
       "creata": "Reported",
-      "scade": "Expires"
+      "scade": "Expires",
+      "ultimaConferma": "Confirmed",
+      "conferma": {
+        "domanda": "Is this still happening?",
+        "si": "Yes",
+        "no": "No",
+        "grazie": "Thanks, we've recorded your answer.",
+        "chiusa": "Report closed: several people said it's no longer happening.",
+        "errore": "We couldn't record your answer. Try again."
+      },
+      "espandi": "Show all details",
+      "riduci": "Show fewer details"
     }
   }
 }

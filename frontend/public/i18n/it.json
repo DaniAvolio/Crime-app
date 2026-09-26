@@ -48,7 +48,18 @@
       "chiudi": "Chiudi dettaglio",
       "distanza": "A {{ distanza }} da te",
       "creata": "Segnalata il",
-      "scade": "Scade il"
+      "scade": "Scade il",
+      "ultimaConferma": "Confermata il",
+      "conferma": {
+        "domanda": "È ancora in atto?",
+        "si": "Sì",
+        "no": "No",
+        "grazie": "Grazie, abbiamo registrato la tua risposta.",
+        "chiusa": "Segnalazione chiusa: diversi utenti hanno indicato che non è più in atto.",
+        "errore": "Non riusciamo a registrare la tua risposta. Riprova."
+      },
+      "espandi": "Mostra tutti i dettagli",
+      "riduci": "Riduci dettagli"
     }
   }
 }

@@ -17,5 +17,6 @@ public record SegnalazioneDto(
         StatoSegnalazione stato,
         LocalDateTime dataCreazione,
         LocalDateTime dataScadenza,
-        LocalDateTime dataRimozione
+        LocalDateTime dataRimozione,
+        LocalDateTime dataUltimaConferma
 ) {}

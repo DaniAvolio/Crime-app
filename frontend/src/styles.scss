@@ -32,8 +32,8 @@ html.dark {
 }
 
 /* Marker delle segnalazioni sulla mappa: HTML generato per i divIcon di Leaflet, fuori dai
-   template Angular, quindi gli stili vanno qui e non nel componente. Colore "beacon" della
-   palette, distinto dal pallino blu della posizione dell'utente. */
+   template Angular, quindi gli stili vanno qui e non nel componente. Rosso "allerta", distinto
+   dal pallino blu della posizione dell'utente. */
 .marker-segnalazione {
   display: flex;
   align-items: center;
@@ -43,8 +43,8 @@ html.dark {
   box-sizing: border-box;
   border: 2px solid #ffffff;
   border-radius: 9999px;
-  background-color: var(--color-beacon);
-  color: var(--color-ink);
+  background-color: var(--color-allerta);
+  color: #ffffff;
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
   transition: transform 120ms ease-out;
 
@@ -71,8 +71,39 @@ html.dark {
   }
 }
 
+/* Bordo sfumato dell'alone di incertezza (i browser senza filter su SVG mostrano un cerchio netto). */
+.alone-segnalazione {
+  filter: blur(6px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marker-segnalazione {
+    transition: none;
+  }
+}
+
+/* Altezza della navbar in basso nella pagina mappa: il pannello di dettaglio e i controlli
+   in basso si appoggiano sopra di essa. 0 finché la navbar non esiste. */
+:root {
+  --altezza-navbar-mappa: 0px;
+}
+
+/* Su mobile il pannello di dettaglio sale dal basso all'apertura. */
+@media (max-width: 639px) {
+  .pannello-dettaglio {
+    animation: pannello-sale 200ms ease-out;
+  }
+}
+
+@keyframes pannello-sale {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pannello-dettaglio {
+    animation: none;
     transition: none;
   }
 }

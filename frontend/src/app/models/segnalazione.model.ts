@@ -18,4 +18,5 @@ export interface Segnalazione {
   dataCreazione: string;
   dataScadenza: string;
   dataRimozione?: string;
+  dataUltimaConferma?: string;
 }

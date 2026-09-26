@@ -19,7 +19,8 @@ import java.util.List;
  * è gestito da Flyway, vedi db/migration/V1__init_schema.sql.
  * <p>
  * Macchina a stati (vedi StatoSegnalazione): ATTIVA -> SCADUTA (job schedulato,
- * scadenza per categoria) | ATTIVA -> SOSPESA (soglia abusi raggiunta,
+ * scadenza per categoria, oppure soglia di voti "non più in atto" raggiunta,
+ * vedi ConfermaSegnalazione) | ATTIVA -> SOSPESA (soglia abusi raggiunta,
  * automatico) | ATTIVA -> RIMOSSA (admin o autore) | SOSPESA -> ATTIVA|RIMOSSA
  * (solo admin).
  */
@@ -76,13 +77,20 @@ public class Segnalazione {
     @Column(name = "data_creazione", nullable = false, updatable = false)
     private LocalDateTime dataCreazione;
 
-    /** Calcolata alla creazione da Categoria.durataValiditaOre. */
+    /**
+     * Calcolata alla creazione da Categoria.durataValiditaOre, prolungata a ogni
+     * conferma "ancora in atto" (vedi ConfermaSegnalazioneService).
+     */
     @NotNull
     @Column(name = "data_scadenza", nullable = false)
     private LocalDateTime dataScadenza;
 
     @Column(name = "data_rimozione")
     private LocalDateTime dataRimozione;
+
+    /** Ultima conferma "ancora in atto": i voti "non più in atto" contano solo se successivi. */
+    @Column(name = "data_ultima_conferma")
+    private LocalDateTime dataUltimaConferma;
 
     @OneToMany(mappedBy = "segnalazione", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

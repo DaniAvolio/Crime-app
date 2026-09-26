@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LeafletDirective } from '@bluehalo/ngx-leaflet';
@@ -19,10 +20,11 @@ import {
 } from 'leaflet';
 import { maplibreGL } from '@maplibre/maplibre-gl-leaflet';
 import { setWorkerUrl } from 'maplibre-gl';
-import { Subject, catchError, debounceTime, of, switchMap, tap } from 'rxjs';
+import { Subject, catchError, debounceTime, finalize, of, switchMap, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { CategoriaApi } from '../categorie/categoria-api';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
-import { Segnalazione } from '../models/segnalazione.model';
+import { Segnalazione, StatoSegnalazione } from '../models/segnalazione.model';
 import { NOME_ICONA_FALLBACK, svgIcona } from '../shared/icone-categoria';
 import { Tema, TemaService } from '../shared/tema';
 
@@ -42,13 +44,25 @@ Icon.Default.mergeOptions({
 // node_modules in assets/maplibre (vedi angular.json -> assets) e indicati qui.
 setWorkerUrl('assets/maplibre/maplibre-gl-worker.mjs');
 
-/** Zoom a livello di quartiere usato quando la posizione dell'utente è nota. */
-const ZOOM_POSIZIONE_UTENTE = 16;
+/** Zoom "la mia posizione" delle app di navigazione: qualche isolato attorno all'utente. */
+const ZOOM_POSIZIONE_UTENTE = 17;
 
 const COLORE_POSIZIONE = '#2563eb';
 
 /** Oltre questo raggio (zoom molto basso) non ha senso chiedere tutte le segnalazioni. */
 const RAGGIO_MASSIMO_METRI = 20_000;
+
+/**
+ * Alone sfumato attorno a ogni segnalazione: l'evento è stato segnalato lì, ma nel frattempo
+ * può essersi spostato nei dintorni. In metri, così scala con lo zoom come la mappa.
+ */
+const RAGGIO_INCERTEZZA_METRI = 100;
+
+/** Stesso breakpoint di `sm:` di Tailwind: sotto, il dettaglio è un pannello dal basso. */
+const MEDIA_MOBILE = '(max-width: 639px)';
+const SOGLIA_TRASCINAMENTO_PX = 40;
+/** Distanza minima dai bordi della mappa per considerare visibile il marker selezionato. */
+const MARGINE_PX = 48;
 
 interface AreaVisibile {
   centro: LatLng;
@@ -83,7 +97,7 @@ function ignoraIconeMancanti(sfondo: MaplibreGL): void {
 @Component({
   selector: 'app-mappa',
   standalone: true,
-  imports: [LeafletDirective, TranslocoDirective, LucideDynamicIcon],
+  imports: [LeafletDirective, TranslocoDirective, LucideDynamicIcon, NgClass],
   templateUrl: './mappa.html',
   host: { '(document:keydown.escape)': 'chiudiDettaglio()' },
 })
@@ -99,6 +113,19 @@ export class Mappa {
   protected readonly selezionata = signal<Segnalazione | null>(null);
   protected readonly erroreSegnalazioni = signal(false);
 
+  /** Stato della risposta a "è ancora in atto?" per la segnalazione aperta. */
+  protected readonly invioConferma = signal(false);
+  protected readonly esitoConferma = signal<'grazie' | 'errore' | null>(null);
+
+  /** Solo mobile: il pannello di dettaglio si apre compatto e si espande su richiesta. */
+  protected readonly pannelloEspanso = signal(false);
+  /** Spostamento verso il basso (px) mentre l'utente trascina la maniglia del pannello. */
+  protected readonly spostamentoPannello = signal(0);
+  private inizioTrascinamentoY: number | null = null;
+  private trascinamentoAppenaFinito = false;
+  /** Avviso mostrato quando i voti "non più in atto" hanno chiuso la segnalazione aperta. */
+  protected readonly segnalazioneChiusa = signal(false);
+
   /** Distanza dal pallino alla segnalazione aperta, se la posizione dell'utente è nota. */
   protected readonly distanzaSelezionata = computed(() => {
     const segnalazione = this.selezionata();
@@ -113,6 +140,10 @@ export class Mappa {
   private readonly tema = inject(TemaService);
   private readonly transloco = inject(TranslocoService);
   private readonly segnalazioneApi = inject(SegnalazioneApi);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Id (e non oggetto) così l'esito del voto non si azzera quando la segnalazione aperta si aggiorna. */
+  private readonly idSelezionata = computed(() => this.selezionata()?.id ?? null);
 
   /** categoriaId -> nome icona Lucide, per disegnare il marker con l'icona della categoria. */
   private readonly iconePerCategoria = signal(new Map<number, string>());
@@ -155,6 +186,12 @@ export class Mappa {
       }
     });
 
+    // Aprendo un'altra segnalazione, l'esito del voto precedente non la riguarda più.
+    effect(() => {
+      this.idSelezionata();
+      this.esitoConferma.set(null);
+    });
+
     // Ridisegna i marker quando cambiano i dati, le icone o la selezione.
     effect(() => {
       const icone = this.iconePerCategoria();
@@ -163,6 +200,14 @@ export class Mappa {
       for (const segnalazione of this.segnalazioni()) {
         const attiva = segnalazione.id === selezionataId;
         const icona = icone.get(segnalazione.categoriaId) ?? NOME_ICONA_FALLBACK;
+        circle([segnalazione.lat, segnalazione.lng], {
+          radius: RAGGIO_INCERTEZZA_METRI,
+          stroke: false,
+          fillColor: attiva ? '#dc2626' : '#6b7280',
+          fillOpacity: attiva ? 0.16 : 0.18,
+          interactive: false,
+          className: 'alone-segnalazione',
+        }).addTo(this.livelloSegnalazioni);
         marker([segnalazione.lat, segnalazione.lng], {
           icon: divIcon({
             className: '',
@@ -176,7 +221,7 @@ export class Mappa {
           riseOnHover: true,
           zIndexOffset: attiva ? 1000 : 0,
         })
-          .on('click', () => this.selezionata.set(segnalazione))
+          .on('click', () => this.apriDettaglio(segnalazione))
           .addTo(this.livelloSegnalazioni);
       }
     });
@@ -244,6 +289,122 @@ export class Mappa {
 
   protected chiudiDettaglio(): void {
     this.selezionata.set(null);
+  }
+
+  /**
+   * Su mobile il dettaglio è un pannello dal basso: la mappa si sposta perché il marker
+   * resti visibile sopra il pannello invece di finirci sotto.
+   */
+  private apriDettaglio(segnalazione: Segnalazione): void {
+    this.selezionata.set(segnalazione);
+    this.pannelloEspanso.set(false);
+    const map = this.mappa();
+    if (!map || !matchMedia(MEDIA_MOBILE).matches) {
+      return;
+    }
+    const { x: larghezza, y: altezza } = map.getSize();
+    const punto = map.latLngToContainerPoint([segnalazione.lat, segnalazione.lng]);
+    // Zona visibile: sotto il bordo alto, sopra il pannello (~45% dell'altezza), lontano dai lati.
+    const fuoriX = punto.x < MARGINE_PX || punto.x > larghezza - MARGINE_PX;
+    const fuoriY = punto.y < MARGINE_PX || punto.y > altezza * 0.45;
+    if (fuoriX || fuoriY) {
+      const riduciMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      map.panBy([fuoriX ? punto.x - larghezza / 2 : 0, fuoriY ? punto.y - altezza * 0.3 : 0], {
+        animate: !riduciMovimento,
+      });
+    }
+  }
+
+  // Maniglia del pannello su mobile: tap alterna compatto/espanso; trascinando in su si
+  // espande, in giù si compatta e, se già compatto, si chiude.
+  protected iniziaTrascinamento(evento: PointerEvent): void {
+    this.inizioTrascinamentoY = evento.clientY;
+    (evento.currentTarget as HTMLElement).setPointerCapture(evento.pointerId);
+  }
+
+  protected trascina(evento: PointerEvent): void {
+    if (this.inizioTrascinamentoY === null) {
+      return;
+    }
+    // Solo verso il basso il pannello segue il dito: verso l'alto conta la soglia di rilascio.
+    this.spostamentoPannello.set(Math.max(0, evento.clientY - this.inizioTrascinamentoY));
+  }
+
+  protected terminaTrascinamento(evento: PointerEvent): void {
+    if (this.inizioTrascinamentoY === null) {
+      return;
+    }
+    const delta = evento.clientY - this.inizioTrascinamentoY;
+    this.inizioTrascinamentoY = null;
+    this.spostamentoPannello.set(0);
+    if (Math.abs(delta) < SOGLIA_TRASCINAMENTO_PX) {
+      return;
+    }
+    this.trascinamentoAppenaFinito = true;
+    if (delta < 0) {
+      this.pannelloEspanso.set(true);
+    } else if (this.pannelloEspanso()) {
+      this.pannelloEspanso.set(false);
+    } else {
+      this.chiudiDettaglio();
+    }
+  }
+
+  protected alternaPannello(): void {
+    // Il click che segue un trascinamento non deve annullarne l'effetto.
+    if (this.trascinamentoAppenaFinito) {
+      this.trascinamentoAppenaFinito = false;
+      return;
+    }
+    this.pannelloEspanso.update((espanso) => !espanso);
+  }
+
+  protected chiudiAvvisoChiusura(): void {
+    this.segnalazioneChiusa.set(false);
+  }
+
+  /**
+   * Risposta a "è ancora in atto?". Il backend restituisce la segnalazione aggiornata: se è
+   * ancora ATTIVA ha la nuova scadenza, altrimenti i voti "no" l'hanno chiusa e va tolta.
+   */
+  protected conferma(ancoraInAtto: boolean): void {
+    const segnalazione = this.selezionata();
+    if (!segnalazione || this.invioConferma()) {
+      return;
+    }
+    this.invioConferma.set(true);
+    this.esitoConferma.set(null);
+    this.segnalazioneApi
+      .conferma(segnalazione.id, { utenteId: environment.utenteCorrenteId, ancoraInAtto })
+      .pipe(
+        finalize(() => this.invioConferma.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (aggiornata) => {
+          const ancoraAperta = this.idSelezionata() === aggiornata.id;
+          if (aggiornata.stato === StatoSegnalazione.ATTIVA) {
+            this.segnalazioni.update((elenco) =>
+              elenco.map((s) => (s.id === aggiornata.id ? aggiornata : s)),
+            );
+            if (ancoraAperta) {
+              this.selezionata.set(aggiornata);
+              this.esitoConferma.set('grazie');
+            }
+            return;
+          }
+          this.segnalazioni.update((elenco) => elenco.filter((s) => s.id !== aggiornata.id));
+          if (ancoraAperta) {
+            this.selezionata.set(null);
+          }
+          this.segnalazioneChiusa.set(true);
+        },
+        error: () => {
+          if (this.idSelezionata() === segnalazione.id) {
+            this.esitoConferma.set('errore');
+          }
+        },
+      });
   }
 
   protected formattaData(iso: string): string {

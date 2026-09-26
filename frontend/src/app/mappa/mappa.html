@@ -1,4 +1,4 @@
-<div class="relative h-full w-full" *transloco="let t">
+<div class="relative isolate h-full w-full" *transloco="let t">
   <div
     class="h-full w-full"
     leaflet
@@ -9,9 +9,10 @@
   @if (posizioneUtente()) {
     <button
       type="button"
-      class="absolute bottom-8 right-3 z-[1000] flex h-11 w-11 items-center justify-center rounded-md border border-neutral-300 bg-white text-blue-600 shadow-md transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:text-paper dark:hover:bg-ink"
+      class="absolute bottom-[calc(var(--altezza-navbar-mappa)+2rem)] right-3 z-[1000] flex h-11 w-11 items-center justify-center rounded-md border border-neutral-300 bg-white text-blue-600 shadow-md transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:text-paper dark:hover:bg-ink"
       [attr.aria-label]="t('mappa.posizione.centra')"
       [title]="t('mappa.posizione.centra')"
+      [ngClass]="{ 'max-sm:hidden': selezionata() }"
       (click)="centraSuPosizione()"
     >
       <svg lucideIcon="locate-fixed" class="h-5 w-5" aria-hidden="true"></svg>
@@ -19,7 +20,8 @@
   }
 
   <div
-    class="pointer-events-none absolute bottom-6 left-4 right-16 z-[1000] flex max-w-md flex-col gap-2 sm:right-auto"
+    class="pointer-events-none absolute bottom-[calc(var(--altezza-navbar-mappa)+1.5rem)] left-4 right-16 z-[1000] flex max-w-md flex-col gap-2 sm:right-auto"
+    [ngClass]="{ 'max-sm:hidden': selezionata() }"
   >
     @if (erroreSegnalazioni()) {
       <p
@@ -28,6 +30,22 @@
       >
         {{ t('mappa.segnalazioni.errore') }}
       </p>
+    }
+
+    @if (segnalazioneChiusa()) {
+      <div
+        role="status"
+        class="pointer-events-auto flex items-start gap-3 rounded-md border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-md dark:border-line dark:bg-panel dark:text-paper"
+      >
+        <p class="flex-1">{{ t('mappa.dettaglio.conferma.chiusa') }}</p>
+        <button
+          type="button"
+          class="shrink-0 font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+          (click)="chiudiAvvisoChiusura()"
+        >
+          {{ t('mappa.posizione.chiudi') }}
+        </button>
+      </div>
     }
 
     @if (avvisoPosizione(); as chiave) {
@@ -48,13 +66,35 @@
   </div>
 
   @if (selezionata(); as segnalazione) {
+    <!-- Mobile: pannello dal basso, sempre sopra la navbar della mappa (--altezza-navbar-mappa).
+         Desktop: pannello fisso in alto a destra. -->
     <section
-      class="absolute inset-x-0 bottom-0 z-[1100] max-h-[70%] overflow-y-auto rounded-t-2xl border-t border-neutral-200 bg-white px-5 pb-6 pt-4 text-neutral-900 shadow-[0_-4px_20px_rgb(0_0_0/0.15)] sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:w-96 sm:rounded-xl sm:border dark:border-line dark:bg-panel dark:text-paper"
+      class="pannello-dettaglio absolute inset-x-0 bottom-[var(--altezza-navbar-mappa)] z-[1100] overflow-y-auto overscroll-contain rounded-t-2xl border-t border-neutral-200 bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-1 text-neutral-900 shadow-[0_-4px_20px_rgb(0_0_0/0.15)] transition-[max-height] duration-200 sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:max-h-[calc(100%-2rem)] sm:w-96 sm:rounded-xl sm:border sm:pb-6 sm:pt-4 dark:border-line dark:bg-panel dark:text-paper"
+      [ngClass]="pannelloEspanso() ? 'max-sm:max-h-[80%]' : 'max-sm:max-h-[55%]'"
+      [style.transform]="
+        spostamentoPannello() ? 'translateY(' + spostamentoPannello() + 'px)' : null
+      "
       [attr.aria-label]="segnalazione.categoriaNome"
     >
+      <button
+        type="button"
+        class="mx-auto flex h-7 w-20 touch-none items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:hidden"
+        [attr.aria-expanded]="pannelloEspanso()"
+        [attr.aria-label]="
+          t(pannelloEspanso() ? 'mappa.dettaglio.riduci' : 'mappa.dettaglio.espandi')
+        "
+        (pointerdown)="iniziaTrascinamento($event)"
+        (pointermove)="trascina($event)"
+        (pointerup)="terminaTrascinamento($event)"
+        (pointercancel)="terminaTrascinamento($event)"
+        (click)="alternaPannello()"
+      >
+        <span class="h-1.5 w-10 rounded-full bg-neutral-300 dark:bg-line"></span>
+      </button>
+
       <header class="flex items-start gap-3">
         <span
-          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-beacon text-ink"
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-allerta text-white"
           aria-hidden="true"
         >
           <svg [lucideIcon]="iconaCategoria(segnalazione.categoriaId)" class="h-5 w-5"></svg>
@@ -79,16 +119,59 @@
         </button>
       </header>
 
-      <p class="mt-4 whitespace-pre-line text-[15px] leading-relaxed">
+      <p
+        class="mt-4 whitespace-pre-line text-[15px] leading-relaxed"
+        [ngClass]="{ 'max-sm:line-clamp-2': !pannelloEspanso() }"
+      >
         {{ segnalazione.descrizione }}
       </p>
 
-      <dl class="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+      <dl
+        class="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm"
+        [ngClass]="{ 'max-sm:hidden': !pannelloEspanso() }"
+      >
         <dt class="text-neutral-500 dark:text-muted">{{ t('mappa.dettaglio.creata') }}</dt>
         <dd>{{ formattaData(segnalazione.dataCreazione) }}</dd>
         <dt class="text-neutral-500 dark:text-muted">{{ t('mappa.dettaglio.scade') }}</dt>
         <dd>{{ formattaData(segnalazione.dataScadenza) }}</dd>
+        @if (segnalazione.dataUltimaConferma; as dataConferma) {
+          <dt class="text-neutral-500 dark:text-muted">
+            {{ t('mappa.dettaglio.ultimaConferma') }}
+          </dt>
+          <dd>{{ formattaData(dataConferma) }}</dd>
+        }
       </dl>
+
+      <div
+        class="mt-5 border-t border-neutral-200 pt-4 dark:border-line"
+        role="group"
+        [attr.aria-label]="t('mappa.dettaglio.conferma.domanda')"
+      >
+        <p class="text-sm font-medium">{{ t('mappa.dettaglio.conferma.domanda') }}</p>
+        <div class="mt-3 flex gap-2">
+          <button
+            type="button"
+            class="h-10 flex-1 rounded-md bg-beacon font-medium text-ink transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            [disabled]="invioConferma()"
+            (click)="conferma(true)"
+          >
+            {{ t('mappa.dettaglio.conferma.si') }}
+          </button>
+          <button
+            type="button"
+            class="h-10 flex-1 rounded-md border border-neutral-300 font-medium transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-line dark:hover:bg-ink"
+            [disabled]="invioConferma()"
+            (click)="conferma(false)"
+          >
+            {{ t('mappa.dettaglio.conferma.no') }}
+          </button>
+        </div>
+        <p role="status" class="mt-2 min-h-5 text-sm text-neutral-500 dark:text-muted">
+          @if (esitoConferma(); as esito) {
+            {{ t('mappa.dettaglio.conferma.' + esito) }}
+          }
+        </p>
+      </div>
     </section>
   }
 </div>

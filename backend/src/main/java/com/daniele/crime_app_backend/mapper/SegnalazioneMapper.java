@@ -27,7 +27,8 @@ public class SegnalazioneMapper {
                 segnalazione.getStato(),
                 segnalazione.getDataCreazione(),
                 segnalazione.getDataScadenza(),
-                segnalazione.getDataRimozione()
+                segnalazione.getDataRimozione(),
+                segnalazione.getDataUltimaConferma()
         );
     }
 

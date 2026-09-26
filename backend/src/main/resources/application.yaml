@@ -38,3 +38,5 @@ crimeapp:
   segnalazioni:
     # Intervallo (ms) del job che porta in SCADUTA le segnalazioni ATTIVA con data di scadenza passata.
     scadenza-job-rate-ms: 300000
+    # Numero di voti "non più in atto" (successivi all'ultimo "ancora in atto") che portano una Segnalazione in SCADUTA.
+    soglia-non-in-atto: 3

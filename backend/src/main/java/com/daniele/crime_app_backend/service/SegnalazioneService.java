@@ -14,12 +14,14 @@ import com.daniele.crime_app_backend.exception.RisorsaNonTrovataException;
 import com.daniele.crime_app_backend.mapper.SegnalazioneMapper;
 import com.daniele.crime_app_backend.repository.EventoModerazioneRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 public class SegnalazioneService {
@@ -138,6 +140,29 @@ public class SegnalazioneService {
             return;
         }
         transiziona(segnalazione, StatoSegnalazione.SOSPESA, TipoAttoreModerazione.SISTEMA, null, motivazione);
+    }
+
+    /**
+     * Conferma "ancora in atto" (vedi ConfermaSegnalazioneService): la scadenza
+     * riparte da adesso con la durata della categoria, senza mai accorciarsi.
+     */
+    @Transactional
+    void prolungaScadenza(Segnalazione segnalazione) {
+        LocalDateTime adesso = LocalDateTime.now();
+        LocalDateTime nuovaScadenza = adesso.plusHours(segnalazione.getCategoria().getDurataValiditaOre());
+        if (nuovaScadenza.isAfter(segnalazione.getDataScadenza())) {
+            segnalazione.setDataScadenza(nuovaScadenza);
+        }
+        segnalazione.setDataUltimaConferma(adesso);
+        log.info("Segnalazione {} confermata ancora in atto, scadenza: {}", segnalazione.getId(),
+                segnalazione.getDataScadenza());
+    }
+
+    /** ATTIVA -> SCADUTA, automatico al raggiungimento della soglia di voti "non più in atto". */
+    @Transactional
+    void scadiPerConfermeNegative(Segnalazione segnalazione, String motivazione) {
+        transiziona(segnalazione, StatoSegnalazione.SCADUTA, TipoAttoreModerazione.SISTEMA, null, motivazione);
+        log.info("Segnalazione {} scaduta: {}", segnalazione.getId(), motivazione);
     }
 
     /** ATTIVA -> SCADUTA per le segnalazioni la cui data di scadenza è passata. Pensato per un job schedulato. */

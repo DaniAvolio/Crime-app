@@ -19,6 +19,12 @@ export interface SegnalazioneTransizioneRequest {
   motivazione: string;
 }
 
+/** Risposta a "è ancora in atto?": un voto per utente, modificabile. */
+export interface ConfermaSegnalazioneRequest {
+  utenteId: number;
+  ancoraInAtto: boolean;
+}
+
 export interface FiltriSegnalazioni {
   stato?: StatoSegnalazione;
   autoreId?: number;
@@ -56,6 +62,11 @@ export class SegnalazioneApi {
 
   rimuovi(id: number, payload: SegnalazioneTransizioneRequest): Observable<Segnalazione> {
     return this.http.patch<Segnalazione>(`${this.baseUrl}/${id}/rimuovi`, payload);
+  }
+
+  /** Restituisce la segnalazione aggiornata: nuova scadenza, oppure stato SCADUTA se chiusa dai voti. */
+  conferma(id: number, payload: ConfermaSegnalazioneRequest): Observable<Segnalazione> {
+    return this.http.post<Segnalazione>(`${this.baseUrl}/${id}/conferme`, payload);
   }
 
   riattiva(id: number, payload: SegnalazioneTransizioneRequest): Observable<Segnalazione> {
