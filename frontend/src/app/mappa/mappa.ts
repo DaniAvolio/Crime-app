@@ -36,12 +36,14 @@ import {
 import { maplibreGL } from '@maplibre/maplibre-gl-leaflet';
 import { setWorkerUrl } from 'maplibre-gl';
 import { Subject, catchError, debounceTime, finalize, of, switchMap, tap } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
+import { AuthService } from '../auth/auth';
 import { CategoriaApi } from '../categorie/categoria-api';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Segnalazione, StatoSegnalazione } from '../models/segnalazione.model';
 import { NOME_ICONA_FALLBACK, svgIcona } from '../shared/icone-categoria';
 import { Tema, TemaService } from '../shared/tema';
+import { ToastService } from '../shared/toast/toast';
 import { Categoria } from '../models/categoria.model';
 import { formattaData, formattaDistanza } from './formattazione';
 import { ListaSegnalazioni } from './lista-segnalazioni';
@@ -242,6 +244,9 @@ export class Mappa {
   private readonly segnalazioneApi = inject(SegnalazioneApi);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly formNuova = viewChild(NuovaSegnalazione);
 
@@ -613,13 +618,13 @@ export class Mappa {
    */
   protected conferma(ancoraInAtto: boolean): void {
     const segnalazione = this.selezionata();
-    if (!segnalazione || this.invioConferma()) {
+    if (!segnalazione || this.invioConferma() || !this.verificaLogin()) {
       return;
     }
     this.invioConferma.set(true);
     this.esitoConferma.set(null);
     this.segnalazioneApi
-      .conferma(segnalazione.id, { utenteId: environment.utenteCorrenteId, ancoraInAtto })
+      .conferma(segnalazione.id, { ancoraInAtto })
       .pipe(
         finalize(() => this.invioConferma.set(false)),
         takeUntilDestroyed(this.destroyRef),
@@ -651,6 +656,19 @@ export class Mappa {
       });
   }
 
+  /**
+   * La mappa è consultabile senza login, ma pubblicare e votare richiedono un account:
+   * senza sessione si va al login, che al termine riporta sulla mappa.
+   */
+  private verificaLogin(): boolean {
+    if (this.auth.autenticato()) {
+      return true;
+    }
+    this.toast.info(this.transloco.translate('auth.richiestoLogin'));
+    void this.router.navigate(['/login'], { queryParams: { redirect: '/mappa' } });
+    return false;
+  }
+
   protected formattaData(iso: string): string {
     return formattaData(iso, this.transloco.getActiveLang());
   }
@@ -677,7 +695,7 @@ export class Mappa {
   /** Il form parte con il pin sulla posizione dell'utente, o sul centro mappa se non è nota. */
   protected apriNuovaSegnalazione(): void {
     const map = this.mappa();
-    if (!map) {
+    if (!map || !this.verificaLogin()) {
       return;
     }
     const posizione = this.posizioneUtente() ?? map.getCenter();

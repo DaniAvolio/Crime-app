@@ -9,3 +9,7 @@ Thumbs.db
 # Variabili d'ambiente locali (mai committare credenziali reali)
 .env
 .env.local
+
+# Log applicativi (es. backend avviato dalla root del repo)
+logs/
+*.log

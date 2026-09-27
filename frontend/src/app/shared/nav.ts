@@ -1,9 +1,10 @@
 import { NgClass } from '@angular/common';
 import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { AuthService } from '../auth/auth';
 import { TemaService } from './tema';
 import { ThemeToggle } from './theme-toggle';
 
@@ -35,6 +36,13 @@ export class Nav {
    * impostazioni chiuso di default, e il tema si applicherebbe solo al primo click.
    */
   private readonly tema = inject(TemaService);
+  private readonly router = inject(Router);
+  protected readonly auth = inject(AuthService);
+
+  constructor() {
+    // Nav è sempre montata: all'avvio riallinea ruolo e dati dell'utente salvato.
+    this.auth.aggiornaUtente();
+  }
 
   protected readonly pannelloAperto = signal(false);
   protected readonly linguaAttiva = toSignal(this.transloco.langChanges$, {
@@ -47,6 +55,13 @@ export class Nav {
 
   protected impostaLingua(lingua: string): void {
     this.transloco.setActiveLang(lingua);
+  }
+
+  /** Dopo il logout si torna alla home: la pagina corrente potrebbe richiedere login. */
+  protected esci(): void {
+    this.auth.logout();
+    this.pannelloAperto.set(false);
+    void this.router.navigateByUrl('/');
   }
 
   @HostListener('document:click', ['$event'])

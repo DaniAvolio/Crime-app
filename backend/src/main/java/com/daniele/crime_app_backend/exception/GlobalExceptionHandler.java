@@ -35,6 +35,18 @@ public class GlobalExceptionHandler {
         return costruisci(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(CredenzialiNonValideException.class)
+    public ResponseEntity<ErrorResponse> gestisciCredenziali(CredenzialiNonValideException ex) {
+        log.warn("Login fallito: {}", ex.getMessage());
+        return costruisci(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(AccessoNegatoException.class)
+    public ResponseEntity<ErrorResponse> gestisciAccessoNegato(AccessoNegatoException ex) {
+        log.warn("Accesso negato: {}", ex.getMessage());
+        return costruisci(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> gestisciIntegrita(DataIntegrityViolationException ex) {
         log.warn("Violazione di integrità dei dati: {}", ex.getMostSpecificCause().getMessage());

@@ -5,9 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CategoriaApi } from '../../categorie/categoria-api';
 import { Categoria } from '../../models/categoria.model';
 import { Segnalazione, StatoSegnalazione } from '../../models/segnalazione.model';
-import { Utente } from '../../models/utente.model';
-import { UtenteApi } from '../utenti/utente-api';
-import { SegnalazioneApi, SegnalazioneRequest } from './segnalazione-api';
+import { SegnalazioneApi, SegnalazioneRequest, SegnalazioneTransizioneRequest } from './segnalazione-api';
 import { DialoghiService } from '../../shared/dialoghi/dialoghi';
 import { ToastService } from '../../shared/toast/toast';
 
@@ -20,7 +18,6 @@ import { ToastService } from '../../shared/toast/toast';
 export class Segnalazioni implements OnInit {
   private readonly segnalazioneApi = inject(SegnalazioneApi);
   private readonly categoriaApi = inject(CategoriaApi);
-  private readonly utenteApi = inject(UtenteApi);
   private readonly fb = inject(FormBuilder);
   private readonly dialoghi = inject(DialoghiService);
   private readonly toast = inject(ToastService);
@@ -29,13 +26,11 @@ export class Segnalazioni implements OnInit {
 
   protected readonly segnalazioni = signal<Segnalazione[]>([]);
   protected readonly categorie = signal<Categoria[]>([]);
-  protected readonly utenti = signal<Utente[]>([]);
   protected readonly caricando = signal(false);
   protected readonly errore = signal<string | null>(null);
   protected readonly filtroStato = signal<StatoSegnalazione | ''>('');
 
   protected readonly form = this.fb.nonNullable.group({
-    autoreId: this.fb.control<number | null>(null, Validators.required),
     categoriaId: this.fb.control<number | null>(null, Validators.required),
     descrizione: ['', Validators.required],
     lat: [0, Validators.required],
@@ -45,7 +40,6 @@ export class Segnalazioni implements OnInit {
 
   ngOnInit(): void {
     this.categoriaApi.elenca().subscribe({ next: (categorie) => this.categorie.set(categorie) });
-    this.utenteApi.elenca().subscribe({ next: (utenti) => this.utenti.set(utenti) });
     this.carica();
   }
 
@@ -77,7 +71,6 @@ export class Segnalazioni implements OnInit {
     }
     const valori = this.form.getRawValue();
     const payload: SegnalazioneRequest = {
-      autoreId: valori.autoreId!,
       categoriaId: valori.categoriaId!,
       descrizione: valori.descrizione,
       lat: valori.lat,
@@ -130,34 +123,25 @@ export class Segnalazioni implements OnInit {
     });
   }
 
-  /** Non c'è un utente loggato: chiediamo esplicitamente chi sta agendo e perché. */
+  /** L'attore è l'admin autenticato (il backend lo ricava dal token): serve solo il perché. */
   private async chiediTransizione(
     titolo: string,
     conferma: string,
     pericolo = false,
-  ): Promise<{ attoreId: number; motivazione: string } | null> {
+  ): Promise<SegnalazioneTransizioneRequest | null> {
     const valori = await this.dialoghi.chiedi({
       titolo,
       conferma,
       pericolo,
       campi: [
-        {
-          nome: 'attoreId',
-          etichetta: "Id dell'utente che esegue l'operazione",
-          tipo: 'number',
-          obbligatorio: true,
-        },
         { nome: 'motivazione', etichetta: 'Motivazione', tipo: 'textarea', obbligatorio: true },
       ],
     });
-    return valori
-      ? { attoreId: Number(valori['attoreId']), motivazione: valori['motivazione'] }
-      : null;
+    return valori ? { motivazione: valori['motivazione'] } : null;
   }
 
   private resetForm(): void {
     this.form.reset({
-      autoreId: null,
       categoriaId: null,
       descrizione: '',
       lat: 0,

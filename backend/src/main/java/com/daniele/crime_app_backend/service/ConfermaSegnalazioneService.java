@@ -23,18 +23,18 @@ public class ConfermaSegnalazioneService {
     private final ConfermaSegnalazioneRepository confermaSegnalazioneRepository;
     private final SegnalazioneService segnalazioneService;
     private final SegnalazioneMapper segnalazioneMapper;
-    private final UtenteService utenteService;
+    private final UtenteCorrenteService utenteCorrenteService;
     private final int sogliaNonInAtto;
 
     public ConfermaSegnalazioneService(ConfermaSegnalazioneRepository confermaSegnalazioneRepository,
                                         SegnalazioneService segnalazioneService,
                                         SegnalazioneMapper segnalazioneMapper,
-                                        UtenteService utenteService,
+                                        UtenteCorrenteService utenteCorrenteService,
                                         @Value("${crimeapp.segnalazioni.soglia-non-in-atto:3}") int sogliaNonInAtto) {
         this.confermaSegnalazioneRepository = confermaSegnalazioneRepository;
         this.segnalazioneService = segnalazioneService;
         this.segnalazioneMapper = segnalazioneMapper;
-        this.utenteService = utenteService;
+        this.utenteCorrenteService = utenteCorrenteService;
         this.sogliaNonInAtto = sogliaNonInAtto;
     }
 
@@ -48,7 +48,7 @@ public class ConfermaSegnalazioneService {
     @Transactional
     public SegnalazioneDto vota(Long segnalazioneId, ConfermaSegnalazioneRequest request) {
         Segnalazione segnalazione = segnalazioneService.recuperaOLancia(segnalazioneId);
-        Utente utente = utenteService.recuperaOLancia(request.utenteId());
+        Utente utente = utenteCorrenteService.utenteCorrente();
         boolean ancoraInAtto = request.ancoraInAtto();
 
         if (segnalazione.getStato() != StatoSegnalazione.ATTIVA) {

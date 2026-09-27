@@ -15,7 +15,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { LatLng } from 'leaflet';
-import { environment } from '../../environments/environment';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Categoria } from '../models/categoria.model';
 import { Segnalazione } from '../models/segnalazione.model';
@@ -139,8 +138,6 @@ export class NuovaSegnalazione {
     this.errore.set(false);
     this.segnalazioneApi
       .crea({
-        // Temporaneo, finché non c'è autenticazione: autore = utente di test.
-        autoreId: environment.utenteCorrenteId,
         categoriaId,
         descrizione: descrizione.trim(),
         lat,

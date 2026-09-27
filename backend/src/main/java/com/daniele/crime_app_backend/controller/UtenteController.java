@@ -3,6 +3,7 @@ package com.daniele.crime_app_backend.controller;
 import com.daniele.crime_app_backend.dto.UtenteAggiornamentoRequest;
 import com.daniele.crime_app_backend.dto.UtenteDto;
 import com.daniele.crime_app_backend.dto.UtenteRegistrazioneRequest;
+import com.daniele.crime_app_backend.dto.UtenteRuoloRequest;
 import com.daniele.crime_app_backend.service.UtenteService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,11 @@ public class UtenteController {
     @PutMapping("/{id}")
     public UtenteDto aggiorna(@PathVariable Long id, @Valid @RequestBody UtenteAggiornamentoRequest request) {
         return utenteService.aggiorna(id, request);
+    }
+
+    @PatchMapping("/{id}/ruolo")
+    public UtenteDto cambiaRuolo(@PathVariable Long id, @Valid @RequestBody UtenteRuoloRequest request) {
+        return utenteService.cambiaRuolo(id, request.ruolo());
     }
 
     @PatchMapping("/{id}/disattiva")

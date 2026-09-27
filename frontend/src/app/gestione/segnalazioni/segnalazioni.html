@@ -17,35 +17,20 @@
     >
       <h2 class="mb-3 font-semibold text-gray-800 dark:text-paper">Nuova segnalazione</h2>
 
-      <div class="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
-            Categoria
-          </label>
-          <select
-            formControlName="categoriaId"
-            class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
-          >
-            <option [ngValue]="null">Seleziona categoria</option>
-            @for (categoria of categorie(); track categoria.id) {
-              <option [ngValue]="categoria.id">{{ categoria.nome }}</option>
-            }
-          </select>
-        </div>
-        <div>
-          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
-            Autore
-          </label>
-          <select
-            formControlName="autoreId"
-            class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
-          >
-            <option [ngValue]="null">Seleziona autore</option>
-            @for (utente of utenti(); track utente.id) {
-              <option [ngValue]="utente.id">{{ utente.nome }} {{ utente.cognome }}</option>
-            }
-          </select>
-        </div>
+      <!-- L'autore è l'admin autenticato: il backend lo ricava dal token. -->
+      <div class="mb-3">
+        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+          Categoria
+        </label>
+        <select
+          formControlName="categoriaId"
+          class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+        >
+          <option [ngValue]="null">Seleziona categoria</option>
+          @for (categoria of categorie(); track categoria.id) {
+            <option [ngValue]="categoria.id">{{ categoria.nome }}</option>
+          }
+        </select>
       </div>
 
       <div class="mb-3">

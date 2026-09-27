@@ -24,8 +24,9 @@ public class SegnalazioneController {
 
     @GetMapping
     public List<SegnalazioneDto> elenca(@RequestParam(required = false) StatoSegnalazione stato,
-                                         @RequestParam(required = false) Long autoreId) {
-        return segnalazioneService.trova(stato, autoreId);
+                                         @RequestParam(required = false) Long autoreId,
+                                         @RequestParam(defaultValue = "false") boolean mie) {
+        return segnalazioneService.trova(stato, autoreId, mie);
     }
 
     @GetMapping("/vicine")

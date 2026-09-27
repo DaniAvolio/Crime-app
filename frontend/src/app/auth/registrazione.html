@@ -1,0 +1,125 @@
+<main
+  *transloco="let t"
+  class="min-h-full bg-white px-4 py-12 text-gray-900 dark:bg-ink dark:text-paper sm:py-20"
+>
+  <div class="mx-auto w-full max-w-sm">
+    <h1 class="font-display text-2xl font-semibold tracking-tight">
+      {{ t('auth.registrazione.titolo') }}
+    </h1>
+    <p class="mt-2 text-sm text-gray-500 dark:text-muted">
+      {{ t('auth.registrazione.sottotitolo') }}
+    </p>
+
+    <form [formGroup]="form" (ngSubmit)="registrati()" class="mt-8 flex flex-col gap-4" novalidate>
+      @if (errore()) {
+        <div
+          role="alert"
+          class="rounded-sm bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+        >
+          {{ errore() }}
+        </div>
+      }
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label for="reg-nome" class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+            {{ t('auth.campi.nome') }}
+          </label>
+          <input
+            id="reg-nome"
+            type="text"
+            formControlName="nome"
+            autocomplete="given-name"
+            class="w-full rounded-sm border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+          />
+          @if (form.controls.nome.touched && form.controls.nome.invalid) {
+            <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+              {{ t('auth.validazione.obbligatorio') }}
+            </p>
+          }
+        </div>
+        <div>
+          <label
+            for="reg-cognome"
+            class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted"
+          >
+            {{ t('auth.campi.cognome') }}
+          </label>
+          <input
+            id="reg-cognome"
+            type="text"
+            formControlName="cognome"
+            autocomplete="family-name"
+            class="w-full rounded-sm border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+          />
+          @if (form.controls.cognome.touched && form.controls.cognome.invalid) {
+            <p class="mt-1 text-xs text-red-600 dark:text-red-400">
+              {{ t('auth.validazione.obbligatorio') }}
+            </p>
+          }
+        </div>
+      </div>
+
+      <div>
+        <label for="reg-email" class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
+          {{ t('auth.campi.email') }}
+        </label>
+        <input
+          id="reg-email"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          class="w-full rounded-sm border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+        />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ t('auth.validazione.email') }}</p>
+        }
+      </div>
+
+      <div>
+        <label
+          for="reg-password"
+          class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted"
+        >
+          {{ t('auth.campi.password') }}
+        </label>
+        <input
+          id="reg-password"
+          type="password"
+          formControlName="password"
+          autocomplete="new-password"
+          class="w-full rounded-sm border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+        />
+        <p
+          class="mt-1 text-xs"
+          [class]="
+            form.controls.password.touched && form.controls.password.invalid
+              ? 'text-red-600 dark:text-red-400'
+              : 'text-gray-500 dark:text-muted'
+          "
+        >
+          {{ t('auth.validazione.passwordMinima', { minimo: lunghezzaMinimaPassword }) }}
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="invio()"
+        class="mt-2 rounded-sm bg-allerta px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {{ invio() ? t('auth.registrazione.invio') : t('auth.registrazione.azione') }}
+      </button>
+    </form>
+
+    <p class="mt-6 text-sm text-gray-500 dark:text-muted">
+      {{ t('auth.registrazione.haiAccount') }}
+      <a
+        routerLink="/login"
+        [queryParams]="{ redirect }"
+        class="font-medium text-gray-900 underline underline-offset-2 dark:text-paper"
+      >
+        {{ t('auth.registrazione.vaiLogin') }}
+      </a>
+    </p>
+  </div>
+</main>

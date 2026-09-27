@@ -4,7 +4,10 @@ import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 
 import java.time.LocalDateTime;
 
-/** Rappresentazione di Segnalazione esposta via API. La posizione PostGIS è appiattita in lat/lng. */
+/**
+ * Rappresentazione di Segnalazione esposta via API. La posizione PostGIS è appiattita in lat/lng.
+ * autoreId è null per le segnalazioni anonime, salvo per l'autore stesso e gli admin (vedi SegnalazioneMapper).
+ */
 public record SegnalazioneDto(
         Long id,
         Long autoreId,

@@ -2,11 +2,8 @@ package com.daniele.crime_app_backend.dto;
 
 import jakarta.validation.constraints.*;
 
-/** Payload in ingresso per creare una Segnalazione. */
+/** Payload in ingresso per creare una Segnalazione. L'autore è l'utente autenticato. */
 public record SegnalazioneRequest(
-        @NotNull(message = "L'autore è obbligatorio")
-        Long autoreId,
-
         @NotNull(message = "La categoria è obbligatoria")
         Long categoriaId,
 

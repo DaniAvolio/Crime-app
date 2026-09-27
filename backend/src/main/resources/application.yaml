@@ -40,3 +40,12 @@ crimeapp:
     scadenza-job-rate-ms: 300000
     # Numero di voti "non più in atto" (successivi all'ultimo "ancora in atto") che portano una Segnalazione in SCADUTA.
     soglia-non-in-atto: 3
+  auth:
+    # Chiave HMAC (HS256) per firmare i JWT: almeno 32 byte. In produzione va
+    # fornita tramite la variabile d'ambiente CRIMEAPP_JWT_SECRET.
+    jwt-secret: ${CRIMEAPP_JWT_SECRET:dev-only-secret-cambiami-in-produzione-0123456789}
+    # Validità del token di accesso, in minuti.
+    jwt-durata-minuti: 1440
+    # Email del primo amministratore: alla registrazione (o al prossimo avvio, se già
+    # registrato) quell'utente diventa ADMIN. Vuota = nessun effetto.
+    admin-email: ${CRIMEAPP_ADMIN_EMAIL:}

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/** Device token push dell'utente autenticato. */
 @RestController
 public class DeviceTokenController {
 
@@ -18,14 +19,14 @@ public class DeviceTokenController {
         this.deviceTokenService = deviceTokenService;
     }
 
-    @GetMapping("/api/utenti/{utenteId}/device-token")
-    public List<DeviceTokenDto> elenca(@PathVariable Long utenteId) {
-        return deviceTokenService.trovaPerUtente(utenteId);
+    @GetMapping("/api/utenti/me/device-token")
+    public List<DeviceTokenDto> elenca() {
+        return deviceTokenService.trovaPerUtenteCorrente();
     }
 
-    @PostMapping("/api/utenti/{utenteId}/device-token")
-    public DeviceTokenDto registra(@PathVariable Long utenteId, @Valid @RequestBody DeviceTokenRequest request) {
-        return deviceTokenService.registra(utenteId, request);
+    @PostMapping("/api/utenti/me/device-token")
+    public DeviceTokenDto registra(@Valid @RequestBody DeviceTokenRequest request) {
+        return deviceTokenService.registra(request);
     }
 
     @DeleteMapping("/api/device-token/{token}")

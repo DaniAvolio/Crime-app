@@ -101,6 +101,7 @@
             <th class="py-2">Identità</th>
             <th class="py-2">Fiducia</th>
             <th class="py-2">Stato</th>
+            <th class="py-2">Ruolo</th>
             <th class="py-2"></th>
           </tr>
         </thead>
@@ -141,6 +142,21 @@
                   </span>
                 }
               </td>
+              <td class="py-2">
+                @if (utente.ruolo === 'ADMIN') {
+                  <span
+                    class="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                  >
+                    Admin
+                  </span>
+                } @else {
+                  <span
+                    class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-panel dark:text-muted"
+                  >
+                    Utente
+                  </span>
+                }
+              </td>
               <td class="py-2 text-right whitespace-nowrap">
                 <button
                   (click)="modifica(utente)"
@@ -148,6 +164,21 @@
                 >
                   Modifica
                 </button>
+                @if (utente.ruolo === 'ADMIN') {
+                  <button
+                    (click)="cambiaRuolo(utente, 'UTENTE')"
+                    class="mr-3 text-amber-600 hover:underline dark:text-beacon"
+                  >
+                    Rimuovi admin
+                  </button>
+                } @else {
+                  <button
+                    (click)="cambiaRuolo(utente, 'ADMIN')"
+                    class="mr-3 text-blue-700 hover:underline dark:text-blue-400"
+                  >
+                    Rendi admin
+                  </button>
+                }
                 @if (utente.attivo) {
                   <button
                     (click)="disattiva(utente)"

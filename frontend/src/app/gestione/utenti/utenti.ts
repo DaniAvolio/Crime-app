@@ -1,7 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Utente } from '../../models/utente.model';
+import { Router } from '@angular/router';
+import { RuoloUtente, Utente } from '../../models/utente.model';
+import { AuthService } from '../../auth/auth';
 import { UtenteAggiornamentoRequest, UtenteApi, UtenteRegistrazioneRequest } from './utente-api';
 import { DialoghiService } from '../../shared/dialoghi/dialoghi';
 import { ToastService } from '../../shared/toast/toast';
@@ -17,6 +19,8 @@ export class Utenti implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly dialoghi = inject(DialoghiService);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   protected readonly utenti = signal<Utente[]>([]);
   protected readonly caricando = signal(false);
@@ -113,6 +117,48 @@ export class Utenti implements OnInit {
     this.utenteApi.riattiva(utente.id).subscribe({
       next: () => this.carica(),
       error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
+    });
+  }
+
+  /**
+   * Il backend rifiuta (409) la revoca dell'ultimo admin attivo. Se un admin revoca
+   * sé stesso, il backend lo tratta subito da utente: si esce per riallineare la sessione.
+   */
+  protected async cambiaRuolo(utente: Utente, ruolo: RuoloUtente): Promise<void> {
+    const nome = `${utente.nome} ${utente.cognome}`;
+    const promozione = ruolo === 'ADMIN';
+    const sestesso = utente.id === this.auth.utente()?.id;
+    const confermato = await this.dialoghi.conferma({
+      titolo: promozione ? 'Rendere amministratore?' : 'Rimuovere il ruolo di amministratore?',
+      messaggio: promozione
+        ? `${nome} potrà gestire utenti, categorie e moderazione.`
+        : sestesso
+          ? 'Perderai subito l’accesso alla gestione e dovrai accedere di nuovo.'
+          : `${nome} non potrà più accedere alla gestione.`,
+      conferma: promozione ? 'Rendi admin' : 'Rimuovi admin',
+      pericolo: !promozione,
+    });
+    if (!confermato) {
+      return;
+    }
+    this.errore.set(null);
+    this.utenteApi.cambiaRuolo(utente.id, ruolo).subscribe({
+      next: () => {
+        if (sestesso && !promozione) {
+          this.auth.logout();
+          this.toast.info('Non sei più amministratore: accedi di nuovo.');
+          void this.router.navigateByUrl('/login');
+          return;
+        }
+        this.toast.successo(
+          promozione ? `${nome} ora è amministratore.` : `${nome} non è più amministratore.`,
+        );
+        this.carica();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errore.set(this.estraiMessaggio(err));
+        this.toast.errore('Non siamo riusciti a cambiare il ruolo.');
+      },
     });
   }
 

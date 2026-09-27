@@ -59,7 +59,18 @@ Error handling is centralized in `exception/GlobalExceptionHandler.java` (`@Rest
 
 Logging uses SLF4J/Logback via Lombok's `@Slf4j` (annotate the class, then `log.info(...)`); don't declare loggers manually with `LoggerFactory`. Always use `{}` placeholders instead of string concatenation, and pass the exception as the last argument to `log.error` to get the stack trace. Levels: `debug` for dev detail, `info` for domain events (create/update/state transitions), `warn` for client errors (already logged by `GlobalExceptionHandler`), `error` for unexpected exceptions (the catch-all handler logs them and returns a generic 500). Configuration lives in `application.yaml` under `logging:`: console + rolling file `logs/crime-app.log` (gitignored), SQL logged via `org.hibernate.SQL` instead of `show-sql`. `config/RequestLoggingFilter.java` logs one line per `/api/**` request (method, path, status, duration).
 
-`config/SecurityConfig.java` currently permits all requests and disables CSRF — explicitly a **temporary** state until real authentication is implemented (see class Javadoc). It also configures CORS to allow only `http://localhost:4200`, which must be restricted to the real frontend origin before going to production. Don't assume any endpoint is actually protected yet.
+### Authentication and authorization
+
+Stateless JWT auth (HS256) via `spring-boot-starter-security-oauth2-resource-server`; tokens are issued by the backend itself, no external IdP.
+- `POST /api/auth/login`, `POST /api/auth/registrazione` (public, self-registration always creates a `UTENTE`) return `AuthResponse { token, scadenza, utente }`; `GET /api/auth/me` returns the current user. Token subject = user id, claim `ruolo` → authority `ROLE_UTENTE`/`ROLE_ADMIN`.
+- Signing key: `crimeapp.auth.jwt-secret` (≥ 32 bytes, override with env `CRIMEAPP_JWT_SECRET` outside dev); lifetime `crimeapp.auth.jwt-durata-minuti`.
+- Access rules live in `config/SecurityConfig.java`: GETs on `/api/segnalazioni/**` and `/api/categorie/**` are public (except abuse reports and moderation history, ADMIN only); category writes, `/api/utenti/**` (except `/api/utenti/me/**`) and `PATCH /api/segnalazioni/*/riattiva` are ADMIN only; everything else requires login. 401/403 from the filter chain are serialized as `ErrorResponse` by `config/ErroriSicurezzaHandler.java`.
+- **Never take the acting user's id from the request body/path.** Use `service/UtenteCorrenteService` (`utenteCorrente()` also rejects deactivated accounts, `idCorrenteOpzionale()` for public endpoints, `isAdmin()` from the token). Finer rules (e.g. only author or admin may remove a report) stay in the services and throw `AccessoNegatoException` (403); failed login throws `CredenzialiNonValideException` (401).
+- Anonymous reports: `SegnalazioneMapper` nulls `autoreId` unless the requester is the author or an admin.
+- Role and active state are **re-read from the DB on every request** by `config/JwtUtenteConverter.java` (the `ruolo` claim in the token is informational only): demoting or deactivating a user takes effect immediately; a deactivated user's token gets 401.
+- Roles are a `ruolo` column on `utente` (`V3__ruolo_utente.sql`). The first admin is bootstrapped with `crimeapp.auth.admin-email` (env `CRIMEAPP_ADMIN_EMAIL`): that user becomes ADMIN on registration, or at startup if already registered (`config/AdminInizialeRunner.java`). Further admins are managed via `PATCH /api/utenti/{id}/ruolo` (ADMIN only). `UtenteService` refuses (409) to demote, deactivate or delete the last active admin.
+
+CSRF is disabled (no cookies, bearer tokens only). CORS allows only `http://localhost:4200` and must be restricted to the real frontend origin before going to production.
 
 ## Frontend architecture
 

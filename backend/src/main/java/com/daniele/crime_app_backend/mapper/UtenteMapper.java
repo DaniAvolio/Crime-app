@@ -16,6 +16,7 @@ public class UtenteMapper {
                 utente.isIdentitaVerificata(),
                 utente.getPunteggioFiducia(),
                 utente.isAttivo(),
+                utente.getRuolo(),
                 utente.getDataRegistrazione(),
                 utente.getDataAggiornamento()
         );

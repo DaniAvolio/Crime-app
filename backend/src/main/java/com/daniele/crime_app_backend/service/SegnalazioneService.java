@@ -7,8 +7,10 @@ import com.daniele.crime_app_backend.entity.Categoria;
 import com.daniele.crime_app_backend.entity.EventoModerazione;
 import com.daniele.crime_app_backend.entity.Segnalazione;
 import com.daniele.crime_app_backend.entity.Utente;
+import com.daniele.crime_app_backend.entity.enums.RuoloUtente;
 import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 import com.daniele.crime_app_backend.entity.enums.TipoAttoreModerazione;
+import com.daniele.crime_app_backend.exception.AccessoNegatoException;
 import com.daniele.crime_app_backend.exception.ConflittoException;
 import com.daniele.crime_app_backend.exception.RisorsaNonTrovataException;
 import com.daniele.crime_app_backend.mapper.SegnalazioneMapper;
@@ -29,28 +31,39 @@ public class SegnalazioneService {
     private final SegnalazioneRepository segnalazioneRepository;
     private final EventoModerazioneRepository eventoModerazioneRepository;
     private final SegnalazioneMapper segnalazioneMapper;
-    private final UtenteService utenteService;
     private final CategoriaService categoriaService;
+    private final UtenteCorrenteService utenteCorrenteService;
 
     public SegnalazioneService(SegnalazioneRepository segnalazioneRepository,
                                 EventoModerazioneRepository eventoModerazioneRepository,
                                 SegnalazioneMapper segnalazioneMapper,
-                                UtenteService utenteService,
-                                CategoriaService categoriaService) {
+                                CategoriaService categoriaService,
+                                UtenteCorrenteService utenteCorrenteService) {
         this.segnalazioneRepository = segnalazioneRepository;
         this.eventoModerazioneRepository = eventoModerazioneRepository;
         this.segnalazioneMapper = segnalazioneMapper;
-        this.utenteService = utenteService;
         this.categoriaService = categoriaService;
+        this.utenteCorrenteService = utenteCorrenteService;
     }
 
-    public List<SegnalazioneDto> trova(StatoSegnalazione stato, Long autoreId) {
+    /**
+     * Con mie=true filtra sulle segnalazioni dell'utente autenticato. Filtrando
+     * per autoreId altrui le segnalazioni anonime vengono escluse (salvo per gli
+     * admin), altrimenti il filtro stesso rivelerebbe chi le ha scritte.
+     */
+    public List<SegnalazioneDto> trova(StatoSegnalazione stato, Long autoreId, boolean mie) {
+        Long autoreFiltro = mie ? utenteCorrenteService.idCorrente() : autoreId;
         List<Segnalazione> risultati = segnalazioneRepository.findAll();
         if (stato != null) {
             risultati = risultati.stream().filter(s -> s.getStato() == stato).toList();
         }
-        if (autoreId != null) {
-            risultati = risultati.stream().filter(s -> s.getAutore().getId().equals(autoreId)).toList();
+        if (autoreFiltro != null) {
+            boolean includiAnonime = utenteCorrenteService.isAdmin()
+                    || utenteCorrenteService.idCorrenteOpzionale().map(autoreFiltro::equals).orElse(false);
+            risultati = risultati.stream()
+                    .filter(s -> s.getAutore().getId().equals(autoreFiltro))
+                    .filter(s -> includiAnonime || !s.isAnonima())
+                    .toList();
         }
         return risultati.stream().map(segnalazioneMapper::toDto).toList();
     }
@@ -73,7 +86,7 @@ public class SegnalazioneService {
      */
     @Transactional
     public SegnalazioneDto crea(SegnalazioneRequest request) {
-        Utente autore = utenteService.recuperaOLancia(request.autoreId());
+        Utente autore = utenteCorrenteService.utenteCorrente();
         Categoria categoria = categoriaService.recuperaOLancia(request.categoriaId());
 
         Segnalazione segnalazione = Segnalazione.builder()
@@ -90,42 +103,44 @@ public class SegnalazioneService {
 
     /**
      * ATTIVA -> RIMOSSA (autore o admin) | SOSPESA -> RIMOSSA (solo admin).
-     * L'attore è identificato per confronto con l'autore della segnalazione, non
-     * essendo ancora presente un sistema di ruoli/autenticazione (vedi
-     * SecurityConfig): chiunque non sia l'autore è trattato come admin.
+     * L'attore è l'utente autenticato: il ruolo ADMIN prevale sull'essere
+     * autore, così un admin che rimuove una propria segnalazione sospesa può farlo.
      */
     @Transactional
     public SegnalazioneDto rimuovi(Long id, SegnalazioneTransizioneRequest request) {
         Segnalazione segnalazione = recuperaOLancia(id);
-        Utente attore = utenteService.recuperaOLancia(request.attoreId());
+        Utente attore = utenteCorrenteService.utenteCorrente();
+        boolean isAdmin = attore.getRuolo() == RuoloUtente.ADMIN;
         boolean isAutore = segnalazione.getAutore().getId().equals(attore.getId());
 
+        if (!isAdmin && !isAutore) {
+            throw new AccessoNegatoException("Solo l'autore o un amministratore può rimuovere questa segnalazione");
+        }
         if (segnalazione.getStato() != StatoSegnalazione.ATTIVA && segnalazione.getStato() != StatoSegnalazione.SOSPESA) {
             throw new ConflittoException("Impossibile rimuovere una segnalazione in stato " + segnalazione.getStato());
         }
-        if (segnalazione.getStato() == StatoSegnalazione.SOSPESA && isAutore) {
-            throw new ConflittoException("Solo un amministratore può rimuovere una segnalazione sospesa");
+        if (segnalazione.getStato() == StatoSegnalazione.SOSPESA && !isAdmin) {
+            throw new AccessoNegatoException("Solo un amministratore può rimuovere una segnalazione sospesa");
         }
 
         transiziona(segnalazione, StatoSegnalazione.RIMOSSA,
-                isAutore ? TipoAttoreModerazione.AUTORE : TipoAttoreModerazione.ADMIN,
-                isAutore ? null : attore, request.motivazione());
+                isAdmin ? TipoAttoreModerazione.ADMIN : TipoAttoreModerazione.AUTORE,
+                isAdmin ? attore : null, request.motivazione());
         segnalazione.setDataRimozione(LocalDateTime.now());
         return segnalazioneMapper.toDto(segnalazione);
     }
 
-    /** SOSPESA -> ATTIVA, solo admin. */
+    /** SOSPESA -> ATTIVA, solo admin (verificato anche in SecurityConfig). */
     @Transactional
     public SegnalazioneDto riattiva(Long id, SegnalazioneTransizioneRequest request) {
         Segnalazione segnalazione = recuperaOLancia(id);
-        Utente attore = utenteService.recuperaOLancia(request.attoreId());
-        boolean isAutore = segnalazione.getAutore().getId().equals(attore.getId());
+        Utente attore = utenteCorrenteService.utenteCorrente();
 
+        if (attore.getRuolo() != RuoloUtente.ADMIN) {
+            throw new AccessoNegatoException("Solo un amministratore può riattivare una segnalazione sospesa");
+        }
         if (segnalazione.getStato() != StatoSegnalazione.SOSPESA) {
             throw new ConflittoException("Impossibile riattivare una segnalazione in stato " + segnalazione.getStato());
-        }
-        if (isAutore) {
-            throw new ConflittoException("Solo un amministratore può riattivare una segnalazione sospesa");
         }
 
         transiziona(segnalazione, StatoSegnalazione.ATTIVA, TipoAttoreModerazione.ADMIN, attore, request.motivazione());

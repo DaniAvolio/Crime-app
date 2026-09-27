@@ -1,5 +1,6 @@
 package com.daniele.crime_app_backend.entity;
 
+import com.daniele.crime_app_backend.entity.enums.RuoloUtente;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -65,6 +66,11 @@ public class Utente {
     @Column(nullable = false)
     @Builder.Default
     private boolean attivo = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private RuoloUtente ruolo = RuoloUtente.UTENTE;
 
     @CreationTimestamp
     @Column(name = "data_registrazione", nullable = false, updatable = false)

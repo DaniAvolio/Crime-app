@@ -1,7 +1,9 @@
 {
   "nav": {
     "mappa": "Map",
-    "gestione": "Management"
+    "gestione": "Management",
+    "accedi": "Sign in",
+    "esci": "Sign out"
   },
   "home": {
     "hero": {
@@ -130,5 +132,41 @@
     "toast": {
       "chiudi": "Dismiss notification"
     }
+  },
+  "auth": {
+    "login": {
+      "titolo": "Sign in",
+      "sottotitolo": "To publish reports and confirm other people’s.",
+      "azione": "Sign in",
+      "invio": "Signing in…",
+      "nessunAccount": "Don’t have an account?",
+      "vaiRegistrazione": "Sign up"
+    },
+    "registrazione": {
+      "titolo": "Create an account",
+      "sottotitolo": "Anyone can browse the map: an account is only needed to contribute.",
+      "azione": "Sign up",
+      "invio": "Creating account…",
+      "haiAccount": "Already have an account?",
+      "vaiLogin": "Sign in"
+    },
+    "campi": {
+      "nome": "First name",
+      "cognome": "Last name",
+      "email": "Email",
+      "password": "Password"
+    },
+    "validazione": {
+      "obbligatorio": "This field is required.",
+      "email": "Enter a valid email address.",
+      "passwordMinima": "At least {{ minimo }} characters."
+    },
+    "errori": {
+      "rete": "Can’t reach the server. Try again shortly.",
+      "generico": "Something went wrong. Try again."
+    },
+    "richiestoLogin": "Sign in to publish or confirm a report.",
+    "sessioneScaduta": "Your session has expired: please sign in again.",
+    "soloAdmin": "This section is for administrators only."
   }
 }

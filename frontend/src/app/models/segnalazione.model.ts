@@ -7,7 +7,8 @@ export enum StatoSegnalazione {
 
 export interface Segnalazione {
   id: number;
-  autoreId: number;
+  /** null per le segnalazioni anonime, salvo per il loro autore e per gli admin. */
+  autoreId: number | null;
   categoriaId: number;
   categoriaNome: string;
   descrizione: string;

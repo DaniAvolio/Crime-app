@@ -4,13 +4,25 @@ import { Categorie } from './categorie/categorie';
 import { Gestione } from './gestione/gestione';
 import { Utenti } from './gestione/utenti/utenti';
 import { Segnalazioni } from './gestione/segnalazioni/segnalazioni';
+import { Login } from './auth/login';
+import { Registrazione } from './auth/registrazione';
+import { adminGuard, ospiteGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: Home },
   // Lazy: MapLibre GL è pesante e serve solo aprendo la mappa.
+  // Pubblica: la consultazione non richiede login, solo pubblicare e votare (vedi Mappa).
   { path: 'mappa', loadComponent: () => import('./mappa/mappa').then((m) => m.Mappa) },
-  { path: 'gestione', component: Gestione },
-  { path: 'gestione/categorie', component: Categorie },
-  { path: 'gestione/utenti', component: Utenti },
-  { path: 'gestione/segnalazioni', component: Segnalazioni },
+  { path: 'login', component: Login, canActivate: [ospiteGuard] },
+  { path: 'registrati', component: Registrazione, canActivate: [ospiteGuard] },
+  {
+    path: 'gestione',
+    canActivate: [adminGuard],
+    children: [
+      { path: '', component: Gestione },
+      { path: 'categorie', component: Categorie },
+      { path: 'utenti', component: Utenti },
+      { path: 'segnalazioni', component: Segnalazioni },
+    ],
+  },
 ];

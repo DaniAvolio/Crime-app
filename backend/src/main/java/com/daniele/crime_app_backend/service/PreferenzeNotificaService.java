@@ -15,31 +15,31 @@ public class PreferenzeNotificaService {
 
     private final PreferenzeNotificaRepository preferenzeNotificaRepository;
     private final PreferenzeNotificaMapper preferenzeNotificaMapper;
-    private final UtenteService utenteService;
+    private final UtenteCorrenteService utenteCorrenteService;
 
     public PreferenzeNotificaService(PreferenzeNotificaRepository preferenzeNotificaRepository,
                                       PreferenzeNotificaMapper preferenzeNotificaMapper,
-                                      UtenteService utenteService) {
+                                      UtenteCorrenteService utenteCorrenteService) {
         this.preferenzeNotificaRepository = preferenzeNotificaRepository;
         this.preferenzeNotificaMapper = preferenzeNotificaMapper;
-        this.utenteService = utenteService;
+        this.utenteCorrenteService = utenteCorrenteService;
     }
 
     /** Le preferenze di default (vedi PreferenzeNotifica) valgono finché l'utente non le personalizza. */
-    public PreferenzeNotificaDto trovaPerUtente(Long utenteId) {
-        return preferenzeNotificaRepository.findByUtenteId(utenteId)
+    public PreferenzeNotificaDto trovaPerUtenteCorrente() {
+        Utente utente = utenteCorrenteService.utenteCorrente();
+        return preferenzeNotificaRepository.findByUtenteId(utente.getId())
                 .map(preferenzeNotificaMapper::toDto)
-                .orElseGet(() -> preferenzeNotificaMapper.toDto(
-                        PreferenzeNotifica.builder().utente(utenteService.recuperaOLancia(utenteId)).build()));
+                .orElseGet(() -> preferenzeNotificaMapper.toDto(PreferenzeNotifica.builder().utente(utente).build()));
     }
 
     /** Upsert: crea le preferenze se l'utente non le ha ancora mai salvate, altrimenti le aggiorna. */
     @Transactional
-    public PreferenzeNotificaDto aggiornaOCrea(Long utenteId, PreferenzeNotificaRequest request) {
-        PreferenzeNotifica preferenze = preferenzeNotificaRepository.findByUtenteId(utenteId)
+    public PreferenzeNotificaDto aggiornaOCrea(PreferenzeNotificaRequest request) {
+        Utente utente = utenteCorrenteService.utenteCorrente();
+        PreferenzeNotifica preferenze = preferenzeNotificaRepository.findByUtenteId(utente.getId())
                 .orElse(null);
         if (preferenze == null) {
-            Utente utente = utenteService.recuperaOLancia(utenteId);
             preferenze = preferenzeNotificaMapper.toEntity(utente, request);
             return preferenzeNotificaMapper.toDto(preferenzeNotificaRepository.save(preferenze));
         }

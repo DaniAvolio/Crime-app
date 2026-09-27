@@ -6,8 +6,9 @@ import com.daniele.crime_app_backend.service.PreferenzeNotificaService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+/** Preferenze di notifica dell'utente autenticato. */
 @RestController
-@RequestMapping("/api/utenti/{utenteId}/preferenze-notifica")
+@RequestMapping("/api/utenti/me/preferenze-notifica")
 public class PreferenzeNotificaController {
 
     private final PreferenzeNotificaService preferenzeNotificaService;
@@ -17,12 +18,12 @@ public class PreferenzeNotificaController {
     }
 
     @GetMapping
-    public PreferenzeNotificaDto trova(@PathVariable Long utenteId) {
-        return preferenzeNotificaService.trovaPerUtente(utenteId);
+    public PreferenzeNotificaDto trova() {
+        return preferenzeNotificaService.trovaPerUtenteCorrente();
     }
 
     @PutMapping
-    public PreferenzeNotificaDto aggiorna(@PathVariable Long utenteId, @Valid @RequestBody PreferenzeNotificaRequest request) {
-        return preferenzeNotificaService.aggiornaOCrea(utenteId, request);
+    public PreferenzeNotificaDto aggiorna(@Valid @RequestBody PreferenzeNotificaRequest request) {
+        return preferenzeNotificaService.aggiornaOCrea(request);
     }
 }

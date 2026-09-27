@@ -4,8 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Segnalazione, StatoSegnalazione } from '../../models/segnalazione.model';
 
+/** L'autore è l'utente autenticato: il backend lo ricava dal token. */
 export interface SegnalazioneRequest {
-  autoreId: number;
   categoriaId: number;
   descrizione: string;
   lat: number;
@@ -13,15 +13,13 @@ export interface SegnalazioneRequest {
   anonima: boolean;
 }
 
-/** Payload delle transizioni di stato: l'attore va indicato esplicitamente, non c'è un utente loggato. */
+/** Payload delle transizioni di stato: l'attore è l'utente autenticato (autore o admin). */
 export interface SegnalazioneTransizioneRequest {
-  attoreId: number;
   motivazione: string;
 }
 
 /** Risposta a "è ancora in atto?": un voto per utente, modificabile. */
 export interface ConfermaSegnalazioneRequest {
-  utenteId: number;
   ancoraInAtto: boolean;
 }
 

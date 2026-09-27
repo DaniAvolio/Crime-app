@@ -4,6 +4,7 @@ import com.daniele.crime_app_backend.dto.DeviceTokenDto;
 import com.daniele.crime_app_backend.dto.DeviceTokenRequest;
 import com.daniele.crime_app_backend.entity.DeviceToken;
 import com.daniele.crime_app_backend.entity.Utente;
+import com.daniele.crime_app_backend.exception.AccessoNegatoException;
 import com.daniele.crime_app_backend.mapper.DeviceTokenMapper;
 import com.daniele.crime_app_backend.repository.DeviceTokenRepository;
 import org.springframework.stereotype.Service;
@@ -18,17 +19,17 @@ public class DeviceTokenService {
 
     private final DeviceTokenRepository deviceTokenRepository;
     private final DeviceTokenMapper deviceTokenMapper;
-    private final UtenteService utenteService;
+    private final UtenteCorrenteService utenteCorrenteService;
 
     public DeviceTokenService(DeviceTokenRepository deviceTokenRepository, DeviceTokenMapper deviceTokenMapper,
-                               UtenteService utenteService) {
+                               UtenteCorrenteService utenteCorrenteService) {
         this.deviceTokenRepository = deviceTokenRepository;
         this.deviceTokenMapper = deviceTokenMapper;
-        this.utenteService = utenteService;
+        this.utenteCorrenteService = utenteCorrenteService;
     }
 
-    public List<DeviceTokenDto> trovaPerUtente(Long utenteId) {
-        return deviceTokenRepository.findByUtenteId(utenteId).stream()
+    public List<DeviceTokenDto> trovaPerUtenteCorrente() {
+        return deviceTokenRepository.findByUtenteId(utenteCorrenteService.idCorrente()).stream()
                 .map(deviceTokenMapper::toDto)
                 .toList();
     }
@@ -36,11 +37,11 @@ public class DeviceTokenService {
     /**
      * Upsert per token: il token del dispositivo è univoco a livello DB, ma un
      * dispositivo può essere ri-registrato (es. riavvio app, cambio account)
-     * quindi un token già esistente viene riassegnato invece di fallire.
+     * quindi un token già esistente viene riassegnato all'utente corrente invece di fallire.
      */
     @Transactional
-    public DeviceTokenDto registra(Long utenteId, DeviceTokenRequest request) {
-        Utente utente = utenteService.recuperaOLancia(utenteId);
+    public DeviceTokenDto registra(DeviceTokenRequest request) {
+        Utente utente = utenteCorrenteService.utenteCorrente();
         DeviceToken deviceToken = deviceTokenRepository.findByToken(request.token()).orElse(null);
         if (deviceToken == null) {
             deviceToken = DeviceToken.builder()
@@ -57,8 +58,15 @@ public class DeviceTokenService {
         return deviceTokenMapper.toDto(deviceToken);
     }
 
+    /** Idempotente: un token inesistente non è un errore, uno di un altro utente sì. */
     @Transactional
     public void rimuovi(String token) {
-        deviceTokenRepository.deleteByToken(token);
+        Long utenteId = utenteCorrenteService.idCorrente();
+        deviceTokenRepository.findByToken(token).ifPresent(deviceToken -> {
+            if (!deviceToken.getUtente().getId().equals(utenteId)) {
+                throw new AccessoNegatoException("Il device token non appartiene all'utente corrente");
+            }
+            deviceTokenRepository.delete(deviceToken);
+        });
     }
 }

@@ -1,34 +1,94 @@
 package com.daniele.crime_app_backend.config;
 
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * Configurazione TEMPORANEA: apre tutti gli endpoint finché non implementiamo
- * l'autenticazione vera (prossimo step del roadmap). Senza questa classe,
- * Spring Security (già in classpath) protegge di default OGNI endpoint con
- * login form e una password generata a ogni avvio, il che impedirebbe di
- * testare i controller REST già pronti.
+ * Autenticazione stateless via JWT (HS256) firmati dal backend stesso (vedi
+ * AuthService): nessuna sessione server, il client invia
+ * "Authorization: Bearer &lt;token&gt;". Il subject del token è l'id dell'Utente;
+ * ruolo (authority ROLE_UTENTE / ROLE_ADMIN) e stato attivo vengono riletti dal
+ * DB a ogni richiesta da JwtUtenteConverter.
+ *
+ * Regole di accesso: la consultazione (mappa, segnalazioni, categorie) è
+ * pubblica; ogni scrittura richiede login; gestione utenti, categorie e
+ * moderazione sono riservate agli ADMIN. I controlli più fini (es. "solo
+ * l'autore o un admin può rimuovere") restano nei service.
  */
 @Configuration
 public class SecurityConfig {
 
+    private final SecretKey chiaveJwt;
+
+    public SecurityConfig(@Value("${crimeapp.auth.jwt-secret}") String jwtSecret) {
+        byte[] byteChiave = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        if (byteChiave.length < 32) {
+            throw new IllegalStateException("crimeapp.auth.jwt-secret deve essere lungo almeno 32 byte (HS256)");
+        }
+        this.chiaveJwt = new SecretKeySpec(byteChiave, "HmacSHA256");
+    }
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, ErroriSicurezzaHandler erroriSicurezza,
+                                           JwtUtenteConverter jwtUtenteConverter) throws Exception {
         http
+                // CSRF non serve: nessun cookie di sessione, il token viaggia in un header esplicito.
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/registrazione").permitAll()
+                        // Prima delle regole GET pubbliche: "/api/segnalazioni/*" non deve aprirle.
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/segnalazioni/*/abusi", "/api/segnalazioni/*/eventi-moderazione").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/segnalazioni", "/api/segnalazioni/*", "/api/categorie/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/segnalazioni/*/riattiva").hasRole("ADMIN")
+                        .requestMatchers("/api/categorie/**").hasRole("ADMIN")
+                        .requestMatchers("/api/utenti/me/**").authenticated()
+                        .requestMatchers("/api/utenti/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtUtenteConverter))
+                        .authenticationEntryPoint(erroriSicurezza)
+                        .accessDeniedHandler(erroriSicurezza))
+                .exceptionHandling(eccezioni -> eccezioni
+                        .authenticationEntryPoint(erroriSicurezza)
+                        .accessDeniedHandler(erroriSicurezza));
         return http.build();
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder() {
+        return new NimbusJwtEncoder(new ImmutableSecret<>(chiaveJwt));
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withSecretKey(chiaveJwt).macAlgorithm(MacAlgorithm.HS256).build();
     }
 
     /**

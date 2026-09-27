@@ -13,13 +13,14 @@ import { ICONE_CATEGORIA_DISPONIBILI } from './shared/icone-categoria';
 import { TranslocoHttpLoader } from './transloco-loader';
 import { LoggerErrorHandler } from './shared/logger-error-handler';
 import { httpLoggingInterceptor } from './shared/http-logging.interceptor';
+import { authInterceptor } from './auth/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     { provide: ErrorHandler, useClass: LoggerErrorHandler },
     provideRouter(routes),
-    provideHttpClient(withInterceptors([httpLoggingInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, httpLoggingInterceptor])),
     provideLucideIcons(...ICONE_CATEGORIA_DISPONIBILI),
     provideTransloco({
       config: {

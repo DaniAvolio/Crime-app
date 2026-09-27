@@ -21,18 +21,18 @@ public class SegnalazioneAbusoService {
     private final SegnalazioneAbusoRepository segnalazioneAbusoRepository;
     private final SegnalazioneAbusoMapper segnalazioneAbusoMapper;
     private final SegnalazioneService segnalazioneService;
-    private final UtenteService utenteService;
+    private final UtenteCorrenteService utenteCorrenteService;
     private final int sogliaAbusi;
 
     public SegnalazioneAbusoService(SegnalazioneAbusoRepository segnalazioneAbusoRepository,
                                      SegnalazioneAbusoMapper segnalazioneAbusoMapper,
                                      SegnalazioneService segnalazioneService,
-                                     UtenteService utenteService,
+                                     UtenteCorrenteService utenteCorrenteService,
                                      @Value("${crimeapp.moderazione.soglia-abusi:5}") int sogliaAbusi) {
         this.segnalazioneAbusoRepository = segnalazioneAbusoRepository;
         this.segnalazioneAbusoMapper = segnalazioneAbusoMapper;
         this.segnalazioneService = segnalazioneService;
-        this.utenteService = utenteService;
+        this.utenteCorrenteService = utenteCorrenteService;
         this.sogliaAbusi = sogliaAbusi;
     }
 
@@ -50,7 +50,7 @@ public class SegnalazioneAbusoService {
     @Transactional
     public SegnalazioneAbusoDto segnala(Long segnalazioneId, SegnalazioneAbusoRequest request) {
         Segnalazione segnalazione = segnalazioneService.recuperaOLancia(segnalazioneId);
-        Utente utente = utenteService.recuperaOLancia(request.utenteId());
+        Utente utente = utenteCorrenteService.utenteCorrente();
 
         if (segnalazioneAbusoRepository.existsBySegnalazioneIdAndUtenteId(segnalazioneId, utente.getId())) {
             throw new ConflittoException("Hai già segnalato un abuso per questa segnalazione");

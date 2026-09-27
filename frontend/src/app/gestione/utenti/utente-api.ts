@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Utente } from '../../models/utente.model';
+import { RuoloUtente, Utente } from '../../models/utente.model';
 
 export interface UtenteRegistrazioneRequest {
   nome: string;
@@ -36,6 +36,11 @@ export class UtenteApi {
 
   aggiorna(id: number, payload: UtenteAggiornamentoRequest): Observable<Utente> {
     return this.http.put<Utente>(`${this.baseUrl}/${id}`, payload);
+  }
+
+  /** Solo admin; il backend impedisce di declassare l'ultimo admin attivo (409). */
+  cambiaRuolo(id: number, ruolo: RuoloUtente): Observable<Utente> {
+    return this.http.patch<Utente>(`${this.baseUrl}/${id}/ruolo`, { ruolo });
   }
 
   disattiva(id: number): Observable<void> {

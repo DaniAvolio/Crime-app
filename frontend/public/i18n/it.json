@@ -1,7 +1,9 @@
 {
   "nav": {
     "mappa": "Mappa",
-    "gestione": "Gestione"
+    "gestione": "Gestione",
+    "accedi": "Accedi",
+    "esci": "Esci"
   },
   "home": {
     "hero": {
@@ -130,5 +132,41 @@
     "toast": {
       "chiudi": "Chiudi notifica"
     }
+  },
+  "auth": {
+    "login": {
+      "titolo": "Accedi",
+      "sottotitolo": "Per pubblicare segnalazioni e confermare quelle degli altri.",
+      "azione": "Accedi",
+      "invio": "Accesso in corso…",
+      "nessunAccount": "Non hai un account?",
+      "vaiRegistrazione": "Registrati"
+    },
+    "registrazione": {
+      "titolo": "Crea un account",
+      "sottotitolo": "La mappa resta consultabile da tutti: l’account serve solo per contribuire.",
+      "azione": "Registrati",
+      "invio": "Registrazione in corso…",
+      "haiAccount": "Hai già un account?",
+      "vaiLogin": "Accedi"
+    },
+    "campi": {
+      "nome": "Nome",
+      "cognome": "Cognome",
+      "email": "Email",
+      "password": "Password"
+    },
+    "validazione": {
+      "obbligatorio": "Campo obbligatorio.",
+      "email": "Inserisci un indirizzo email valido.",
+      "passwordMinima": "Almeno {{ minimo }} caratteri."
+    },
+    "errori": {
+      "rete": "Impossibile contattare il server. Riprova tra poco.",
+      "generico": "Qualcosa è andato storto. Riprova."
+    },
+    "richiestoLogin": "Accedi per pubblicare o confermare una segnalazione.",
+    "sessioneScaduta": "La sessione è scaduta: accedi di nuovo.",
+    "soloAdmin": "Questa sezione è riservata agli amministratori."
   }
 }
