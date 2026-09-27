@@ -112,7 +112,12 @@
       "attornoATe": "Active within {{ raggio }} of you, closest first.",
       "attornoAlCentro": "Your location isn't available: active within {{ raggio }} of the map center.",
       "caricamento": "Loading nearby reports…",
-      "errore": "We can't load nearby reports right now. Try again shortly."
+      "errore": "We can't load nearby reports right now. Try again shortly.",
+      "raggio": "Maximum distance",
+      "categoria": "Filter by category",
+      "tutte": "All",
+      "vuotaCategoria": "No {{ categoria }} reports within {{ raggio }}.",
+      "allarga": "Search within {{ raggio }}"
     }
   },
   "condivisi": {

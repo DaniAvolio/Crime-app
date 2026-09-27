@@ -112,7 +112,12 @@
       "attornoATe": "Attive entro {{ raggio }} da te, dalla più vicina.",
       "attornoAlCentro": "La tua posizione non è disponibile: attive entro {{ raggio }} dal centro della mappa.",
       "caricamento": "Caricamento delle segnalazioni vicine…",
-      "errore": "Non riusciamo a caricare le segnalazioni vicine. Riprova tra poco."
+      "errore": "Non riusciamo a caricare le segnalazioni vicine. Riprova tra poco.",
+      "raggio": "Distanza massima",
+      "categoria": "Filtra per categoria",
+      "tutte": "Tutte",
+      "vuotaCategoria": "Nessuna segnalazione di {{ categoria }} entro {{ raggio }}.",
+      "allarga": "Cerca entro {{ raggio }}"
     }
   },
   "condivisi": {

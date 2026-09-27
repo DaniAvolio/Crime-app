@@ -8,8 +8,68 @@
       {{ t('mappa.lista.titolo') }}
     </h2>
     <p class="mt-1 text-sm text-neutral-500 dark:text-muted">
-      {{ t(centroUtente() ? 'mappa.lista.attornoATe' : 'mappa.lista.attornoAlCentro', { raggio }) }}
+      {{
+        t(centroUtente() ? 'mappa.lista.attornoATe' : 'mappa.lista.attornoAlCentro', {
+          raggio: distanza(raggioMetri()),
+        })
+      }}
     </p>
+
+    <!-- Filtri: restano in vista mentre si scorre la lista. -->
+    <div
+      class="sticky -top-px z-10 -mx-4 mt-3 flex flex-col gap-2.5 border-b border-neutral-200 bg-white px-4 py-3 sm:-mx-6 sm:px-6 dark:border-line dark:bg-ink"
+    >
+      <div
+        role="radiogroup"
+        [attr.aria-label]="t('mappa.lista.raggio')"
+        class="flex rounded-lg bg-neutral-100 p-1 dark:bg-panel"
+        (keydown)="muoviRaggio($event)"
+      >
+        @for (raggio of raggi; track raggio) {
+          <button
+            type="button"
+            role="radio"
+            [attr.data-raggio]="raggio"
+            [attr.aria-checked]="raggio === raggioMetri()"
+            [attr.tabindex]="raggio === raggioMetri() ? 0 : -1"
+            class="h-9 flex-1 rounded-md text-sm font-medium tabular-nums text-neutral-600 transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 aria-checked:bg-white aria-checked:text-neutral-900 aria-checked:shadow-sm dark:text-muted dark:aria-checked:bg-ink dark:aria-checked:text-paper"
+            (click)="scegliRaggio(raggio)"
+          >
+            {{ distanza(raggio) }}
+          </button>
+        }
+      </div>
+
+      @if (categorie().length > 1) {
+        <div
+          role="group"
+          [attr.aria-label]="t('mappa.lista.categoria')"
+          class="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden"
+        >
+          <button
+            type="button"
+            class="chip-filtro"
+            [attr.aria-pressed]="categoriaFiltro() === null"
+            (click)="scegliCategoria(null)"
+          >
+            {{ t('mappa.lista.tutte') }}
+            <span class="tabular-nums opacity-70">{{ totale() }}</span>
+          </button>
+          @for (categoria of categorie(); track categoria.id) {
+            <button
+              type="button"
+              class="chip-filtro"
+              [attr.aria-pressed]="categoriaFiltro() === categoria.id"
+              (click)="scegliCategoria(categoria.id)"
+            >
+              <svg [lucideIcon]="icona(categoria.id)" class="h-4 w-4" aria-hidden="true"></svg>
+              {{ categoria.nome }}
+              <span class="tabular-nums opacity-70">{{ categoria.numero }}</span>
+            </button>
+          }
+        </div>
+      }
+    </div>
 
     @if (caricamento()) {
       <p role="status" class="mt-10 text-center text-neutral-600 dark:text-muted">
@@ -20,9 +80,24 @@
         {{ t('mappa.lista.errore') }}
       </p>
     } @else if (voci().length === 0) {
-      <p class="mt-10 text-center text-neutral-600 dark:text-muted">
-        {{ t('mappa.lista.vuota', { raggio }) }}
-      </p>
+      <div class="mt-10 flex flex-col items-center gap-4 text-center">
+        <p class="text-neutral-600 dark:text-muted">
+          @if (nomeCategoriaFiltro(); as categoria) {
+            {{ t('mappa.lista.vuotaCategoria', { categoria, raggio: distanza(raggioMetri()) }) }}
+          } @else {
+            {{ t('mappa.lista.vuota', { raggio: distanza(raggioMetri()) }) }}
+          }
+        </p>
+        @if (raggioSuccessivo(); as successivo) {
+          <button
+            type="button"
+            class="h-11 rounded-md bg-allerta px-5 font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            (click)="scegliRaggio(successivo)"
+          >
+            {{ t('mappa.lista.allarga', { raggio: distanza(successivo) }) }}
+          </button>
+        }
+      </div>
     } @else {
       <ul class="mt-4 divide-y divide-neutral-200 dark:divide-line">
         @for (voce of voci(); track voce.segnalazione.id) {
