@@ -1,4 +1,20 @@
 <div class="mappa-con-navbar relative isolate h-full w-full" *transloco="let t">
+  <!-- Gradienti degli aloni di incertezza (usati come fill dai cerchi Leaflet, vedi stileAlone). -->
+  <svg class="absolute h-0 w-0" aria-hidden="true" focusable="false">
+    <defs>
+      <radialGradient id="alone">
+        <stop offset="0%" stop-color="#6b7280" stop-opacity="0.22" />
+        <stop offset="55%" stop-color="#6b7280" stop-opacity="0.18" />
+        <stop offset="100%" stop-color="#6b7280" stop-opacity="0" />
+      </radialGradient>
+      <radialGradient id="alone-attivo">
+        <stop offset="0%" stop-color="#dc2626" stop-opacity="0.2" />
+        <stop offset="55%" stop-color="#dc2626" stop-opacity="0.16" />
+        <stop offset="100%" stop-color="#dc2626" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+  </svg>
+
   <div
     class="h-full w-full"
     leaflet

@@ -71,11 +71,6 @@ html.dark {
   }
 }
 
-/* Bordo sfumato dell'alone di incertezza (i browser senza filter su SVG mostrano un cerchio netto). */
-.alone-segnalazione {
-  filter: blur(6px);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .marker-segnalazione {
     transition: none;

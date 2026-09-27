@@ -118,6 +118,23 @@ function spostaMappaTenendoPin(map: LeafletMap, pin: Marker, movimento: Point): 
   DomUtil.setPosition(icona, trascinamento._draggable._newPos);
   trascinamento._onDrag({});
 }
+function iconaMarker(icona: string, attiva: boolean) {
+  return divIcon({
+    className: '',
+    html: `<span class="marker-segnalazione${attiva ? ' marker-segnalazione--attiva' : ''}">${svgIcona(icona)}</span>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+  });
+}
+
+/**
+ * Alone sfumato con un gradiente radiale (definito una volta in mappa.html) invece di un
+ * filter: blur() su ogni cerchio, che il browser ricalcola a ogni pan e zoom.
+ */
+function stileAlone(attiva: boolean) {
+  return { fillColor: attiva ? 'url(#alone-attivo)' : 'url(#alone)', fillOpacity: 1 };
+}
+
 /** Aprendo una segnalazione da uno zoom più lontano di così, ci si avvicina prima di centrarla. */
 const ZOOM_MINIMO_CENTRATURA = 15;
 
@@ -128,21 +145,33 @@ interface AreaVisibile {
   raggioMetri: number;
 }
 
+/** Si carica un'area più ampia della vista, così i piccoli spostamenti restano coperti. */
+const MARGINE_AREA_CARICATA = 1.5;
+/** Oltre questo tempo l'area caricata si considera vecchia (nuove segnalazioni di altri). */
+const VALIDITA_AREA_MS = 60_000;
+
 /**
  * Stili vettoriali OpenFreeMap (open source, gratuiti, senza chiave), resi da MapLibre GL
  * dentro un layer Leaflet: pallino e overlay restano layer Leaflet normali sopra la mappa.
  */
+/** Stile vettoriale per tema. Oggi coincidono: il cambio tema non ricarica la mappa. */
+const STILI_PER_TEMA: Record<Tema, string> = { chiaro: 'bright', scuro: 'bright' };
+
+function urlStileOpenFreeMap(stile: string): string {
+  return `https://tiles.openfreemap.org/styles/${stile}`;
+}
+
 function sfondoOpenFreeMap(stile: string): MaplibreGL {
   // L'attribuzione (OpenFreeMap, OpenMapTiles, OSM) arriva dalle sorgenti dello stile: il
   // plugin la inserisce nel controllo di Leaflet al "load" di MapLibre.
-  return maplibreGL({ style: `https://tiles.openfreemap.org/styles/${stile}` });
+  return maplibreGL({ style: urlStileOpenFreeMap(stile) });
 }
 
 /**
  * Lo stile Bright chiede icone (es. "gate", "bollard", "office") assenti dallo sprite di
  * OpenFreeMap, e MapLibre logga un warning per ognuna. Registrarle come immagine vuota non
  * cambia nulla a video (l'icona non esiste comunque) ma evita il rumore in console.
- * Va ripetuto a ogni addTo: il plugin ricrea la mappa MapLibre ogni volta.
+ * Il resolver resta valido anche dopo setStyle: basta impostarlo una volta.
  */
 function ignoraIconeMancanti(sfondo: MaplibreGL): void {
   const glMap = sfondo.getMaplibreMap();
@@ -256,7 +285,10 @@ export class Mappa {
   /** categoriaId -> nome icona Lucide, per disegnare il marker con l'icona della categoria. */
   protected readonly iconePerCategoria = signal(new Map<number, string>());
   private readonly areaRichiesta = new Subject<AreaVisibile>();
+  private areaCaricata: (AreaVisibile & { istante: number }) | null = null;
   private readonly livelloSegnalazioni = layerGroup();
+  /** Marker e alone per id di segnalazione, con una "firma" per capire se vanno ritoccati. */
+  private readonly marcatori = new Map<number, { marker: Marker; alone: Circle; firma: string }>();
 
   /** Signal (e non campo semplice) così l'effect del tema riparte quando la mappa è pronta. */
   private readonly mappa = signal<LeafletMap | null>(null);
@@ -264,15 +296,17 @@ export class Mappa {
   private pallino: CircleMarker | null = null;
   private cerchioPrecisione: Circle | null = null;
 
-  /** Uno sfondo per tema, scambiati dal toggle del tema dell'app (per ora entrambi "Bright"). */
-  private readonly sfondi: Record<Tema, MaplibreGL> = {
-    chiaro: sfondoOpenFreeMap('bright'),
-    scuro: sfondoOpenFreeMap('bright'),
-  };
+  /**
+   * Un solo sfondo vettoriale: al cambio tema si cambia lo stile sulla stessa mappa MapLibre
+   * (setStyle), che riusa contesto WebGL e cache. Se lo stile non cambia non si fa nulla.
+   */
+  private readonly sfondo = sfondoOpenFreeMap(STILI_PER_TEMA[this.tema.temaAttuale()]);
+  private stileSfondo = STILI_PER_TEMA[this.tema.temaAttuale()];
+  private resolverIconeImpostato = false;
 
   /** Centro di default (Lombardia): resta tale se l'utente non condivide la posizione. */
   protected readonly options: MapOptions = {
-    layers: [this.sfondi[this.tema.temaAttuale()]],
+    layers: [this.sfondo],
     zoom: 13,
     center: latLng(45.3181, 8.8589),
   };
@@ -284,13 +318,14 @@ export class Mappa {
       if (!map) {
         return;
       }
-      for (const [nome, sfondo] of Object.entries(this.sfondi)) {
-        if (nome === tema) {
-          sfondo.addTo(map);
-          ignoraIconeMancanti(sfondo);
-        } else {
-          sfondo.remove();
-        }
+      if (!this.resolverIconeImpostato) {
+        ignoraIconeMancanti(this.sfondo);
+        this.resolverIconeImpostato = true;
+      }
+      const stile = STILI_PER_TEMA[tema];
+      if (stile !== this.stileSfondo) {
+        this.stileSfondo = stile;
+        this.sfondo.getMaplibreMap().setStyle(urlStileOpenFreeMap(stile));
       }
     });
 
@@ -300,37 +335,62 @@ export class Mappa {
       this.esitoConferma.set(null);
     });
 
-    // Ridisegna i marker quando cambiano i dati, le icone o la selezione.
+    // Aggiorna i marker in modo incrementale: si creano solo i nuovi, si rimuovono quelli spariti
+    // e si ritoccano solo quelli cambiati (posizione, icona, selezione), invece di ridisegnare tutto.
     effect(() => {
       const icone = this.iconePerCategoria();
       const selezionataId = this.selezionata()?.id;
-      this.livelloSegnalazioni.clearLayers();
+      const presenti = new Set<number>();
       for (const segnalazione of this.segnalazioni()) {
+        presenti.add(segnalazione.id);
         const attiva = segnalazione.id === selezionataId;
         const icona = icone.get(segnalazione.categoriaId) ?? NOME_ICONA_FALLBACK;
-        circle([segnalazione.lat, segnalazione.lng], {
+        const posizione = latLng(segnalazione.lat, segnalazione.lng);
+        const firma = `${segnalazione.lat},${segnalazione.lng},${icona},${attiva}`;
+        const esistente = this.marcatori.get(segnalazione.id);
+        if (esistente?.firma === firma) {
+          continue;
+        }
+        if (esistente) {
+          esistente.alone.setLatLng(posizione).setStyle(stileAlone(attiva));
+          esistente.marker
+            .setLatLng(posizione)
+            .setIcon(iconaMarker(icona, attiva))
+            .setZIndexOffset(attiva ? 1000 : 0);
+          esistente.firma = firma;
+          continue;
+        }
+        const id = segnalazione.id;
+        const alone = circle(posizione, {
           radius: RAGGIO_INCERTEZZA_METRI,
           stroke: false,
-          fillColor: attiva ? '#dc2626' : '#6b7280',
-          fillOpacity: attiva ? 0.16 : 0.18,
           interactive: false,
-          className: 'alone-segnalazione',
+          ...stileAlone(attiva),
         }).addTo(this.livelloSegnalazioni);
-        marker([segnalazione.lat, segnalazione.lng], {
-          icon: divIcon({
-            className: '',
-            html: `<span class="marker-segnalazione${attiva ? ' marker-segnalazione--attiva' : ''}">${svgIcona(icona)}</span>`,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
-          }),
+        const nuovo = marker(posizione, {
+          icon: iconaMarker(icona, attiva),
           title: segnalazione.categoriaNome,
           alt: segnalazione.categoriaNome,
           keyboard: true,
           riseOnHover: true,
           zIndexOffset: attiva ? 1000 : 0,
         })
-          .on('click', () => this.apriDettaglio(segnalazione))
+          // Si apre la versione attuale della segnalazione, non quella di quando è nato il marker.
+          .on('click', () => {
+            const attuale = this.segnalazioni().find((s) => s.id === id);
+            if (attuale) {
+              this.apriDettaglio(attuale);
+            }
+          })
           .addTo(this.livelloSegnalazioni);
+        this.marcatori.set(id, { marker: nuovo, alone, firma });
+      }
+      for (const [id, { marker: vecchio, alone }] of this.marcatori) {
+        if (!presenti.has(id)) {
+          vecchio.remove();
+          alone.remove();
+          this.marcatori.delete(id);
+        }
       }
     });
 
@@ -385,9 +445,13 @@ export class Mappa {
     this.areaRichiesta
       .pipe(
         debounceTime(300),
-        switchMap(({ centro, raggioMetri }) =>
-          this.segnalazioneApi.vicine(centro.lat, centro.lng, raggioMetri).pipe(
-            tap(() => this.erroreSegnalazioni.set(false)),
+        switchMap((area) =>
+          this.segnalazioneApi.vicine(area.centro.lat, area.centro.lng, area.raggioMetri).pipe(
+            tap(() => {
+              this.erroreSegnalazioni.set(false);
+              // Solo a caricamento riuscito l'area conta come coperta.
+              this.areaCaricata = { ...area, istante: Date.now() };
+            }),
             catchError(() => {
               this.erroreSegnalazioni.set(true);
               return of(null);
@@ -784,13 +848,26 @@ export class Mappa {
     return this.iconePerCategoria().get(categoriaId) ?? NOME_ICONA_FALLBACK;
   }
 
-  /** Raggio = distanza centro-angolo della vista, così la richiesta copre tutto lo schermo. */
+  /**
+   * Chiede le segnalazioni della vista (raggio = distanza centro-angolo), ma solo se la vista
+   * esce dall'area già caricata o se quella è più vecchia di VALIDITA_AREA_MS. Si carica un
+   * raggio più ampio della vista, così i piccoli spostamenti non generano richieste.
+   */
   private richiediSegnalazioni(map: LeafletMap): void {
     const centro = map.getCenter();
-    const raggioMetri = Math.min(
+    const raggioVista = Math.min(
       centro.distanceTo(map.getBounds().getNorthEast()),
       RAGGIO_MASSIMO_METRI,
     );
+    const caricata = this.areaCaricata;
+    if (
+      caricata &&
+      Date.now() - caricata.istante < VALIDITA_AREA_MS &&
+      caricata.centro.distanceTo(centro) + raggioVista <= caricata.raggioMetri
+    ) {
+      return;
+    }
+    const raggioMetri = Math.min(raggioVista * MARGINE_AREA_CARICATA, RAGGIO_MASSIMO_METRI);
     this.areaRichiesta.next({ centro, raggioMetri: Math.ceil(raggioMetri) });
   }
 
