@@ -6,7 +6,7 @@
   "home": {
     "hero": {
       "titolo": "Segnala quello che succede nel tuo quartiere.",
-      "sottotitolo": "Crime App raccoglie segnalazioni di sicurezza pubblica su una mappa condivisa. Ogni segnalazione scade da sola quando non è più utile.",
+      "sottotitolo": "Crime raccoglie segnalazioni di sicurezza pubblica su una mappa condivisa. Ogni segnalazione scade da sola quando non è più utile.",
       "ctaMappa": "Apri la mappa",
       "ctaCategorie": "Sfoglia le categorie"
     },
@@ -31,7 +31,7 @@
       }
     },
     "footer": {
-      "tagline": "Crime App — segnalazioni di sicurezza pubblica gestite dalla community."
+      "tagline": "Crime — segnalazioni di sicurezza pubblica gestite dalla community."
     }
   },
   "mappa": {
@@ -108,9 +108,22 @@
     },
     "lista": {
       "titolo": "Segnalazioni in zona",
-      "ordineDaTe": "{{ numero }} attive nell’area della mappa, dalla più vicina a te.",
-      "ordineDaCentro": "{{ numero }} attive nell’area della mappa, dalla più vicina al centro.",
-      "vuota": "Nessuna segnalazione attiva in quest’area. Sposta la mappa per cercare altrove."
+      "vuota": "Nessuna segnalazione attiva entro {{ raggio }}.",
+      "attornoATe": "Attive entro {{ raggio }} da te, dalla più vicina.",
+      "attornoAlCentro": "La tua posizione non è disponibile: attive entro {{ raggio }} dal centro della mappa.",
+      "caricamento": "Caricamento delle segnalazioni vicine…",
+      "errore": "Non riusciamo a caricare le segnalazioni vicine. Riprova tra poco."
+    }
+  },
+  "condivisi": {
+    "dialogo": {
+      "conferma": "Conferma",
+      "annulla": "Annulla",
+      "obbligatorio": "Questo campo è obbligatorio.",
+      "numero": "Inserisci un numero."
+    },
+    "toast": {
+      "chiudi": "Chiudi notifica"
     }
   }
 }

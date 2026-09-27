@@ -1,0 +1,107 @@
+@if (aperto(); as dialogo) {
+  <div
+    *transloco="let t"
+    class="dialogo-sfondo fixed inset-0 z-[90] flex items-end justify-center bg-black/40 sm:items-center sm:p-4"
+    (click)="annulla()"
+  >
+    <div
+      #riquadro
+      [attr.role]="dialogo.tipo === 'conferma' ? 'alertdialog' : 'dialog'"
+      aria-modal="true"
+      aria-labelledby="titolo-dialogo"
+      [attr.aria-describedby]="opzioni()?.messaggio ? 'messaggio-dialogo' : null"
+      class="dialogo-riquadro max-h-[90%] w-full overflow-y-auto rounded-t-2xl bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 text-neutral-900 shadow-xl sm:w-[26rem] sm:rounded-xl sm:pb-5 dark:bg-panel dark:text-paper"
+      (click)="$event.stopPropagation()"
+      (keydown)="intrappolaFocus($event)"
+    >
+      <div class="flex items-start gap-3">
+        @if (opzioni()?.pericolo) {
+          <span
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-allerta text-white"
+            aria-hidden="true"
+          >
+            <svg lucideIcon="triangle-alert" class="h-5 w-5"></svg>
+          </span>
+        }
+        <div class="min-w-0 flex-1">
+          <h2 id="titolo-dialogo" class="font-display text-lg font-semibold leading-tight">
+            {{ opzioni()?.titolo }}
+          </h2>
+          @if (opzioni()?.messaggio; as messaggio) {
+            <p
+              id="messaggio-dialogo"
+              class="mt-1 text-sm leading-relaxed text-neutral-600 dark:text-muted"
+            >
+              {{ messaggio }}
+            </p>
+          }
+        </div>
+      </div>
+
+      <form
+        class="mt-5 flex flex-col gap-4"
+        [formGroup]="form()"
+        (ngSubmit)="conferma()"
+        novalidate
+      >
+        @for (campo of campi(); track campo.nome) {
+          <div>
+            <label [for]="'campo-dialogo-' + campo.nome" class="text-sm font-medium">
+              {{ campo.etichetta }}
+            </label>
+            @if (campo.tipo === 'textarea') {
+              <textarea
+                [id]="'campo-dialogo-' + campo.nome"
+                [formControlName]="campo.nome"
+                [placeholder]="campo.placeholder ?? ''"
+                [attr.aria-invalid]="erroreCampo(campo.nome) !== null"
+                [attr.aria-describedby]="'errore-dialogo-' + campo.nome"
+                rows="3"
+                class="mt-1.5 block w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-2 text-[15px] placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-ink dark:placeholder:text-muted"
+              ></textarea>
+            } @else {
+              <input
+                [id]="'campo-dialogo-' + campo.nome"
+                [formControlName]="campo.nome"
+                [placeholder]="campo.placeholder ?? ''"
+                [attr.inputmode]="campo.tipo === 'number' ? 'decimal' : null"
+                [attr.aria-invalid]="erroreCampo(campo.nome) !== null"
+                [attr.aria-describedby]="'errore-dialogo-' + campo.nome"
+                type="text"
+                class="mt-1.5 block h-11 w-full rounded-md border border-neutral-300 bg-white px-3 text-[15px] placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-ink dark:placeholder:text-muted"
+              />
+            }
+            <p [id]="'errore-dialogo-' + campo.nome" class="mt-1 min-h-5 text-sm text-allerta">
+              @switch (erroreCampo(campo.nome)) {
+                @case ('obbligatorio') {
+                  {{ t('condivisi.dialogo.obbligatorio') }}
+                }
+                @case ('numero') {
+                  {{ t('condivisi.dialogo.numero') }}
+                }
+              }
+            </p>
+          </div>
+        }
+
+        <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            data-dialogo="annulla"
+            class="h-11 rounded-md border border-neutral-300 px-5 font-medium transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-line dark:hover:bg-ink"
+            (click)="annulla()"
+          >
+            {{ opzioni()?.annulla ?? t('condivisi.dialogo.annulla') }}
+          </button>
+          <button
+            type="submit"
+            data-dialogo="conferma"
+            class="h-11 rounded-md bg-allerta px-5 font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          >
+            {{ opzioni()?.conferma ?? t('condivisi.dialogo.conferma') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

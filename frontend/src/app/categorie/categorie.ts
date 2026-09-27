@@ -5,6 +5,8 @@ import { LucideDynamicIcon } from '@lucide/angular';
 import { CategoriaApi, CategoriaRequest } from './categoria-api';
 import { Categoria } from '../models/categoria.model';
 import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-categoria';
+import { DialoghiService } from '../shared/dialoghi/dialoghi';
+import { ToastService } from '../shared/toast/toast';
 
 @Component({
   selector: 'app-categorie',
@@ -15,6 +17,8 @@ import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-cat
 export class Categorie implements OnInit {
   private readonly categoriaApi = inject(CategoriaApi);
   private readonly fb = inject(FormBuilder);
+  private readonly dialoghi = inject(DialoghiService);
+  private readonly toast = inject(ToastService);
 
   /** Nomi delle icone selezionabili, suggeriti nel form tramite datalist. */
   protected readonly nomiIconeDisponibili = NOMI_ICONE_DISPONIBILI;
@@ -64,6 +68,7 @@ export class Categorie implements OnInit {
     this.errore.set(null);
     richiesta.subscribe({
       next: () => {
+        this.toast.successo(id === null ? 'Categoria creata.' : 'Categoria aggiornata.');
         this.resetForm();
         this.carica();
       },
@@ -101,17 +106,26 @@ export class Categorie implements OnInit {
     });
   }
 
-  protected elimina(categoria: Categoria): void {
-    const confermato = confirm(
-      `Eliminare definitivamente la categoria "${categoria.nome}"? L'operazione non è reversibile.`,
-    );
+  protected async elimina(categoria: Categoria): Promise<void> {
+    const confermato = await this.dialoghi.conferma({
+      titolo: 'Eliminare la categoria?',
+      messaggio: `"${categoria.nome}" verrà eliminata definitivamente. L'operazione non è reversibile.`,
+      conferma: 'Elimina',
+      pericolo: true,
+    });
     if (!confermato) {
       return;
     }
     this.errore.set(null);
     this.categoriaApi.eliminaDefinitivamente(categoria.id).subscribe({
-      next: () => this.carica(),
-      error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
+      next: () => {
+        this.toast.successo(`Categoria "${categoria.nome}" eliminata.`);
+        this.carica();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errore.set(this.estraiMessaggio(err));
+        this.toast.errore('Non siamo riusciti a eliminare la categoria.');
+      },
     });
   }
 

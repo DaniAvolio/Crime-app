@@ -186,9 +186,8 @@
 
   @if (vista() === 'lista') {
     <app-lista-segnalazioni
-      [segnalazioni]="segnalazioni()"
-      [riferimento]="riferimentoLista()"
-      [riferimentoUtente]="posizioneUtente() !== null"
+      [centro]="centroLista()"
+      [centroUtente]="posizioneUtente() !== null"
       [iconePerCategoria]="iconePerCategoria()"
       (seleziona)="selezionaDaLista($event)"
     />

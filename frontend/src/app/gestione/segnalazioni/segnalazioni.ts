@@ -8,6 +8,8 @@ import { Segnalazione, StatoSegnalazione } from '../../models/segnalazione.model
 import { Utente } from '../../models/utente.model';
 import { UtenteApi } from '../utenti/utente-api';
 import { SegnalazioneApi, SegnalazioneRequest } from './segnalazione-api';
+import { DialoghiService } from '../../shared/dialoghi/dialoghi';
+import { ToastService } from '../../shared/toast/toast';
 
 @Component({
   selector: 'app-segnalazioni',
@@ -20,6 +22,8 @@ export class Segnalazioni implements OnInit {
   private readonly categoriaApi = inject(CategoriaApi);
   private readonly utenteApi = inject(UtenteApi);
   private readonly fb = inject(FormBuilder);
+  private readonly dialoghi = inject(DialoghiService);
+  private readonly toast = inject(ToastService);
 
   protected readonly StatoSegnalazione = StatoSegnalazione;
 
@@ -90,46 +94,65 @@ export class Segnalazioni implements OnInit {
     });
   }
 
-  protected rimuovi(segnalazione: Segnalazione): void {
-    const richiesta = this.chiediTransizione();
+  protected async rimuovi(segnalazione: Segnalazione): Promise<void> {
+    const richiesta = await this.chiediTransizione('Rimuovere la segnalazione?', 'Rimuovi', true);
     if (!richiesta) {
       return;
     }
     this.errore.set(null);
     this.segnalazioneApi.rimuovi(segnalazione.id, richiesta).subscribe({
-      next: () => this.carica(),
-      error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
+      next: () => {
+        this.toast.successo('Segnalazione rimossa.');
+        this.carica();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errore.set(this.estraiMessaggio(err));
+        this.toast.errore('Non siamo riusciti a rimuovere la segnalazione.');
+      },
     });
   }
 
-  protected riattiva(segnalazione: Segnalazione): void {
-    const richiesta = this.chiediTransizione();
+  protected async riattiva(segnalazione: Segnalazione): Promise<void> {
+    const richiesta = await this.chiediTransizione('Riattivare la segnalazione?', 'Riattiva');
     if (!richiesta) {
       return;
     }
     this.errore.set(null);
     this.segnalazioneApi.riattiva(segnalazione.id, richiesta).subscribe({
-      next: () => this.carica(),
-      error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
+      next: () => {
+        this.toast.successo('Segnalazione riattivata.');
+        this.carica();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errore.set(this.estraiMessaggio(err));
+        this.toast.errore('Non siamo riusciti a riattivare la segnalazione.');
+      },
     });
   }
 
   /** Non c'è un utente loggato: chiediamo esplicitamente chi sta agendo e perché. */
-  private chiediTransizione(): { attoreId: number; motivazione: string } | null {
-    const attoreIdInserito = prompt("Id dell'utente che esegue l'operazione:");
-    if (attoreIdInserito === null) {
-      return null;
-    }
-    const attoreId = Number(attoreIdInserito);
-    if (!Number.isFinite(attoreId)) {
-      this.errore.set('Id utente non valido.');
-      return null;
-    }
-    const motivazione = prompt("Motivazione dell'operazione:");
-    if (motivazione === null || motivazione.trim() === '') {
-      return null;
-    }
-    return { attoreId, motivazione };
+  private async chiediTransizione(
+    titolo: string,
+    conferma: string,
+    pericolo = false,
+  ): Promise<{ attoreId: number; motivazione: string } | null> {
+    const valori = await this.dialoghi.chiedi({
+      titolo,
+      conferma,
+      pericolo,
+      campi: [
+        {
+          nome: 'attoreId',
+          etichetta: "Id dell'utente che esegue l'operazione",
+          tipo: 'number',
+          obbligatorio: true,
+        },
+        { nome: 'motivazione', etichetta: 'Motivazione', tipo: 'textarea', obbligatorio: true },
+      ],
+    });
+    return valori
+      ? { attoreId: Number(valori['attoreId']), motivazione: valori['motivazione'] }
+      : null;
   }
 
   private resetForm(): void {

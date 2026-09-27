@@ -3,6 +3,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Utente } from '../../models/utente.model';
 import { UtenteAggiornamentoRequest, UtenteApi, UtenteRegistrazioneRequest } from './utente-api';
+import { DialoghiService } from '../../shared/dialoghi/dialoghi';
+import { ToastService } from '../../shared/toast/toast';
 
 @Component({
   selector: 'app-utenti',
@@ -13,6 +15,8 @@ import { UtenteAggiornamentoRequest, UtenteApi, UtenteRegistrazioneRequest } fro
 export class Utenti implements OnInit {
   private readonly utenteApi = inject(UtenteApi);
   private readonly fb = inject(FormBuilder);
+  private readonly dialoghi = inject(DialoghiService);
+  private readonly toast = inject(ToastService);
 
   protected readonly utenti = signal<Utente[]>([]);
   protected readonly caricando = signal(false);
@@ -112,17 +116,27 @@ export class Utenti implements OnInit {
     });
   }
 
-  protected elimina(utente: Utente): void {
-    const confermato = confirm(
-      `Eliminare definitivamente l'utente "${utente.nome} ${utente.cognome}"? L'operazione non è reversibile.`,
-    );
+  protected async elimina(utente: Utente): Promise<void> {
+    const nome = `${utente.nome} ${utente.cognome}`;
+    const confermato = await this.dialoghi.conferma({
+      titolo: "Eliminare l'utente?",
+      messaggio: `${nome} verrà eliminato definitivamente. L'operazione non è reversibile.`,
+      conferma: 'Elimina',
+      pericolo: true,
+    });
     if (!confermato) {
       return;
     }
     this.errore.set(null);
     this.utenteApi.elimina(utente.id).subscribe({
-      next: () => this.carica(),
-      error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
+      next: () => {
+        this.toast.successo(`Utente ${nome} eliminato.`);
+        this.carica();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errore.set(this.estraiMessaggio(err));
+        this.toast.errore("Non siamo riusciti a eliminare l'utente.");
+      },
     });
   }
 

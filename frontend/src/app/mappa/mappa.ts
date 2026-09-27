@@ -197,7 +197,10 @@ export class Mappa {
     if (!segnalazione || !posizione) {
       return null;
     }
-    return formattaDistanza(posizione.distanceTo([segnalazione.lat, segnalazione.lng]));
+    return formattaDistanza(
+      posizione.distanceTo([segnalazione.lat, segnalazione.lng]),
+      this.transloco.getActiveLang(),
+    );
   });
 
   /** Vista attiva, scelta dalla navbar in basso. */
@@ -220,11 +223,14 @@ export class Mappa {
     () => this.selezionata() !== null || this.nuovaAperta(),
   );
 
-  /** Da dove la lista misura le distanze: l'utente se la posizione è nota, sennò il centro mappa. */
-  protected readonly riferimentoLista = computed(
-    () => this.posizioneUtente() ?? this.centroMappa(),
+  /**
+   * Centro della lista: sempre la posizione dell'utente, qualunque sia la zona della mappa.
+   * Senza posizione si ripiega sul centro della mappa al momento in cui si apre la lista.
+   */
+  protected readonly centroLista = computed(
+    () => this.posizioneUtente() ?? this.centroAperturaLista(),
   );
-  private readonly centroMappa = signal(latLng(45.3181, 8.8589));
+  private readonly centroAperturaLista = signal(latLng(45.3181, 8.8589));
   private pinNuova: Marker | null = null;
   private fotogrammaAutoScorrimento: number | null = null;
 
@@ -422,7 +428,6 @@ export class Mappa {
     this.mappa.set(map);
     this.livelloSegnalazioni.addTo(map);
     map.on('moveend', () => {
-      this.centroMappa.set(map.getCenter());
       this.richiediSegnalazioni(map);
     });
     // Un tocco sulla mappa chiude il pannello aperto, come per il dettaglio. Il form può avere
@@ -643,6 +648,10 @@ export class Mappa {
     this.vista.set(vista);
     if (vista === 'lista') {
       this.selezionata.set(null);
+      const map = this.mappa();
+      if (map) {
+        this.centroAperturaLista.set(map.getCenter());
+      }
     }
   }
 

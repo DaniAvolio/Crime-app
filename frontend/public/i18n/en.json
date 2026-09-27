@@ -6,7 +6,7 @@
   "home": {
     "hero": {
       "titolo": "Report what's happening in your neighborhood.",
-      "sottotitolo": "Crime App collects public safety reports on a shared map. Each report expires on its own once it's no longer useful.",
+      "sottotitolo": "Crime collects public safety reports on a shared map. Each report expires on its own once it's no longer useful.",
       "ctaMappa": "Open the map",
       "ctaCategorie": "Browse categories"
     },
@@ -31,7 +31,7 @@
       }
     },
     "footer": {
-      "tagline": "Crime App — public safety reports maintained by the community."
+      "tagline": "Crime — public safety reports maintained by the community."
     }
   },
   "mappa": {
@@ -108,9 +108,22 @@
     },
     "lista": {
       "titolo": "Reports nearby",
-      "ordineDaTe": "{{ numero }} active in the map area, closest to you first.",
-      "ordineDaCentro": "{{ numero }} active in the map area, closest to the center first.",
-      "vuota": "No active reports in this area. Move the map to look elsewhere."
+      "vuota": "No active reports within {{ raggio }}.",
+      "attornoATe": "Active within {{ raggio }} of you, closest first.",
+      "attornoAlCentro": "Your location isn't available: active within {{ raggio }} of the map center.",
+      "caricamento": "Loading nearby reports…",
+      "errore": "We can't load nearby reports right now. Try again shortly."
+    }
+  },
+  "condivisi": {
+    "dialogo": {
+      "conferma": "Confirm",
+      "annulla": "Cancel",
+      "obbligatorio": "This field is required.",
+      "numero": "Enter a number."
+    },
+    "toast": {
+      "chiudi": "Dismiss notification"
     }
   }
 }

@@ -8,16 +8,20 @@
       {{ t('mappa.lista.titolo') }}
     </h2>
     <p class="mt-1 text-sm text-neutral-500 dark:text-muted">
-      {{
-        t(riferimentoUtente() ? 'mappa.lista.ordineDaTe' : 'mappa.lista.ordineDaCentro', {
-          numero: voci().length,
-        })
-      }}
+      {{ t(centroUtente() ? 'mappa.lista.attornoATe' : 'mappa.lista.attornoAlCentro', { raggio }) }}
     </p>
 
-    @if (voci().length === 0) {
+    @if (caricamento()) {
+      <p role="status" class="mt-10 text-center text-neutral-600 dark:text-muted">
+        {{ t('mappa.lista.caricamento') }}
+      </p>
+    } @else if (errore()) {
+      <p role="alert" class="mt-10 text-center text-neutral-600 dark:text-muted">
+        {{ t('mappa.lista.errore') }}
+      </p>
+    } @else if (voci().length === 0) {
       <p class="mt-10 text-center text-neutral-600 dark:text-muted">
-        {{ t('mappa.lista.vuota') }}
+        {{ t('mappa.lista.vuota', { raggio }) }}
       </p>
     } @else {
       <ul class="mt-4 divide-y divide-neutral-200 dark:divide-line">

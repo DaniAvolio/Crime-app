@@ -1,6 +1,13 @@
-/** "350 m" sotto il chilometro (arrotondato a 10 m), "1.4 km" sopra. */
-export function formattaDistanza(metri: number): string {
-  return metri < 1000 ? `${Math.round(metri / 10) * 10} m` : `${(metri / 1000).toFixed(1)} km`;
+/**
+ * "350 m" sotto il chilometro (arrotondato a 10 m), sopra "1,4 km" / "2 km" con il separatore
+ * decimale della lingua attiva e senza ",0" superflui.
+ */
+export function formattaDistanza(metri: number, lingua?: string): string {
+  if (metri < 1000) {
+    return `${Math.round(metri / 10) * 10} m`;
+  }
+  const km = new Intl.NumberFormat(lingua, { maximumFractionDigits: 1 }).format(metri / 1000);
+  return `${km} km`;
 }
 
 export function formattaData(iso: string, lingua: string): string {
