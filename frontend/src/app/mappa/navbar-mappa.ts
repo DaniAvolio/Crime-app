@@ -17,7 +17,7 @@ export type VistaMappa = 'mappa' | 'lista';
     <nav
       *transloco="let t"
       [attr.aria-label]="t('mappa.navbar.etichetta')"
-      class="absolute inset-x-0 bottom-0 z-[1150] grid h-[var(--altezza-navbar-mappa)] grid-cols-3 items-start border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] text-neutral-600 sm:inset-x-auto sm:bottom-5 sm:left-1/2 sm:h-16 sm:w-[22rem] sm:-translate-x-1/2 sm:rounded-full sm:border sm:pb-0 sm:shadow-lg dark:border-line dark:bg-panel dark:text-muted"
+      class="absolute inset-x-0 bottom-0 z-[1150] grid h-[var(--altezza-navbar-mappa)] grid-cols-3 items-start border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] text-neutral-600 lg:inset-x-auto lg:bottom-5 lg:left-1/2 lg:h-16 lg:w-[22rem] lg:-translate-x-1/2 lg:rounded-full lg:border lg:pb-0 lg:shadow-lg dark:border-line dark:bg-panel dark:text-muted"
     >
       <button type="button" class="voce-navbar-mappa" (click)="soccorsi.emit()">
         <svg lucideIcon="phone" class="h-5 w-5 text-allerta" aria-hidden="true"></svg>
@@ -30,7 +30,7 @@ export type VistaMappa = 'mappa' | 'lista';
         (click)="nuovaSegnalazione.emit()"
       >
         <span
-          class="-mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-allerta text-white shadow-md ring-4 ring-white sm:-mt-4 dark:ring-panel"
+          class="-mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-allerta text-white shadow-md ring-4 ring-white lg:-mt-4 dark:ring-panel"
           aria-hidden="true"
         >
           <svg lucideIcon="plus" class="h-6 w-6"></svg>

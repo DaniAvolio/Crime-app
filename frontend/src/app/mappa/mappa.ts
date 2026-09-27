@@ -80,8 +80,11 @@ const RAGGIO_MASSIMO_METRI = 20_000;
  */
 const RAGGIO_INCERTEZZA_METRI = 100;
 
-/** Stesso breakpoint di `sm:` di Tailwind: sotto, il dettaglio è un pannello dal basso. */
-const MEDIA_MOBILE = '(max-width: 639px)';
+/**
+ * Stesso breakpoint di `lg:` di Tailwind: sotto (telefono e tablet) i pannelli della mappa
+ * salgono dal basso; sopra sono laterali e non coprono il centro della mappa.
+ */
+const MEDIA_MOBILE = '(max-width: 1023px)';
 const SOGLIA_TRASCINAMENTO_PX = 40;
 
 /** Trascinando il pin: distanza dal bordo visibile a cui la mappa inizia a scorrere, e velocità. */
@@ -488,8 +491,16 @@ export class Mappa {
     );
   }
 
-  /** Centro (px nel contenitore della mappa) della parte non coperta da pannello e navbar. */
+  /**
+   * Punto (px nel contenitore della mappa) in cui centrare: su telefono/tablet il centro della
+   * parte sopra il pannello dal basso; su desktop il centro vero della mappa, come per "torna
+   * alla mia posizione" (il pannello laterale non lo copre).
+   */
   private centroZonaLibera(map: LeafletMap): { x: number; y: number } {
+    if (!matchMedia(MEDIA_MOBILE).matches) {
+      const { x, y } = map.getSize();
+      return { x: Math.round(x / 2), y: Math.round(y / 2) };
+    }
     const { destra, basso } = this.zonaLibera(map);
     return { x: Math.round(destra / 2), y: Math.round(basso / 2) };
   }

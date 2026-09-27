@@ -12,7 +12,7 @@
       class="absolute bottom-[calc(var(--altezza-navbar-mappa)+2rem)] right-3 z-[1000] flex h-11 w-11 items-center justify-center rounded-md border border-neutral-300 bg-white text-blue-600 shadow-md transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:text-paper dark:hover:bg-ink"
       [attr.aria-label]="t('mappa.posizione.centra')"
       [title]="t('mappa.posizione.centra')"
-      [ngClass]="{ 'max-sm:hidden': pannelloInBassoAperto() }"
+      [ngClass]="{ 'max-lg:hidden': pannelloInBassoAperto() }"
       (click)="centraSuPosizione()"
     >
       <svg lucideIcon="locate-fixed" class="h-5 w-5" aria-hidden="true"></svg>
@@ -20,8 +20,8 @@
   }
 
   <div
-    class="pointer-events-none absolute bottom-[calc(var(--altezza-navbar-mappa)+1.5rem)] left-4 right-16 z-[1000] flex max-w-md flex-col gap-2 sm:right-auto"
-    [ngClass]="{ 'max-sm:hidden': pannelloInBassoAperto() }"
+    class="pointer-events-none absolute bottom-[calc(var(--altezza-navbar-mappa)+1.5rem)] left-4 right-16 z-[1000] flex max-w-md flex-col gap-2 lg:right-auto"
+    [ngClass]="{ 'max-lg:hidden': pannelloInBassoAperto() }"
   >
     @if (erroreSegnalazioni()) {
       <p
@@ -69,7 +69,7 @@
     <!-- Mobile: pannello dal basso, sempre sopra la navbar della mappa. Desktop: in alto a destra. -->
     <section
       class="pannello-mappa"
-      [ngClass]="pannelloEspanso() ? 'max-sm:max-h-[80%]' : 'max-sm:max-h-[55%]'"
+      [ngClass]="pannelloEspanso() ? 'max-lg:max-h-[80%]' : 'max-lg:max-h-[55%]'"
       [style.transform]="
         spostamentoPannello() ? 'translateY(' + spostamentoPannello() + 'px)' : null
       "
@@ -77,7 +77,7 @@
     >
       <button
         type="button"
-        class="mx-auto flex h-7 w-20 touch-none items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:hidden"
+        class="mx-auto flex h-7 w-20 touch-none items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 lg:hidden"
         [attr.aria-expanded]="pannelloEspanso()"
         [attr.aria-label]="
           t(pannelloEspanso() ? 'mappa.dettaglio.riduci' : 'mappa.dettaglio.espandi')
@@ -130,14 +130,14 @@
 
       <p
         class="mt-4 whitespace-pre-line text-[15px] leading-relaxed"
-        [ngClass]="{ 'max-sm:line-clamp-2': !pannelloEspanso() }"
+        [ngClass]="{ 'max-lg:line-clamp-2': !pannelloEspanso() }"
       >
         {{ segnalazione.descrizione }}
       </p>
 
       <dl
         class="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm"
-        [ngClass]="{ 'max-sm:hidden': !pannelloEspanso() }"
+        [ngClass]="{ 'max-lg:hidden': !pannelloEspanso() }"
       >
         <dt class="text-neutral-500 dark:text-muted">{{ t('mappa.dettaglio.creata') }}</dt>
         <dd>{{ formattaData(segnalazione.dataCreazione) }}</dd>

@@ -83,7 +83,7 @@ html.dark {
 }
 
 /* Altezza della navbar in basso nella pagina mappa: pannelli, lista e controlli in basso si
-   appoggiano sopra di essa. Su desktop la navbar è una pillola flottante e non riserva spazio. */
+   appoggiano sopra di essa. Da 1024px la navbar è una pillola flottante e non riserva spazio. */
 :root {
   --altezza-navbar-mappa: 0px;
 }
@@ -96,7 +96,7 @@ html.dark {
     bottom: var(--altezza-navbar-mappa);
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 1024px) {
     --altezza-navbar-mappa: 0px;
   }
 }
@@ -160,8 +160,8 @@ html.dark {
   }
 }
 
-/* Su mobile i pannelli della mappa salgono dal basso all'apertura. */
-@media (max-width: 639px) {
+/* Sotto i 1024px (telefono e tablet) i pannelli della mappa salgono dal basso all'apertura. */
+@media (max-width: 1023px) {
   .pannello-mappa {
     animation: pannello-sale 200ms ease-out;
   }
