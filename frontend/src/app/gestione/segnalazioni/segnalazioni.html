@@ -1,6 +1,8 @@
 <main class="min-h-screen bg-white text-gray-900 dark:bg-ink dark:text-paper">
   <div class="mx-auto max-w-5xl px-6 py-10">
-    <h1 class="mb-6 text-2xl font-bold text-blue-700 dark:text-blue-400">Gestione segnalazioni</h1>
+    <h1 class="mb-6 font-display text-2xl font-bold text-gray-900 dark:text-paper">
+      Gestione segnalazioni
+    </h1>
 
     @if (errore()) {
       <div
@@ -76,7 +78,7 @@
 
       <button
         type="submit"
-        class="rounded bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
+        class="rounded bg-allerta px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
       >
         Crea
       </button>
