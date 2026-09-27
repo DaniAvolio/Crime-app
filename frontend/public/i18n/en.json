@@ -78,8 +78,6 @@
     "nuova": {
       "titolo": "New report",
       "annulla": "Cancel report",
-      "posizioneUtente": "At your current location. Drag the pin to adjust it.",
-      "posizionePin": "At the pin. Drag it to move it.",
       "pin": "Location of the new report",
       "categoria": "What's happening?",
       "categorieNonDisponibili": "Categories aren't available right now. Try again shortly.",
@@ -99,6 +97,13 @@
         "testo": "What you've entered will be lost.",
         "scarta": "Discard",
         "continua": "Keep editing"
+      },
+      "posizione": {
+        "titolo": "Where is it happening?",
+        "istruzione": "Press and hold the pin, then drag it to the exact spot.",
+        "continua": "Continue",
+        "puntoScelto": "Spot chosen on the map",
+        "cambia": "Change"
       }
     },
     "lista": {

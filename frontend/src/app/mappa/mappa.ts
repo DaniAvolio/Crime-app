@@ -29,6 +29,9 @@ import {
   MapOptions,
   Marker,
   marker,
+  DomUtil,
+  Point,
+  point,
 } from 'leaflet';
 import { maplibreGL } from '@maplibre/maplibre-gl-leaflet';
 import { setWorkerUrl } from 'maplibre-gl';
@@ -44,6 +47,7 @@ import { formattaData, formattaDistanza } from './formattazione';
 import { ListaSegnalazioni } from './lista-segnalazioni';
 import { NavbarMappa, VistaMappa } from './navbar-mappa';
 import { NuovaSegnalazione } from './nuova-segnalazione';
+import { SceltaPosizione } from './scelta-posizione';
 import { Soccorsi } from './soccorsi';
 
 // Le icone di default di Leaflet puntano a percorsi relativi al CSS che il
@@ -79,8 +83,40 @@ const RAGGIO_INCERTEZZA_METRI = 100;
 /** Stesso breakpoint di `sm:` di Tailwind: sotto, il dettaglio è un pannello dal basso. */
 const MEDIA_MOBILE = '(max-width: 639px)';
 const SOGLIA_TRASCINAMENTO_PX = 40;
+
+/** Trascinando il pin: distanza dal bordo visibile a cui la mappa inizia a scorrere, e velocità. */
+const MARGINE_AUTOSCORRIMENTO_PX = 50;
+const VELOCITA_AUTOSCORRIMENTO_PX = 10;
+/** Altezza della goccia del pin sopra la sua punta (vedi iconAnchor del pin). */
+const ALTEZZA_PIN_PX = 48;
+
+/** Parti interne del trascinamento dei marker di Leaflet 1.9 usate da spostaMappaTenendoPin. */
+interface TrascinamentoMarkerInterno {
+  _draggable: { _newPos: Point; _startPos: Point };
+  _onDrag(evento: object): void;
+}
+
+/**
+ * Sposta la mappa di `movimento` px lasciando il pin sotto il dito: è ciò che fa l'autoPan
+ * nativo di Leaflet (MarkerDrag._adjustPan), replicato perché il suo padding è simmetrico.
+ * Usa API interne di Leaflet 1.9: da ricontrollare se si aggiorna Leaflet.
+ */
+function spostaMappaTenendoPin(map: LeafletMap, pin: Marker, movimento: Point): void {
+  const trascinamento = pin.dragging as unknown as TrascinamentoMarkerInterno | undefined;
+  const icona = pin.getElement();
+  if (!trascinamento?._draggable || !icona) {
+    return;
+  }
+  map.panBy(movimento, { animate: false });
+  trascinamento._draggable._newPos = trascinamento._draggable._newPos.add(movimento);
+  trascinamento._draggable._startPos = trascinamento._draggable._startPos.add(movimento);
+  DomUtil.setPosition(icona, trascinamento._draggable._newPos);
+  trascinamento._onDrag({});
+}
 /** Aprendo una segnalazione da uno zoom più lontano di così, ci si avvicina prima di centrarla. */
 const ZOOM_MINIMO_CENTRATURA = 15;
+
+type PannelloMappa = 'nuova-posizione' | 'nuova-dettagli' | 'soccorsi' | null;
 
 interface AreaVisibile {
   centro: LatLng;
@@ -123,6 +159,7 @@ function ignoraIconeMancanti(sfondo: MaplibreGL): void {
     NavbarMappa,
     Soccorsi,
     NuovaSegnalazione,
+    SceltaPosizione,
     ListaSegnalazioni,
   ],
   templateUrl: './mappa.html',
@@ -166,20 +203,21 @@ export class Mappa {
   /** Vista attiva, scelta dalla navbar in basso. */
   protected readonly vista = signal<VistaMappa>('mappa');
   /** Pannello aperto dalla navbar (il dettaglio segnalazione è governato da `selezionata`). */
-  protected readonly pannello = signal<'nuova' | 'soccorsi' | null>(null);
+  protected readonly pannello = signal<PannelloMappa>(null);
+  /** Nuova segnalazione in corso, in uno dei due passi (scelta del punto o dettagli). */
+  protected readonly nuovaAperta = computed(() => this.pannello()?.startsWith('nuova') ?? false);
 
   protected readonly categorie = signal<Categoria[]>([]);
   protected readonly categorieAttive = computed(() => this.categorie().filter((c) => c.attiva));
 
   /** Punto della nuova segnalazione: parte dalla posizione dell'utente, si sposta col pin. */
   protected readonly posizioneNuova = signal<LatLng | null>(null);
-  protected readonly pinSpostato = signal(false);
   /** Id dell'ultima segnalazione pubblicata, per confermarlo nel suo pannello di dettaglio. */
   protected readonly idAppenaPubblicata = signal<number | null>(null);
 
   /** Su mobile pulsante "torna a me" e avvisi lasciano spazio ai pannelli dal basso. */
   protected readonly pannelloInBassoAperto = computed(
-    () => this.selezionata() !== null || this.pannello() === 'nuova',
+    () => this.selezionata() !== null || this.nuovaAperta(),
   );
 
   /** Da dove la lista misura le distanze: l'utente se la posizione è nota, sennò il centro mappa. */
@@ -188,6 +226,7 @@ export class Mappa {
   );
   private readonly centroMappa = signal(latLng(45.3181, 8.8589));
   private pinNuova: Marker | null = null;
+  private fotogrammaAutoScorrimento: number | null = null;
 
   private readonly tema = inject(TemaService);
   private readonly transloco = inject(TranslocoService);
@@ -281,38 +320,51 @@ export class Mappa {
       }
     });
 
-    // Pin trascinabile della nuova segnalazione: esiste solo mentre il form è aperto.
+    // Pin della nuova segnalazione: al passo 1 si prende e si trascina sul punto (segue il dito),
+    // al passo 2 resta fermo sul punto scelto.
     effect(() => {
       const map = this.mappa();
       const posizione = this.posizioneNuova();
-      if (!map || this.pannello() !== 'nuova' || !posizione) {
+      const passo = this.pannello();
+      if (!map || !this.nuovaAperta() || !posizione) {
         this.pinNuova?.remove();
         this.pinNuova = null;
         return;
       }
-      if (this.pinNuova) {
-        this.pinNuova.setLatLng(posizione);
-        return;
-      }
-      this.pinNuova = marker(posizione, {
-        draggable: true,
-        autoPan: true,
-        zIndexOffset: 2000,
-        title: this.transloco.translate('mappa.nuova.pin'),
-        alt: this.transloco.translate('mappa.nuova.pin'),
-        icon: divIcon({
-          className: '',
-          html: `<span class="pin-nuova-segnalazione">${svgIcona('plus')}</span>`,
-          iconSize: [40, 40],
-          // La punta della goccia (angolo ruotato di 45°) sta ~28px sotto il centro.
-          iconAnchor: [20, 48],
-        }),
-      })
-        .on('dragend', () => {
-          this.posizioneNuova.set(this.pinNuova!.getLatLng());
-          this.pinSpostato.set(true);
+      if (!this.pinNuova) {
+        this.pinNuova = marker(posizione, {
+          draggable: true,
+          // Auto-scorrimento gestito da autoScorrimentoPin, sui bordi della zona visibile.
+          autoPan: false,
+          zIndexOffset: 2000,
+          title: this.transloco.translate('mappa.nuova.pin'),
+          alt: this.transloco.translate('mappa.nuova.pin'),
+          icon: divIcon({
+            className: '',
+            html: `<span class="pin-trascinabile"><span class="pin-nuova-segnalazione">${svgIcona('plus')}</span></span>`,
+            iconSize: [40, 48],
+            // La punta della goccia (angolo ruotato di 45°) è il fondo dell'icona.
+            iconAnchor: [20, 48],
+          }),
         })
-        .addTo(map);
+          .on('dragstart', () => {
+            this.pinNuova?.getElement()?.classList.add('pin-in-trascinamento');
+            this.autoScorrimentoPin(map, this.pinNuova!);
+          })
+          .on('dragend', () => {
+            this.fermaAutoScorrimento();
+            this.pinNuova?.getElement()?.classList.remove('pin-in-trascinamento');
+            this.posizioneNuova.set(this.pinNuova!.getLatLng());
+          })
+          .addTo(map);
+      } else if (!this.pinNuova.getLatLng().equals(posizione)) {
+        this.pinNuova.setLatLng(posizione);
+      }
+      if (passo === 'nuova-posizione') {
+        this.pinNuova.dragging?.enable();
+      } else {
+        this.pinNuova.dragging?.disable();
+      }
     });
 
     // debounce: un trascinamento produce molti moveend; switchMap scarta le risposte superate.
@@ -351,6 +403,7 @@ export class Mappa {
       });
 
     inject(DestroyRef).onDestroy(() => {
+      this.fermaAutoScorrimento();
       if (this.idWatch !== null) {
         navigator.geolocation.clearWatch(this.idWatch);
       }
@@ -375,8 +428,8 @@ export class Mappa {
     // Un tocco sulla mappa chiude il pannello aperto, come per il dettaglio. Il form può avere
     // dati non inviati: decide lui se chiudere subito o chiedere conferma.
     map.on('click', () => {
-      if (this.pannello() === 'nuova') {
-        this.formNuova()?.richiediChiusura();
+      if (this.nuovaAperta()) {
+        this.chiudiNuovaSegnalazione();
       } else {
         this.selezionata.set(null);
       }
@@ -396,8 +449,8 @@ export class Mappa {
   /** Apre il dettaglio e porta la segnalazione al centro della mappa rimasta visibile. */
   private apriDettaglio(segnalazione: Segnalazione): void {
     // Con il form aperto un tocco su un marker vale come un tocco sulla mappa: chiede di chiudere.
-    if (this.pannello() === 'nuova') {
-      this.formNuova()?.richiediChiusura();
+    if (this.nuovaAperta()) {
+      this.chiudiNuovaSegnalazione();
       return;
     }
     this.selezionata.set(segnalazione);
@@ -421,24 +474,73 @@ export class Mappa {
     }
     afterNextRender(
       () => {
-        const radice = this.host.nativeElement;
-        const pannello = radice.querySelector<HTMLElement>('.pannello-mappa');
-        const navbar = radice.querySelector<HTMLElement>('app-navbar-mappa nav');
-        const { x: larghezza, y: altezza } = map.getSize();
-        const mobile = matchMedia(MEDIA_MOBILE).matches;
-        const bordoDestro = !mobile && pannello ? pannello.offsetLeft : larghezza;
-        const bordoBasso = Math.min(
-          navbar ? navbar.offsetTop : altezza,
-          mobile && pannello ? pannello.offsetTop : altezza,
-        );
+        const centro = this.centroZonaLibera(map);
         const punto = map.latLngToContainerPoint(posizione);
         const riduciMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        map.panBy([punto.x - bordoDestro / 2, punto.y - bordoBasso / 2], {
-          animate: !riduciMovimento,
-        });
+        map.panBy([punto.x - centro.x, punto.y - centro.y], { animate: !riduciMovimento });
       },
       { injector: this.injector },
     );
+  }
+
+  /** Centro (px nel contenitore della mappa) della parte non coperta da pannello e navbar. */
+  private centroZonaLibera(map: LeafletMap): { x: number; y: number } {
+    const { destra, basso } = this.zonaLibera(map);
+    return { x: Math.round(destra / 2), y: Math.round(basso / 2) };
+  }
+
+  /** Bordi (px nel contenitore) della parte di mappa visibile; sinistra e alto sono 0. */
+  private zonaLibera(map: LeafletMap): { destra: number; basso: number } {
+    const radice = this.host.nativeElement;
+    // Solo il pannello visibile: il form resta montato (nascosto) mentre si sceglie il punto.
+    const pannello = [...radice.querySelectorAll<HTMLElement>('.pannello-mappa')].find(
+      (elemento) => elemento.offsetParent !== null,
+    );
+    const navbar = radice.querySelector<HTMLElement>('app-navbar-mappa nav');
+    const { x: larghezza, y: altezza } = map.getSize();
+    const mobile = matchMedia(MEDIA_MOBILE).matches;
+    const bordoDestro = !mobile && pannello ? pannello.offsetLeft : larghezza;
+    const bordoBasso = Math.min(
+      navbar ? navbar.offsetTop : altezza,
+      mobile && pannello ? pannello.offsetTop : altezza,
+    );
+    return { destra: bordoDestro, basso: bordoBasso };
+  }
+
+  /**
+   * Auto-scorrimento mentre si trascina il pin: la mappa scorre quando la punta si avvicina
+   * al bordo della zona visibile (card/pannello/navbar), non del contenitore Leaflet, che sta
+   * anche sotto di loro. L'autoPan nativo dei marker ha un padding simmetrico e non lo
+   * permette. Gira a ogni frame finché dura il trascinamento.
+   */
+  private autoScorrimentoPin(map: LeafletMap, pin: Marker): void {
+    const passo = () => {
+      const { destra, basso } = this.zonaLibera(map);
+      const punta = map.latLngToContainerPoint(pin.getLatLng());
+      const m = MARGINE_AUTOSCORRIMENTO_PX;
+      // Frazione di "penetrazione" nel margine (0..1) per lato, come fa Leaflet.
+      const verso = (valore: number, minimo: number, massimo: number) =>
+        Math.min(1, Math.max(0, valore - (massimo - m)) / m) -
+        Math.min(1, Math.max(0, minimo + m - valore) / m);
+      const movimento = point(
+        verso(punta.x, 0, destra),
+        // In alto conta il corpo della goccia (ALTEZZA_PIN sopra la punta), non la punta.
+        verso(punta.y, ALTEZZA_PIN_PX, basso),
+      ).multiplyBy(VELOCITA_AUTOSCORRIMENTO_PX);
+      if (movimento.x !== 0 || movimento.y !== 0) {
+        spostaMappaTenendoPin(map, pin, movimento);
+      }
+      this.fotogrammaAutoScorrimento = requestAnimationFrame(passo);
+    };
+    this.fermaAutoScorrimento();
+    this.fotogrammaAutoScorrimento = requestAnimationFrame(passo);
+  }
+
+  private fermaAutoScorrimento(): void {
+    if (this.fotogrammaAutoScorrimento !== null) {
+      cancelAnimationFrame(this.fotogrammaAutoScorrimento);
+      this.fotogrammaAutoScorrimento = null;
+    }
   }
 
   // Maniglia del pannello su mobile: tap alterna compatto/espanso; trascinando in su si
@@ -562,26 +664,59 @@ export class Mappa {
     this.vista.set('mappa');
     this.selezionata.set(null);
     this.posizioneNuova.set(posizione);
-    this.pinSpostato.set(false);
-    this.pannello.set('nuova');
-    this.centraNellaZonaLibera(posizione);
+    this.pannello.set('nuova-posizione');
+    this.centraNellaZonaLibera(posizione, ZOOM_POSIZIONE_UTENTE);
   }
 
-  /** Dal form: riporta il pin (e la mappa) sulla posizione GPS dell'utente. */
+  /** Passo 1: riporta il pin sulla posizione GPS e ci centra la mappa. */
   protected riportaPinSuUtente(): void {
     const posizione = this.posizioneUtente();
-    if (!posizione) {
-      return;
+    if (posizione) {
+      this.posizioneNuova.set(posizione);
+      this.centraNellaZonaLibera(posizione, ZOOM_POSIZIONE_UTENTE);
     }
-    this.posizioneNuova.set(posizione);
-    this.pinSpostato.set(false);
-    this.centraNellaZonaLibera(posizione);
   }
 
-  /** Esc: chiude il dettaglio o, con il form aperto, chiede di chiuderlo (come un tocco sulla mappa). */
+  /** Passo 1 → 2: il punto dove è stato lasciato il pin diventa la posizione della segnalazione. */
+  protected confermaPosizione(): void {
+    this.pannello.set('nuova-dettagli');
+    const posizione = this.posizioneNuova();
+    if (posizione) {
+      this.centraNellaZonaLibera(posizione);
+    }
+  }
+
+  /** Passo 2 → 1 ("Cambia"): i dati del form restano, si riparte dal punto già scelto. */
+  protected cambiaPosizione(): void {
+    const posizione = this.posizioneNuova();
+    this.pannello.set('nuova-posizione');
+    if (posizione) {
+      this.centraNellaZonaLibera(posizione);
+    }
+  }
+
+  /**
+   * Chiusura "morbida" della nuova segnalazione (tocco sulla mappa, Esc, X). Se il form ha dati
+   * la decisione passa a lui, che chiede conferma: dal passo 1 si torna ai dettagli per mostrarla.
+   */
+  protected chiudiNuovaSegnalazione(): void {
+    const form = this.formNuova();
+    if (this.pannello() === 'nuova-posizione' && form?.haDati()) {
+      this.pannello.set('nuova-dettagli');
+      afterNextRender(() => this.formNuova()?.richiediChiusura(), { injector: this.injector });
+      return;
+    }
+    if (this.pannello() === 'nuova-dettagli' && form) {
+      form.richiediChiusura();
+      return;
+    }
+    this.chiudiPannello();
+  }
+
+  /** Esc: chiude il dettaglio o, durante una nuova segnalazione, chiede di chiuderla. */
   protected gestisciEscape(): void {
-    if (this.pannello() === 'nuova') {
-      this.formNuova()?.richiediChiusura();
+    if (this.nuovaAperta()) {
+      this.chiudiNuovaSegnalazione();
     } else {
       this.chiudiDettaglio();
     }

@@ -37,14 +37,10 @@ const SOGLIA_CHIUSURA_PX = 60;
 export class NuovaSegnalazione {
   readonly categorie = input.required<Categoria[]>();
   readonly posizione = input.required<LatLng>();
-  /** true finché il pin è ancora sulla posizione GPS dell'utente (non spostato a mano). */
-  readonly suPosizioneUtente = input(false);
-  /** Se la posizione GPS è nota, il form offre "La mia posizione" per riportarci il pin. */
-  readonly posizioneUtenteNota = input(false);
-
   readonly annulla = output<void>();
   readonly pubblicata = output<Segnalazione>();
-  readonly riportaSuUtente = output<void>();
+  /** Torna al passo di scelta del punto; il form resta montato e conserva i dati inseriti. */
+  readonly cambiaPosizione = output<void>();
 
   protected readonly lunghezzaMassima = LUNGHEZZA_MASSIMA_DESCRIZIONE;
   protected readonly invio = signal(false);
@@ -80,8 +76,7 @@ export class NuovaSegnalazione {
     if (this.invio()) {
       return;
     }
-    const { categoriaId, descrizione } = this.form.getRawValue();
-    if (categoriaId === 0 && descrizione.trim() === '') {
+    if (!this.haDati()) {
       this.annulla.emit();
       return;
     }
@@ -93,6 +88,12 @@ export class NuovaSegnalazione {
       },
       { injector: this.injector },
     );
+  }
+
+  /** Categoria scelta o descrizione scritta: chiudere farebbe perdere qualcosa. */
+  haDati(): boolean {
+    const { categoriaId, descrizione } = this.form.getRawValue();
+    return categoriaId !== 0 || descrizione.trim() !== '';
   }
 
   protected continuaAScrivere(): void {

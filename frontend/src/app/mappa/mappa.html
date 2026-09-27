@@ -194,14 +194,23 @@
     />
   }
 
-  @if (pannello() === 'nuova' && posizioneNuova(); as posizione) {
+  @if (pannello() === 'nuova-posizione') {
+    <app-scelta-posizione
+      [posizioneUtenteNota]="posizioneUtente() !== null"
+      (continua)="confermaPosizione()"
+      (miaPosizione)="riportaPinSuUtente()"
+      (chiudi)="chiudiNuovaSegnalazione()"
+    />
+  }
+
+  <!-- Passo 2. Resta montato (nascosto) al passo 1, così "Cambia" non perde i dati inseriti. -->
+  @if (nuovaAperta() && posizioneNuova(); as posizione) {
     <app-nuova-segnalazione
+      [class.hidden]="pannello() !== 'nuova-dettagli'"
       [categorie]="categorieAttive()"
       [posizione]="posizione"
-      [suPosizioneUtente]="posizioneUtente() !== null && !pinSpostato()"
-      [posizioneUtenteNota]="posizioneUtente() !== null"
-      (riportaSuUtente)="riportaPinSuUtente()"
       (annulla)="chiudiPannello()"
+      (cambiaPosizione)="cambiaPosizione()"
       (pubblicata)="segnalazionePubblicata($event)"
     />
   }

@@ -61,21 +61,18 @@
     </div>
   }
 
-  <div class="mt-2 flex items-start gap-3">
-    <p class="flex flex-1 items-start gap-1.5 text-sm text-neutral-500 dark:text-muted">
-      <svg lucideIcon="map-pin" class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true"></svg>
-      {{ t(suPosizioneUtente() ? 'mappa.nuova.posizioneUtente' : 'mappa.nuova.posizionePin') }}
+  <div class="mt-2 flex items-center gap-3">
+    <p class="flex flex-1 items-center gap-1.5 text-sm text-neutral-500 dark:text-muted">
+      <svg lucideIcon="map-pin" class="h-4 w-4 shrink-0 text-allerta" aria-hidden="true"></svg>
+      {{ t('mappa.nuova.posizione.puntoScelto') }}
     </p>
-    @if (posizioneUtenteNota()) {
-      <button
-        type="button"
-        class="flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-neutral-300 px-3 text-sm font-medium text-blue-600 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-line dark:text-paper dark:hover:bg-ink"
-        (click)="riportaSuUtente.emit()"
-      >
-        <svg lucideIcon="locate-fixed" class="h-4 w-4" aria-hidden="true"></svg>
-        {{ t('mappa.nuova.miaPosizione') }}
-      </button>
-    }
+    <button
+      type="button"
+      class="h-8 shrink-0 rounded-md px-2 text-sm font-medium text-blue-600 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-blue-400"
+      (click)="cambiaPosizione.emit()"
+    >
+      {{ t('mappa.nuova.posizione.cambia') }}
+    </button>
   </div>
 
   <form class="mt-4 flex flex-col gap-5" [formGroup]="form" (ngSubmit)="pubblica()" novalidate>

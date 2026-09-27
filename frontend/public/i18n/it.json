@@ -78,8 +78,6 @@
     "nuova": {
       "titolo": "Nuova segnalazione",
       "annulla": "Annulla segnalazione",
-      "posizioneUtente": "Nella tua posizione attuale. Trascina il pin per correggerla.",
-      "posizionePin": "Nel punto del pin. Trascinalo per spostarlo.",
       "pin": "Posizione della nuova segnalazione",
       "categoria": "Cosa sta succedendo?",
       "categorieNonDisponibili": "Le categorie non sono disponibili al momento. Riprova tra poco.",
@@ -99,6 +97,13 @@
         "testo": "Quello che hai inserito andrà perso.",
         "scarta": "Scarta",
         "continua": "Continua"
+      },
+      "posizione": {
+        "titolo": "Dove sta succedendo?",
+        "istruzione": "Tieni premuto il pin e trascinalo sul punto esatto.",
+        "continua": "Continua",
+        "puntoScelto": "Punto scelto sulla mappa",
+        "cambia": "Cambia"
       }
     },
     "lista": {
