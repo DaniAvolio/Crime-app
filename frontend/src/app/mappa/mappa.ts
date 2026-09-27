@@ -34,7 +34,7 @@ import {
   point,
 } from 'leaflet';
 import { maplibreGL } from '@maplibre/maplibre-gl-leaflet';
-import { setWorkerUrl } from 'maplibre-gl';
+import { ExpressionSpecification, setWorkerUrl } from 'maplibre-gl';
 import { Subject, catchError, debounceTime, finalize, of, switchMap, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth';
@@ -155,7 +155,7 @@ const VALIDITA_AREA_MS = 60_000;
  * dentro un layer Leaflet: pallino e overlay restano layer Leaflet normali sopra la mappa.
  */
 /** Stile vettoriale per tema. Oggi coincidono: il cambio tema non ricarica la mappa. */
-const STILI_PER_TEMA: Record<Tema, string> = { chiaro: 'bright', scuro: 'bright' };
+const STILI_PER_TEMA: Record<Tema, string> = { chiaro: 'positron', scuro: 'positron' };
 
 function urlStileOpenFreeMap(stile: string): string {
   return `https://tiles.openfreemap.org/styles/${stile}`;
@@ -180,6 +180,118 @@ function ignoraIconeMancanti(sfondo: MaplibreGL): void {
       glMap.addImage(id, { width: 1, height: 1, data: new Uint8Array(4) });
     }
   });
+}
+
+/**
+ * Luoghi utili in caso di emergenza, dal livello `poi` delle tile OpenMapTiles (classi con
+ * icona nello sprite OpenFreeMap). In ordine di priorità: se si sovrappongono vince il primo.
+ */
+const CLASSI_LUOGHI_UTILI = [
+  'hospital',
+  'police',
+  'fire_station',
+  'doctors',
+  'railway',
+  'town_hall',
+];
+const ID_LIVELLO_LUOGHI_UTILI = 'luoghi-utili';
+
+/**
+ * Zone sensibili (scuole, parchi, parchi giochi): più numerose e meno urgenti dei luoghi di
+ * emergenza, quindi compaiono solo da vicino, più discrete, e cedono il posto nelle collisioni.
+ * Zoom in unità MapLibre (= zoom della mappa - 1, vedi il livello dei luoghi utili).
+ */
+const ZONE_SENSIBILI = [
+  // Scuole: da zoom mappa 16.
+  { id: 'zone-sensibili-scuole', classi: ['school', 'college'], minzoom: 15 },
+  // Parchi e parchi giochi, i più numerosi: da zoom mappa 17.
+  { id: 'zone-sensibili-svago', classi: ['playground', 'park'], minzoom: 16 },
+];
+/** Il nome delle zone sensibili compare solo da zoom mappa 17; prima solo l'icona. */
+const ZOOM_NOMI_ZONE_SENSIBILI = 16;
+
+const NOME_LUOGO: ExpressionSpecification = ['coalesce', ['get', 'name:latin'], ['get', 'name']];
+
+/**
+ * Positron (come gli altri stili minimali) non disegna i luoghi di interesse: si aggiunge un
+ * livello con solo quelli utili per un'app di sicurezza. Gli stili ricchi (bright, liberty) li
+ * hanno già. Va riaggiunto a ogni caricamento di stile: setStyle azzera i livelli aggiunti.
+ */
+function aggiungiLuoghiUtili(sfondo: MaplibreGL): void {
+  const glMap = sfondo.getMaplibreMap();
+  const aggiungi = () => {
+    const haGiaLuoghi = glMap
+      .getStyle()
+      .layers.some((livello) => 'source-layer' in livello && livello['source-layer'] === 'poi');
+    if (haGiaLuoghi || glMap.getLayer(ID_LIVELLO_LUOGHI_UTILI)) {
+      return;
+    }
+    glMap.addLayer({
+      id: ID_LIVELLO_LUOGHI_UTILI,
+      type: 'symbol',
+      source: 'openmaptiles',
+      'source-layer': 'poi',
+      // Zoom MapLibre: il plugin lo tiene uno sotto quello di Leaflet (tile da 512 px), quindi
+      // 13 qui = zoom 14 della mappa.
+      minzoom: 13,
+      filter: ['match', ['get', 'class'], CLASSI_LUOGHI_UTILI, true, false],
+      layout: {
+        'icon-image': ['get', 'class'],
+        'icon-size': 0.9,
+        'text-field': NOME_LUOGO,
+        'text-font': ['Noto Sans Italic'],
+        'text-size': 11,
+        'text-anchor': 'top',
+        'text-offset': [0, 0.8],
+        'text-max-width': 9,
+        // Se non c'è spazio si perde prima il nome, poi l'icona.
+        'text-optional': true,
+        'symbol-sort-key': ['index-of', ['get', 'class'], ['literal', CLASSI_LUOGHI_UTILI]],
+      },
+      paint: {
+        'text-color': '#555',
+        'text-halo-color': '#ffffff',
+        'text-halo-width': 1,
+        'text-halo-blur': 0.5,
+      },
+    });
+    // Aggiunte sotto i luoghi utili: MapLibre piazza prima i simboli dei livelli più in alto,
+    // quindi in caso di sovrapposizione restano ospedali, polizia, ecc.
+    for (const zona of ZONE_SENSIBILI) {
+      glMap.addLayer(
+        {
+          id: zona.id,
+          type: 'symbol',
+          source: 'openmaptiles',
+          'source-layer': 'poi',
+          minzoom: zona.minzoom,
+          filter: ['match', ['get', 'class'], zona.classi, true, false],
+          layout: {
+            'icon-image': ['get', 'class'],
+            'icon-size': 0.8,
+            'text-field': ['step', ['zoom'], '', ZOOM_NOMI_ZONE_SENSIBILI, NOME_LUOGO],
+            'text-font': ['Noto Sans Italic'],
+            'text-size': 10,
+            'text-anchor': 'top',
+            'text-offset': [0, 0.8],
+            'text-max-width': 8,
+            'text-optional': true,
+          },
+          paint: {
+            'text-color': '#888',
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 1,
+            'icon-opacity': 0.85,
+          },
+        },
+        ID_LIVELLO_LUOGHI_UTILI,
+      );
+    }
+  };
+  glMap.on('style.load', aggiungi);
+  if (glMap.isStyleLoaded()) {
+    aggiungi();
+  }
 }
 
 @Component({
@@ -320,6 +432,7 @@ export class Mappa {
       }
       if (!this.resolverIconeImpostato) {
         ignoraIconeMancanti(this.sfondo);
+        aggiungiLuoghiUtili(this.sfondo);
         this.resolverIconeImpostato = true;
       }
       const stile = STILI_PER_TEMA[tema];
