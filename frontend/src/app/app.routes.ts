@@ -6,10 +6,11 @@ import { Utenti } from './gestione/utenti/utenti';
 import { Segnalazioni } from './gestione/segnalazioni/segnalazioni';
 import { Login } from './auth/login';
 import { Registrazione } from './auth/registrazione';
-import { adminGuard, ospiteGuard } from './auth/auth.guard';
+import { adminGuard, ospiteGuard, paginaInizialeGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: Home },
+  // Ospiti: landing. Utenti autenticati: direttamente la mappa.
+  { path: '', component: Home, canActivate: [paginaInizialeGuard] },
   // Lazy: MapLibre GL è pesante e serve solo aprendo la mappa.
   // Pubblica: la consultazione non richiede login, solo pubblicare e votare (vedi Mappa).
   { path: 'mappa', loadComponent: () => import('./mappa/mappa').then((m) => m.Mappa) },

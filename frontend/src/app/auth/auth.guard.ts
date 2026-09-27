@@ -24,10 +24,18 @@ export const adminGuard: CanActivateFn = (_route, state) => {
     return true;
   }
   inject(ToastService).errore(inject(TranslocoService).translate('auth.soloAdmin'));
-  return router.createUrlTree(['/']);
+  return router.createUrlTree(['/mappa']);
 };
 
 /** Login e registrazione non hanno senso se si è già autenticati. */
 export const ospiteGuard: CanActivateFn = () => {
-  return inject(AuthService).autenticato() ? inject(Router).createUrlTree(['/']) : true;
+  return inject(AuthService).autenticato() ? inject(Router).createUrlTree(['/mappa']) : true;
+};
+
+/**
+ * Pagina iniziale: la landing è per chi non ha ancora un account; chi è autenticato
+ * atterra direttamente sulla mappa (anche cliccando il logo nell'header).
+ */
+export const paginaInizialeGuard: CanActivateFn = () => {
+  return inject(AuthService).autenticato() ? inject(Router).createUrlTree(['/mappa']) : true;
 };
