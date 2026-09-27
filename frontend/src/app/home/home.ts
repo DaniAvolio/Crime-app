@@ -25,7 +25,7 @@ export class Home implements OnInit {
   protected readonly categorie = signal<Categoria[]>([]);
   protected readonly caricamentoCompletato = signal(false);
 
-  protected readonly : readonly FaseCiclo[] = [
+  protected readonly fasiCiclo: readonly FaseCiclo[] = [
     { numero: '01', chiave: 'fase1' },
     { numero: '02', chiave: 'fase2' },
     { numero: '03', chiave: 'fase3' },
