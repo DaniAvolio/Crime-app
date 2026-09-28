@@ -205,19 +205,35 @@
         {{ segnalazione.descrizione }}
       </p>
 
-      <dl
-        class="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm"
-        [ngClass]="{ 'max-lg:hidden': !pannelloEspanso() }"
-      >
-        <dt class="text-neutral-500 dark:text-muted">{{ t('mappa.dettaglio.creata') }}</dt>
-        <dd>{{ formattaData(segnalazione.dataCreazione) }}</dd>
-        <dt class="text-neutral-500 dark:text-muted">{{ t('mappa.dettaglio.scade') }}</dt>
-        <dd>{{ formattaData(segnalazione.dataScadenza) }}</dd>
+      <dl class="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+        <!-- Autore: solo per chi ha fatto l'accesso; per le anonime il backend non manda il nome. -->
+        @if (segnalazione.autoreNome; as autore) {
+          <dt class="text-neutral-500 dark:text-muted">{{ t('mappa.dettaglio.autore') }}</dt>
+          <dd class="font-medium">{{ autore }}</dd>
+        } @else if (segnalazione.anonima && auth.autenticato()) {
+          <dt class="text-neutral-500 dark:text-muted">{{ t('mappa.dettaglio.autore') }}</dt>
+          <dd class="italic">{{ t('mappa.dettaglio.anonimo') }}</dd>
+        }
+        <!-- Date: nel pannello compatto su mobile compaiono solo espandendo. -->
+        <dt
+          class="text-neutral-500 dark:text-muted"
+          [ngClass]="{ 'max-lg:hidden': !pannelloEspanso() }"
+        >
+          {{ t('mappa.dettaglio.creata') }}
+        </dt>
+        <dd [ngClass]="{ 'max-lg:hidden': !pannelloEspanso() }">
+          {{ formattaData(segnalazione.dataCreazione) }}
+        </dd>
         @if (segnalazione.dataUltimaConferma; as dataConferma) {
-          <dt class="text-neutral-500 dark:text-muted">
+          <dt
+            class="text-neutral-500 dark:text-muted"
+            [ngClass]="{ 'max-lg:hidden': !pannelloEspanso() }"
+          >
             {{ t('mappa.dettaglio.ultimaConferma') }}
           </dt>
-          <dd>{{ formattaData(dataConferma) }}</dd>
+          <dd [ngClass]="{ 'max-lg:hidden': !pannelloEspanso() }">
+            {{ formattaData(dataConferma) }}
+          </dd>
         }
       </dl>
 

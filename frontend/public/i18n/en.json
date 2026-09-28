@@ -59,7 +59,6 @@
       "chiudi": "Close details",
       "distanza": "{{ distanza }} from you",
       "creata": "Reported",
-      "scade": "Expires",
       "ultimaConferma": "Confirmed",
       "conferma": {
         "domanda": "Is this still happening?",
@@ -70,7 +69,9 @@
         "errore": "We couldn't record your answer. Try again."
       },
       "espandi": "Show all details",
-      "riduci": "Show fewer details"
+      "riduci": "Show fewer details",
+      "autore": "Reported by",
+      "anonimo": "Anonymous"
     },
     "navbar": {
       "etichetta": "Map actions",

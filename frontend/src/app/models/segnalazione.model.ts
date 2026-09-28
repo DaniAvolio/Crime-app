@@ -11,6 +11,8 @@ export interface Segnalazione {
   id: number;
   /** null per le segnalazioni anonime, salvo per il loro autore e per gli admin. */
   autoreId: number | null;
+  /** "Mario R."; null se anonima (salvo autore/admin) o se chi guarda non è autenticato. */
+  autoreNome?: string | null;
   categoriaId: number;
   categoriaNome: string;
   categoriaGravita: Gravita;

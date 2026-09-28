@@ -10,6 +10,11 @@ spring:
       # Lo schema è governato da Flyway (db/migration): Hibernate si limita a
       # validare che le entity mapping corrispondano allo schema reale.
       ddl-auto: validate
+    properties:
+      hibernate:
+        # Le relazioni LAZY (es. l'autore di ogni segnalazione in /vicine) si caricano a blocchi
+        # con una query "in (...)" invece di una query per riga (problema N+1).
+        default_batch_fetch_size: 50
   flyway:
     enabled: true
     locations: classpath:db/migration

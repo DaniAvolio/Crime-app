@@ -59,7 +59,6 @@
       "chiudi": "Chiudi dettaglio",
       "distanza": "A {{ distanza }} da te",
       "creata": "Segnalata il",
-      "scade": "Scade il",
       "ultimaConferma": "Confermata il",
       "conferma": {
         "domanda": "È ancora in atto?",
@@ -70,7 +69,9 @@
         "errore": "Non riusciamo a registrare la tua risposta. Riprova."
       },
       "espandi": "Mostra tutti i dettagli",
-      "riduci": "Riduci dettagli"
+      "riduci": "Riduci dettagli",
+      "autore": "Segnalata da",
+      "anonimo": "Anonimo"
     },
     "navbar": {
       "etichetta": "Azioni mappa",

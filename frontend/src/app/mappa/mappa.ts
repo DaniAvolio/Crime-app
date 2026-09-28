@@ -411,7 +411,7 @@ export class Mappa {
   private readonly segnalazioneApi = inject(SegnalazioneApi);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
-  private readonly auth = inject(AuthService);
+  protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly rotta = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
