@@ -17,9 +17,7 @@ import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideDynamicIcon } from '@lucide/angular';
 import {
   Circle,
-  CircleMarker,
   circle,
-  circleMarker,
   divIcon,
   LatLng,
   latLng,
@@ -441,7 +439,7 @@ export class Mappa {
   /** Signal (e non campo semplice) così l'effect del tema riparte quando la mappa è pronta. */
   private readonly mappa = signal<LeafletMap | null>(null);
   private idWatch: number | null = null;
-  private pallino: CircleMarker | null = null;
+  private pallino: Marker | null = null;
   private cerchioPrecisione: Circle | null = null;
 
   /**
@@ -1107,20 +1105,32 @@ export class Mappa {
           return;
         }
 
+        // Bordo sottile: fa capire dove finisce l'area di precisione anche sulla mappa grigia.
         this.cerchioPrecisione = circle(posizione, {
           radius: coords.accuracy,
-          stroke: false,
+          color: COLORE_POSIZIONE,
+          weight: 1,
+          opacity: 0.35,
           fillColor: COLORE_POSIZIONE,
-          fillOpacity: 0.12,
+          fillOpacity: 0.15,
           interactive: false,
         }).addTo(map);
-        this.pallino = circleMarker(posizione, {
-          radius: 8,
-          color: '#ffffff',
-          weight: 3,
-          fillColor: COLORE_POSIZIONE,
-          fillOpacity: 1,
+        // Marker HTML (non un cerchio SVG): sta nel pane dei marker, quindi sopra aloni e cerchio
+        // di precisione, ma sotto i marker delle segnalazioni (zIndexOffset negativo) per non
+        // coprirne l'icona. Non interattivo: i clic passano alle segnalazioni.
+        const etichetta = this.transloco.translate('mappa.posizione.tu');
+        this.pallino = marker(posizione, {
+          icon: divIcon({
+            className: '',
+            html: `<span class="pallino-utente" style="--colore-posizione: ${COLORE_POSIZIONE}"></span>`,
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+          }),
           interactive: false,
+          keyboard: false,
+          zIndexOffset: -1000,
+          title: etichetta,
+          alt: etichetta,
         }).addTo(map);
         if (this.centraSuPrimaPosizione) {
           map.setView(posizione, ZOOM_POSIZIONE_UTENTE);
