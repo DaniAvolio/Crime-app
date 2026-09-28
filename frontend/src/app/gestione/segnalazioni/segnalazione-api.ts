@@ -70,4 +70,9 @@ export class SegnalazioneApi {
   riattiva(id: number, payload: SegnalazioneTransizioneRequest): Observable<Segnalazione> {
     return this.http.patch<Segnalazione>(`${this.baseUrl}/${id}/riattiva`, payload);
   }
+
+  /** Cancellazione fisica dal DB (solo admin), a differenza di rimuovi() che cambia lo stato. */
+  eliminaDefinitivamente(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
 }

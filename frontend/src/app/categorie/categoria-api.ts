@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Categoria } from '../models/categoria.model';
+import { Gravita } from '../models/gravita.model';
 
 /** Payload di creazione/modifica: nessun id, nessun flag "attiva" (gestito dal backend). */
 export interface CategoriaRequest {
@@ -10,6 +11,7 @@ export interface CategoriaRequest {
   descrizione?: string;
   icona?: string;
   durataValiditaOre: number;
+  gravita: Gravita;
 }
 
 @Injectable({ providedIn: 'root' })

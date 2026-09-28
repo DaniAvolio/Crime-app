@@ -13,6 +13,7 @@ public record SegnalazioneDto(
         Long autoreId,
         Long categoriaId,
         String categoriaNome,
+        Integer categoriaGravita,
         String descrizione,
         double lat,
         double lng,

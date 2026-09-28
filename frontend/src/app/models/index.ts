@@ -1,4 +1,5 @@
 export * from './utente.model';
+export * from './gravita.model';
 export * from './categoria.model';
 export * from './segnalazione.model';
 export * from './segnalazione-abuso.model';

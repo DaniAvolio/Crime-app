@@ -5,7 +5,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CategoriaApi } from '../../categorie/categoria-api';
 import { Categoria } from '../../models/categoria.model';
 import { Segnalazione, StatoSegnalazione } from '../../models/segnalazione.model';
-import { SegnalazioneApi, SegnalazioneRequest, SegnalazioneTransizioneRequest } from './segnalazione-api';
+import {
+  SegnalazioneApi,
+  SegnalazioneRequest,
+  SegnalazioneTransizioneRequest,
+} from './segnalazione-api';
 import { DialoghiService } from '../../shared/dialoghi/dialoghi';
 import { ToastService } from '../../shared/toast/toast';
 
@@ -119,6 +123,34 @@ export class Segnalazioni implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.errore.set(this.estraiMessaggio(err));
         this.toast.errore('Non siamo riusciti a riattivare la segnalazione.');
+      },
+    });
+  }
+
+  /**
+   * Cancellazione definitiva dal database (voti, abusi e storico di moderazione compresi).
+   * Diversa da "Rimuovi", che cambia solo lo stato: serve ad esempio per poter poi eliminare
+   * una categoria, bloccata finché ha segnalazioni.
+   */
+  protected async elimina(segnalazione: Segnalazione): Promise<void> {
+    const confermato = await this.dialoghi.conferma({
+      titolo: 'Eliminare definitivamente la segnalazione?',
+      messaggio: `"${segnalazione.categoriaNome}" #${segnalazione.id} verrà cancellata dal database insieme a voti, segnalazioni di abuso e storico di moderazione. L'operazione non è reversibile.`,
+      conferma: 'Elimina',
+      pericolo: true,
+    });
+    if (!confermato) {
+      return;
+    }
+    this.errore.set(null);
+    this.segnalazioneApi.eliminaDefinitivamente(segnalazione.id).subscribe({
+      next: () => {
+        this.toast.successo('Segnalazione eliminata definitivamente.');
+        this.carica();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.errore.set(this.estraiMessaggio(err));
+        this.toast.errore('Non siamo riusciti a eliminare la segnalazione.');
       },
     });
   }

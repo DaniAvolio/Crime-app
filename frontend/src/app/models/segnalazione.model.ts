@@ -1,3 +1,5 @@
+import { Gravita } from './gravita.model';
+
 export enum StatoSegnalazione {
   ATTIVA = 'ATTIVA',
   SCADUTA = 'SCADUTA',
@@ -11,6 +13,7 @@ export interface Segnalazione {
   autoreId: number | null;
   categoriaId: number;
   categoriaNome: string;
+  categoriaGravita: Gravita;
   descrizione: string;
   lat: number;
   lng: number;

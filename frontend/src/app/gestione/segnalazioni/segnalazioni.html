@@ -167,7 +167,7 @@
                 @if (segnalazione.stato === StatoSegnalazione.ATTIVA) {
                   <button
                     (click)="rimuovi(segnalazione)"
-                    class="text-red-600 hover:underline dark:text-red-400"
+                    class="text-amber-600 hover:underline dark:text-beacon"
                   >
                     Rimuovi
                   </button>
@@ -183,6 +183,12 @@
                     Riattiva
                   </button>
                 }
+                <button
+                  (click)="elimina(segnalazione)"
+                  class="ml-3 text-red-600 hover:underline dark:text-red-400"
+                >
+                  Elimina
+                </button>
               </td>
             </tr>
           }

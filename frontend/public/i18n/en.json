@@ -36,6 +36,14 @@
       "tagline": "Crime — public safety reports maintained by the community."
     }
   },
+  "gravita": {
+    "filtro": "Filter by severity",
+    "tutte": "All",
+    "etichetta": "{{gravita}} severity",
+    "1": "Low",
+    "2": "Medium",
+    "3": "High"
+  },
   "mappa": {
     "posizione": {
       "negata": "Location not shared, so the map shows a default area. You can turn it on in your browser settings.",

@@ -32,8 +32,8 @@ html.dark {
 }
 
 /* Marker delle segnalazioni sulla mappa: HTML generato per i divIcon di Leaflet, fuori dai
-   template Angular, quindi gli stili vanno qui e non nel componente. Rosso "allerta", distinto
-   dal pallino blu della posizione dell'utente. */
+   template Angular, quindi gli stili vanno qui e non nel componente. Il colore dipende dalla
+   gravità della categoria (modificatori --g1/--g2/--g3), distinto dal pallino blu dell'utente. */
 .marker-segnalazione {
   display: flex;
   align-items: center;
@@ -52,6 +52,20 @@ html.dark {
     width: 18px;
     height: 18px;
   }
+}
+
+/* Giallo: icona scura, il bianco non avrebbe contrasto sufficiente. */
+.marker-segnalazione--g1 {
+  background-color: var(--color-gravita-1);
+  color: var(--color-ink);
+}
+
+.marker-segnalazione--g2 {
+  background-color: var(--color-gravita-2);
+}
+
+.marker-segnalazione--g3 {
+  background-color: var(--color-gravita-3);
 }
 
 .marker-segnalazione--attiva {

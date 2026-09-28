@@ -27,6 +27,7 @@ public class SegnalazioneMapper {
                 autoreVisibile(segnalazione) ? segnalazione.getAutore().getId() : null,
                 segnalazione.getCategoria().getId(),
                 segnalazione.getCategoria().getNome(),
+                segnalazione.getCategoria().getGravita(),
                 segnalazione.getDescrizione(),
                 segnalazione.getPosizione().getY(),
                 segnalazione.getPosizione().getX(),

@@ -6,6 +6,7 @@ import com.daniele.crime_app_backend.dto.SegnalazioneTransizioneRequest;
 import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 import com.daniele.crime_app_backend.service.SegnalazioneService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,5 +56,12 @@ public class SegnalazioneController {
     @PatchMapping("/{id}/riattiva")
     public SegnalazioneDto riattiva(@PathVariable Long id, @Valid @RequestBody SegnalazioneTransizioneRequest request) {
         return segnalazioneService.riattiva(id, request);
+    }
+
+    /** Cancellazione fisica, solo ADMIN (vedi SecurityConfig). */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void elimina(@PathVariable Long id) {
+        segnalazioneService.eliminaDefinitivamente(id);
     }
 }

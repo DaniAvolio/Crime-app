@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SecurityConfigTest {
 
     private static final String CATEGORIA_VALIDA = """
-            {"nome": "Furto", "durataValiditaOre": 24}
+            {"nome": "Furto", "durataValiditaOre": 24, "gravita": 2}
             """;
     private static final String SEGNALAZIONE_VALIDA = """
             {"categoriaId": 1, "descrizione": "Auto in sosta vietata", "lat": 45, "lng": 9, "anonima": false}
@@ -108,6 +109,10 @@ class SecurityConfigTest {
                 .andExpect(status().isForbidden());
         mockMvc.perform(get("/api/segnalazioni/1/eventi-moderazione").with(ruolo("UTENTE")))
                 .andExpect(status().isForbidden());
+        mockMvc.perform(delete("/api/segnalazioni/1").with(ruolo("UTENTE")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(delete("/api/segnalazioni/1").with(ruolo("ADMIN")))
+                .andExpect(status().isNoContent());
         mockMvc.perform(patch("/api/utenti/1/ruolo").with(ruolo("UTENTE"))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"ruolo\": \"ADMIN\"}"))
                 .andExpect(status().isForbidden());

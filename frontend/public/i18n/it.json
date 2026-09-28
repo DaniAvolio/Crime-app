@@ -36,6 +36,14 @@
       "tagline": "Crime — segnalazioni di sicurezza pubblica gestite dalla community."
     }
   },
+  "gravita": {
+    "filtro": "Filtra per gravità",
+    "tutte": "Tutte",
+    "etichetta": "Gravità {{gravita}}",
+    "1": "Bassa",
+    "2": "Media",
+    "3": "Alta"
+  },
   "mappa": {
     "posizione": {
       "negata": "Posizione non condivisa: la mappa mostra un'area predefinita. Puoi attivarla dalle impostazioni del browser.",

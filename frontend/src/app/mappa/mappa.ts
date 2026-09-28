@@ -45,6 +45,8 @@ import { NOME_ICONA_FALLBACK, svgIcona } from '../shared/icone-categoria';
 import { Tema, TemaService } from '../shared/tema';
 import { ToastService } from '../shared/toast/toast';
 import { Categoria } from '../models/categoria.model';
+import { GRAVITA, Gravita } from '../models/gravita.model';
+import { chiaveGravita, classeGravita, classePallinoGravita } from '../shared/gravita';
 import { formattaData, formattaDistanza } from './formattazione';
 import { ListaSegnalazioni } from './lista-segnalazioni';
 import { NavbarMappa, VistaMappa } from './navbar-mappa';
@@ -118,10 +120,10 @@ function spostaMappaTenendoPin(map: LeafletMap, pin: Marker, movimento: Point): 
   DomUtil.setPosition(icona, trascinamento._draggable._newPos);
   trascinamento._onDrag({});
 }
-function iconaMarker(icona: string, attiva: boolean) {
+function iconaMarker(icona: string, attiva: boolean, gravita: Gravita) {
   return divIcon({
     className: '',
-    html: `<span class="marker-segnalazione${attiva ? ' marker-segnalazione--attiva' : ''}">${svgIcona(icona)}</span>`,
+    html: `<span class="marker-segnalazione marker-segnalazione--g${gravita}${attiva ? ' marker-segnalazione--attiva' : ''}">${svgIcona(icona)}</span>`,
     iconSize: [36, 36],
     iconAnchor: [18, 18],
   });
@@ -133,6 +135,18 @@ function iconaMarker(icona: string, attiva: boolean) {
  */
 function stileAlone(attiva: boolean) {
   return { fillColor: attiva ? 'url(#alone-attivo)' : 'url(#alone)', fillOpacity: 1 };
+}
+
+/** Il filtro per gravità si ricorda tra una visita e l'altra (solo comodità: se manca, "Tutte"). */
+const CHIAVE_FILTRO_GRAVITA = 'crime-mappa-gravita';
+
+function leggiFiltroGravitaSalvato(): Gravita | null {
+  try {
+    const salvato = Number(localStorage.getItem(CHIAVE_FILTRO_GRAVITA));
+    return (GRAVITA as readonly number[]).includes(salvato) ? (salvato as Gravita) : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Aprendo una segnalazione da uno zoom più lontano di così, ci si avvicina prima di centrarla. */
@@ -321,6 +335,17 @@ export class Mappa {
   /** Segnalazioni ATTIVA nell'area visibile, ricaricate quando l'utente sposta la mappa. */
   protected readonly segnalazioni = signal<Segnalazione[]>([]);
   protected readonly selezionata = signal<Segnalazione | null>(null);
+
+  /** Gravità mostrata sulla mappa e nella lista; null = tutte. Filtra i dati già caricati. */
+  protected readonly gravitaFiltro = signal<Gravita | null>(leggiFiltroGravitaSalvato());
+  protected readonly livelliGravita = GRAVITA;
+  protected readonly segnalazioniVisibili = computed(() => {
+    const gravita = this.gravitaFiltro();
+    const segnalazioni = this.segnalazioni();
+    return gravita === null
+      ? segnalazioni
+      : segnalazioni.filter((s) => s.categoriaGravita === gravita);
+  });
   protected readonly erroreSegnalazioni = signal(false);
 
   /** Stato della risposta a "è ancora in atto?" per la segnalazione aperta. */
@@ -454,12 +479,13 @@ export class Mappa {
       const icone = this.iconePerCategoria();
       const selezionataId = this.selezionata()?.id;
       const presenti = new Set<number>();
-      for (const segnalazione of this.segnalazioni()) {
+      for (const segnalazione of this.segnalazioniVisibili()) {
         presenti.add(segnalazione.id);
         const attiva = segnalazione.id === selezionataId;
         const icona = icone.get(segnalazione.categoriaId) ?? NOME_ICONA_FALLBACK;
+        const gravita = segnalazione.categoriaGravita;
         const posizione = latLng(segnalazione.lat, segnalazione.lng);
-        const firma = `${segnalazione.lat},${segnalazione.lng},${icona},${attiva}`;
+        const firma = `${segnalazione.lat},${segnalazione.lng},${icona},${gravita},${attiva}`;
         const esistente = this.marcatori.get(segnalazione.id);
         if (esistente?.firma === firma) {
           continue;
@@ -468,7 +494,7 @@ export class Mappa {
           esistente.alone.setLatLng(posizione).setStyle(stileAlone(attiva));
           esistente.marker
             .setLatLng(posizione)
-            .setIcon(iconaMarker(icona, attiva))
+            .setIcon(iconaMarker(icona, attiva, gravita))
             .setZIndexOffset(attiva ? 1000 : 0);
           esistente.firma = firma;
           continue;
@@ -481,7 +507,7 @@ export class Mappa {
           ...stileAlone(attiva),
         }).addTo(this.livelloSegnalazioni);
         const nuovo = marker(posizione, {
-          icon: iconaMarker(icona, attiva),
+          icon: iconaMarker(icona, attiva, gravita),
           title: segnalazione.categoriaNome,
           alt: segnalazione.categoriaNome,
           keyboard: true,
@@ -939,6 +965,11 @@ export class Mappa {
 
   protected segnalazionePubblicata(segnalazione: Segnalazione): void {
     this.pannello.set(null);
+    // La propria segnalazione deve vedersi anche se il filtro attivo la nasconderebbe.
+    const filtro = this.gravitaFiltro();
+    if (filtro !== null && filtro !== segnalazione.categoriaGravita) {
+      this.scegliGravita(null);
+    }
     this.segnalazioni.update((elenco) => [segnalazione, ...elenco]);
     this.idAppenaPubblicata.set(segnalazione.id);
     this.apriDettaglio(segnalazione);
@@ -959,6 +990,29 @@ export class Mappa {
 
   protected iconaCategoria(categoriaId: number): string {
     return this.iconePerCategoria().get(categoriaId) ?? NOME_ICONA_FALLBACK;
+  }
+
+  protected readonly classeGravita = classeGravita;
+  protected readonly classePallinoGravita = classePallinoGravita;
+  protected readonly chiaveGravita = chiaveGravita;
+
+  /** Toccare di nuovo il filtro attivo torna a "Tutte". Il dettaglio di una segnalazione nascosta si chiude. */
+  protected scegliGravita(gravita: Gravita | null): void {
+    const nuovo = this.gravitaFiltro() === gravita ? null : gravita;
+    this.gravitaFiltro.set(nuovo);
+    const aperta = this.selezionata();
+    if (nuovo !== null && aperta && aperta.categoriaGravita !== nuovo) {
+      this.selezionata.set(null);
+    }
+    try {
+      if (nuovo === null) {
+        localStorage.removeItem(CHIAVE_FILTRO_GRAVITA);
+      } else {
+        localStorage.setItem(CHIAVE_FILTRO_GRAVITA, String(nuovo));
+      }
+    } catch {
+      // Storage non disponibile (es. navigazione privata): la scelta vale solo per questa visita.
+    }
   }
 
   /**

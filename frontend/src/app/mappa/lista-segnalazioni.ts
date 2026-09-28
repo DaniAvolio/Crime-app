@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
@@ -14,6 +15,8 @@ import {
 } from 'rxjs';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Segnalazione } from '../models/segnalazione.model';
+import { GRAVITA, Gravita } from '../models/gravita.model';
+import { chiaveGravita, classeGravita, classePallinoGravita } from '../shared/gravita';
 import { NOME_ICONA_FALLBACK } from '../shared/icone-categoria';
 import { formattaDistanza, formattaTempoFa } from './formattazione';
 
@@ -55,7 +58,7 @@ function leggiRaggioSalvato(): number {
 @Component({
   selector: 'app-lista-segnalazioni',
   standalone: true,
-  imports: [TranslocoDirective, LucideDynamicIcon],
+  imports: [TranslocoDirective, LucideDynamicIcon, NgClass],
   templateUrl: './lista-segnalazioni.html',
 })
 export class ListaSegnalazioni {
@@ -63,8 +66,16 @@ export class ListaSegnalazioni {
   readonly centro = input.required<LatLng>();
   readonly centroUtente = input(false);
   readonly iconePerCategoria = input.required<Map<number, string>>();
+  /** Filtro per gravità condiviso con la mappa (che lo possiede e lo ricorda); null = tutte. */
+  readonly gravitaFiltro = input<Gravita | null>(null);
 
   readonly seleziona = output<Segnalazione>();
+  readonly gravitaScelta = output<Gravita | null>();
+
+  protected readonly livelliGravita = GRAVITA;
+  protected readonly classeGravita = classeGravita;
+  protected readonly classePallinoGravita = classePallinoGravita;
+  protected readonly chiaveGravita = chiaveGravita;
 
   protected readonly raggi = RAGGI_METRI;
   protected readonly raggioMetri = signal(leggiRaggioSalvato());
@@ -72,7 +83,13 @@ export class ListaSegnalazioni {
   protected readonly categoriaFiltro = signal<number | null>(null);
   protected readonly caricamento = signal(true);
   protected readonly errore = signal(false);
-  private readonly segnalazioni = signal<Segnalazione[]>([]);
+  private readonly segnalazioniCaricate = signal<Segnalazione[]>([]);
+  /** Le caricate, ristrette alla gravità scelta: chip categorie e conteggi partono da qui. */
+  private readonly segnalazioni = computed(() => {
+    const gravita = this.gravitaFiltro();
+    const caricate = this.segnalazioniCaricate();
+    return gravita === null ? caricate : caricate.filter((s) => s.categoriaGravita === gravita);
+  });
 
   private readonly transloco = inject(TranslocoService);
   private readonly segnalazioneApi = inject(SegnalazioneApi);
@@ -139,7 +156,7 @@ export class ListaSegnalazioni {
       )
       .subscribe((segnalazioni) => {
         if (segnalazioni) {
-          this.segnalazioni.set(segnalazioni);
+          this.segnalazioniCaricate.set(segnalazioni);
         }
       });
 

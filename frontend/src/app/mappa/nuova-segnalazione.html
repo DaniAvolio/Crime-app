@@ -84,9 +84,9 @@
         </p>
       } @else {
         <div class="mt-2 grid grid-cols-3 gap-2">
-          @for (categoria of categorie(); track categoria.id) {
+          @for (categoria of categorieOrdinate(); track categoria.id) {
             <label
-              class="flex cursor-pointer flex-col items-center gap-1.5 rounded-md border border-neutral-200 px-1 py-2.5 text-center text-xs leading-tight transition-colors hover:bg-neutral-50 has-[:checked]:border-allerta has-[:checked]:bg-allerta/10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-600 dark:border-line dark:hover:bg-ink"
+              class="relative flex cursor-pointer flex-col items-center gap-1.5 rounded-md border border-neutral-200 px-1 py-2.5 text-center text-xs leading-tight transition-colors hover:bg-neutral-50 has-[:checked]:border-allerta has-[:checked]:bg-allerta/10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-600 dark:border-line dark:hover:bg-ink"
             >
               <input
                 type="radio"
@@ -94,6 +94,11 @@
                 formControlName="categoriaId"
                 [value]="categoria.id"
               />
+              <span
+                class="absolute right-1.5 top-1.5 h-2 w-2 rounded-full"
+                [ngClass]="classePallinoGravita(categoria.gravita)"
+                aria-hidden="true"
+              ></span>
               <svg
                 [lucideIcon]="iconaCategoria(categoria.icona)"
                 class="h-5 w-5"

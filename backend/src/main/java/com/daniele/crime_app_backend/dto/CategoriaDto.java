@@ -7,5 +7,6 @@ public record CategoriaDto(
         String descrizione,
         String icona,
         Integer durataValiditaOre,
+        Integer gravita,
         boolean attiva
 ) {}

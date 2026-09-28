@@ -40,6 +40,36 @@
         }
       </div>
 
+      <div
+        role="group"
+        [attr.aria-label]="t('gravita.filtro')"
+        class="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden"
+      >
+        <button
+          type="button"
+          class="chip-filtro"
+          [attr.aria-pressed]="gravitaFiltro() === null"
+          (click)="gravitaScelta.emit(null)"
+        >
+          {{ t('gravita.tutte') }}
+        </button>
+        @for (gravita of livelliGravita; track gravita) {
+          <button
+            type="button"
+            class="chip-filtro"
+            [attr.aria-pressed]="gravitaFiltro() === gravita"
+            (click)="gravitaScelta.emit(gravita)"
+          >
+            <span
+              class="h-3 w-3 rounded-full ring-2 ring-white dark:ring-ink"
+              [ngClass]="classePallinoGravita(gravita)"
+              aria-hidden="true"
+            ></span>
+            {{ t(chiaveGravita(gravita)) }}
+          </button>
+        }
+      </div>
+
       @if (categorie().length > 1) {
         <div
           role="group"
@@ -108,7 +138,8 @@
               (click)="seleziona.emit(voce.segnalazione)"
             >
               <span
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-allerta text-white"
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                [ngClass]="classeGravita(voce.segnalazione.categoriaGravita)"
                 aria-hidden="true"
               >
                 <svg [lucideIcon]="icona(voce.segnalazione.categoriaId)" class="h-5 w-5"></svg>

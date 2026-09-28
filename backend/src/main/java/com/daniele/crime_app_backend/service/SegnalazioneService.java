@@ -14,7 +14,9 @@ import com.daniele.crime_app_backend.exception.AccessoNegatoException;
 import com.daniele.crime_app_backend.exception.ConflittoException;
 import com.daniele.crime_app_backend.exception.RisorsaNonTrovataException;
 import com.daniele.crime_app_backend.mapper.SegnalazioneMapper;
+import com.daniele.crime_app_backend.repository.ConfermaSegnalazioneRepository;
 import com.daniele.crime_app_backend.repository.EventoModerazioneRepository;
+import com.daniele.crime_app_backend.repository.SegnalazioneAbusoRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,17 +32,23 @@ public class SegnalazioneService {
 
     private final SegnalazioneRepository segnalazioneRepository;
     private final EventoModerazioneRepository eventoModerazioneRepository;
+    private final ConfermaSegnalazioneRepository confermaSegnalazioneRepository;
+    private final SegnalazioneAbusoRepository segnalazioneAbusoRepository;
     private final SegnalazioneMapper segnalazioneMapper;
     private final CategoriaService categoriaService;
     private final UtenteCorrenteService utenteCorrenteService;
 
     public SegnalazioneService(SegnalazioneRepository segnalazioneRepository,
                                 EventoModerazioneRepository eventoModerazioneRepository,
+                                ConfermaSegnalazioneRepository confermaSegnalazioneRepository,
+                                SegnalazioneAbusoRepository segnalazioneAbusoRepository,
                                 SegnalazioneMapper segnalazioneMapper,
                                 CategoriaService categoriaService,
                                 UtenteCorrenteService utenteCorrenteService) {
         this.segnalazioneRepository = segnalazioneRepository;
         this.eventoModerazioneRepository = eventoModerazioneRepository;
+        this.confermaSegnalazioneRepository = confermaSegnalazioneRepository;
+        this.segnalazioneAbusoRepository = segnalazioneAbusoRepository;
         this.segnalazioneMapper = segnalazioneMapper;
         this.categoriaService = categoriaService;
         this.utenteCorrenteService = utenteCorrenteService;
@@ -145,6 +153,22 @@ public class SegnalazioneService {
 
         transiziona(segnalazione, StatoSegnalazione.ATTIVA, TipoAttoreModerazione.ADMIN, attore, request.motivazione());
         return segnalazioneMapper.toDto(segnalazione);
+    }
+
+    /**
+     * Cancellazione fisica dal DB (solo ADMIN, vedi SecurityConfig), a differenza di rimuovi()
+     * che cambia solo lo stato. Serve ad esempio per poter poi eliminare una categoria, che il
+     * vincolo di FK blocca finché ha segnalazioni. Le tabelle collegate non hanno ON DELETE
+     * CASCADE: voti, abusi ed eventi di moderazione vanno cancellati prima, nella stessa transazione.
+     */
+    @Transactional
+    public void eliminaDefinitivamente(Long id) {
+        Segnalazione segnalazione = recuperaOLancia(id);
+        confermaSegnalazioneRepository.eliminaPerSegnalazione(id);
+        segnalazioneAbusoRepository.eliminaPerSegnalazione(id);
+        eventoModerazioneRepository.eliminaPerSegnalazione(id);
+        segnalazioneRepository.delete(segnalazione);
+        log.info("Eliminazione definitiva segnalazione: id={}", id);
     }
 
     /** ATTIVA -> SOSPESA, automatico al superamento della soglia di abusi (vedi SegnalazioneAbusoService). */

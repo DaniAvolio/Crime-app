@@ -1,9 +1,12 @@
+import { NgClass } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { CategoriaApi, CategoriaRequest } from './categoria-api';
 import { Categoria } from '../models/categoria.model';
+import { GRAVITA, Gravita } from '../models/gravita.model';
+import { classeGravita } from '../shared/gravita';
 import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-categoria';
 import { DialoghiService } from '../shared/dialoghi/dialoghi';
 import { ToastService } from '../shared/toast/toast';
@@ -11,7 +14,7 @@ import { ToastService } from '../shared/toast/toast';
 @Component({
   selector: 'app-categorie',
   standalone: true,
-  imports: [ReactiveFormsModule, LucideDynamicIcon],
+  imports: [ReactiveFormsModule, LucideDynamicIcon, NgClass],
   templateUrl: './categorie.html',
 })
 export class Categorie implements OnInit {
@@ -34,7 +37,16 @@ export class Categorie implements OnInit {
     descrizione: [''],
     icona: [''],
     durataValiditaOre: [24, [Validators.required, Validators.min(1)]],
+    gravita: [1 as Gravita, Validators.required],
   });
+
+  protected readonly livelliGravita = GRAVITA;
+  protected readonly etichetteGravita: Record<Gravita, string> = {
+    1: 'Bassa (degrado, quiete)',
+    2: 'Media (patrimonio)',
+    3: 'Alta (contro la persona)',
+  };
+  protected readonly classeGravita = classeGravita;
 
   ngOnInit(): void {
     this.carica();
@@ -83,6 +95,7 @@ export class Categorie implements OnInit {
       descrizione: categoria.descrizione ?? '',
       icona: categoria.icona ?? '',
       durataValiditaOre: categoria.durataValiditaOre,
+      gravita: categoria.gravita,
     });
   }
 
@@ -143,7 +156,7 @@ export class Categorie implements OnInit {
 
   private resetForm(): void {
     this.idInModifica.set(null);
-    this.form.reset({ nome: '', descrizione: '', icona: '', durataValiditaOre: 24 });
+    this.form.reset({ nome: '', descrizione: '', icona: '', durataValiditaOre: 24, gravita: 1 });
   }
 
   private estraiMessaggio(err: HttpErrorResponse): string {

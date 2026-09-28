@@ -67,6 +67,21 @@
         </p>
       </div>
 
+      <div class="mb-3">
+        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">Gravità</label>
+        <select
+          formControlName="gravita"
+          class="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+        >
+          @for (gravita of livelliGravita; track gravita) {
+            <option [ngValue]="gravita">{{ gravita }} – {{ etichetteGravita[gravita] }}</option>
+          }
+        </select>
+        <p class="mt-1 text-xs text-gray-400 dark:text-muted">
+          Decide il colore sulla mappa (giallo, arancione, rosso) e il filtro per gravità.
+        </p>
+      </div>
+
       <div class="mb-4">
         <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-muted">
           Durata validità (ore)
@@ -110,6 +125,7 @@
           >
             <th class="py-2"></th>
             <th class="py-2">Nome</th>
+            <th class="py-2">Gravità</th>
             <th class="py-2">Durata (ore)</th>
             <th class="py-2">Stato</th>
             <th class="py-2"></th>
@@ -125,6 +141,15 @@
                 ></svg>
               </td>
               <td class="py-2">{{ categoria.nome }}</td>
+              <td class="py-2">
+                <span
+                  class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                  [ngClass]="classeGravita(categoria.gravita)"
+                  [title]="etichetteGravita[categoria.gravita]"
+                >
+                  {{ categoria.gravita }}
+                </span>
+              </td>
               <td class="py-2">{{ categoria.durataValiditaOre }}</td>
               <td class="py-2">
                 @if (categoria.attiva) {

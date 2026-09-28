@@ -22,6 +22,39 @@
     (leafletMapReady)="onMapReady($event)"
   ></div>
 
+  <!-- Filtro per gravità: in alto, lontano dai pannelli dal basso; su desktop a sinistra del dettaglio. -->
+  @if (!nuovaAperta()) {
+    <div
+      role="group"
+      [attr.aria-label]="t('gravita.filtro')"
+      class="absolute inset-x-0 top-0 z-[1000] flex gap-2 overflow-x-auto px-3 pt-3 pb-1 [scrollbar-width:none] lg:right-auto [&::-webkit-scrollbar]:hidden"
+    >
+      <button
+        type="button"
+        class="chip-filtro bg-white shadow-md aria-pressed:bg-allerta aria-pressed:text-white dark:bg-panel dark:aria-pressed:bg-allerta"
+        [attr.aria-pressed]="gravitaFiltro() === null"
+        (click)="scegliGravita(null)"
+      >
+        {{ t('gravita.tutte') }}
+      </button>
+      @for (gravita of livelliGravita; track gravita) {
+        <button
+          type="button"
+          class="chip-filtro bg-white shadow-md aria-pressed:bg-allerta aria-pressed:text-white dark:bg-panel dark:aria-pressed:bg-allerta"
+          [attr.aria-pressed]="gravitaFiltro() === gravita"
+          (click)="scegliGravita(gravita)"
+        >
+          <span
+            class="h-3 w-3 rounded-full ring-2 ring-white dark:ring-panel"
+            [ngClass]="classePallinoGravita(gravita)"
+            aria-hidden="true"
+          ></span>
+          {{ t(chiaveGravita(gravita)) }}
+        </button>
+      }
+    </div>
+  }
+
   @if (posizioneUtente()) {
     <button
       type="button"
@@ -109,7 +142,8 @@
 
       <header class="flex items-start gap-3">
         <span
-          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-allerta text-white"
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+          [ngClass]="classeGravita(segnalazione.categoriaGravita)"
           aria-hidden="true"
         >
           <svg [lucideIcon]="iconaCategoria(segnalazione.categoriaId)" class="h-5 w-5"></svg>
@@ -118,6 +152,9 @@
           <h2 class="font-display text-lg font-semibold leading-tight">
             {{ segnalazione.categoriaNome }}
           </h2>
+          <p class="text-sm text-neutral-500 dark:text-muted">
+            {{ t('gravita.etichetta', { gravita: t(chiaveGravita(segnalazione.categoriaGravita)) }) }}
+          </p>
           @if (distanzaSelezionata(); as distanza) {
             <p class="text-sm text-neutral-500 dark:text-muted">
               {{ t('mappa.dettaglio.distanza', { distanza }) }}
@@ -205,6 +242,8 @@
       [centro]="centroLista()"
       [centroUtente]="posizioneUtente() !== null"
       [iconePerCategoria]="iconePerCategoria()"
+      [gravitaFiltro]="gravitaFiltro()"
+      (gravitaScelta)="scegliGravita($event)"
       (seleziona)="selezionaDaLista($event)"
     />
   }

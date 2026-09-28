@@ -15,6 +15,7 @@ public class CategoriaMapper {
                 categoria.getDescrizione(),
                 categoria.getIcona(),
                 categoria.getDurataValiditaOre(),
+                categoria.getGravita(),
                 categoria.isAttiva()
         );
     }
@@ -25,6 +26,7 @@ public class CategoriaMapper {
                 .descrizione(request.descrizione())
                 .icona(request.icona())
                 .durataValiditaOre(request.durataValiditaOre())
+                .gravita(request.gravita())
                 .attiva(true)
                 .build();
     }
@@ -35,5 +37,6 @@ public class CategoriaMapper {
         categoria.setDescrizione(request.descrizione());
         categoria.setIcona(request.icona());
         categoria.setDurataValiditaOre(request.durataValiditaOre());
+        categoria.setGravita(request.gravita());
     }
 }

@@ -1,6 +1,8 @@
 package com.daniele.crime_app_backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -44,6 +46,17 @@ public class Categoria {
     @Positive
     @Column(name = "durata_validita_ore", nullable = false)
     private Integer durataValiditaOre;
+
+    /**
+     * Gravità da 1 (degrado, quiete) a 3 (contro la persona): decide il colore
+     * dei marker e permette all'utente di filtrare la mappa.
+     */
+    @NotNull
+    @Min(1)
+    @Max(3)
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer gravita = 1;
 
     @Column(nullable = false)
     @Builder.Default

@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -18,6 +19,7 @@ import { LatLng } from 'leaflet';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Categoria } from '../models/categoria.model';
 import { Segnalazione } from '../models/segnalazione.model';
+import { classePallinoGravita } from '../shared/gravita';
 import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-categoria';
 
 const LUNGHEZZA_MASSIMA_DESCRIZIONE = 2000;
@@ -30,7 +32,7 @@ const SOGLIA_CHIUSURA_PX = 60;
 @Component({
   selector: 'app-nuova-segnalazione',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslocoDirective, LucideDynamicIcon],
+  imports: [ReactiveFormsModule, TranslocoDirective, LucideDynamicIcon, NgClass],
   templateUrl: './nuova-segnalazione.html',
 })
 export class NuovaSegnalazione {
@@ -40,6 +42,12 @@ export class NuovaSegnalazione {
   readonly pubblicata = output<Segnalazione>();
   /** Torna al passo di scelta del punto; il form resta montato e conserva i dati inseriti. */
   readonly cambiaPosizione = output<void>();
+
+  /** Prima le più gravi (contro la persona), poi per nome: le urgenze si trovano subito. */
+  protected readonly categorieOrdinate = computed(() =>
+    [...this.categorie()].sort((a, b) => b.gravita - a.gravita || a.nome.localeCompare(b.nome)),
+  );
+  protected readonly classePallinoGravita = classePallinoGravita;
 
   protected readonly lunghezzaMassima = LUNGHEZZA_MASSIMA_DESCRIZIONE;
   protected readonly invio = signal(false);
