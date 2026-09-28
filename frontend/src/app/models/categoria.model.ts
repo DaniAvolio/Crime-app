@@ -10,4 +10,11 @@ export interface Categoria {
   /** Decide il colore dei marker e il filtro per gravità sulla mappa. */
   gravita: Gravita;
   attiva: boolean;
+  /** Traduzioni per codice lingua (es. "en"); nome e descrizione sono in italiano e fanno da fallback. */
+  traduzioni?: Record<string, TraduzioneCategoria>;
+}
+
+export interface TraduzioneCategoria {
+  nome: string;
+  descrizione?: string;
 }

@@ -1,10 +1,10 @@
 import { NgClass } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { CategoriaApi } from '../categorie/categoria-api';
-import { Categoria } from '../models/categoria.model';
+import { CategorieStore } from '../categorie/categorie-store';
+import { NomeCategoriaPipe } from '../categorie/nome-categoria.pipe';
 import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-categoria';
 
 interface FaseCiclo {
@@ -15,15 +15,15 @@ interface FaseCiclo {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, LucideDynamicIcon, TranslocoDirective, NgClass],
+  imports: [RouterLink, LucideDynamicIcon, TranslocoDirective, NgClass, NomeCategoriaPipe],
   templateUrl: './home.html',
 })
 export class Home implements OnInit {
-  private readonly categoriaApi = inject(CategoriaApi);
+  private readonly store = inject(CategorieStore);
 
   /** Elenco categorie per il pannello "log": resta vuoto se il backend non risponde. */
-  protected readonly categorie = signal<Categoria[]>([]);
-  protected readonly caricamentoCompletato = signal(false);
+  protected readonly categorie = computed(() => this.store.categorie().filter((c) => c.attiva));
+  protected readonly caricamentoCompletato = this.store.caricate;
 
   protected readonly fasiCiclo: readonly FaseCiclo[] = [
     { numero: '01', chiave: 'fase1' },
@@ -32,16 +32,7 @@ export class Home implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.categoriaApi.elenca().subscribe({
-      next: (categorie) => {
-        this.categorie.set(categorie.filter((c) => c.attiva));
-        this.caricamentoCompletato.set(true);
-      },
-      error: () => {
-        this.categorie.set([]);
-        this.caricamentoCompletato.set(true);
-      },
-    });
+    this.store.carica();
   }
 
   protected iconaRisolta(nome: string | null | undefined): string {

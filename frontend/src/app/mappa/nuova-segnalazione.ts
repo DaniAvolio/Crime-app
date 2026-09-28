@@ -16,10 +16,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { LatLng } from 'leaflet';
+import { nomeCategoria } from '../categorie/categoria-i18n';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Categoria } from '../models/categoria.model';
 import { Segnalazione } from '../models/segnalazione.model';
 import { classePallinoGravita } from '../shared/gravita';
+import { LinguaService } from '../shared/lingua';
 import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-categoria';
 
 const LUNGHEZZA_MASSIMA_DESCRIZIONE = 2000;
@@ -43,10 +45,15 @@ export class NuovaSegnalazione {
   /** Torna al passo di scelta del punto; il form resta montato e conserva i dati inseriti. */
   readonly cambiaPosizione = output<void>();
 
+  private readonly lingua = inject(LinguaService);
+
   /** Prima le più gravi (contro la persona), poi per nome: le urgenze si trovano subito. */
-  protected readonly categorieOrdinate = computed(() =>
-    [...this.categorie()].sort((a, b) => b.gravita - a.gravita || a.nome.localeCompare(b.nome)),
-  );
+  protected readonly categorieOrdinate = computed(() => {
+    const lingua = this.lingua.attiva();
+    return this.categorie()
+      .map((categoria) => ({ ...categoria, nome: nomeCategoria(categoria, lingua) }))
+      .sort((a, b) => b.gravita - a.gravita || a.nome.localeCompare(b.nome, lingua));
+  });
   protected readonly classePallinoGravita = classePallinoGravita;
 
   protected readonly lunghezzaMassima = LUNGHEZZA_MASSIMA_DESCRIZIONE;

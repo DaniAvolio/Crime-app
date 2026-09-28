@@ -44,7 +44,7 @@ public class CategoriaService {
 
     @Transactional
     public CategoriaDto crea(CategoriaRequest request) {
-        verificaNomeLibero(request.nome(), null);
+        verificaNomiLiberi(request, null);
         Categoria categoria = categoriaRepository.save(categoriaMapper.toEntity(request));
         log.info("Categoria creata: id={}, nome={}", categoria.getId(), categoria.getNome());
         return categoriaMapper.toDto(categoria);
@@ -53,7 +53,7 @@ public class CategoriaService {
     @Transactional
     public CategoriaDto aggiorna(Long id, CategoriaRequest request) {
         Categoria categoria = recuperaOLancia(id);
-        verificaNomeLibero(request.nome(), id);
+        verificaNomiLiberi(request, id);
         categoriaMapper.aggiornaEntity(categoria, request);
         log.info("Categoria aggiornata: id={}", id);
         return categoriaMapper.toDto(categoria);
@@ -86,12 +86,19 @@ public class CategoriaService {
         log.info("Eliminazione definitiva categoria richiesta: id={}", id);
     }
 
-    private void verificaNomeLibero(String nome, Long idEscluso) {
-        categoriaRepository.findByNome(nome)
+    /** Il nome deve essere unico sia in italiano sia in ciascuna lingua tradotta. */
+    private void verificaNomiLiberi(CategoriaRequest request, Long idEscluso) {
+        categoriaRepository.findByNome(request.nome())
                 .filter(esistente -> !esistente.getId().equals(idEscluso))
                 .ifPresent(esistente -> {
-                    throw new ConflittoException("Esiste già una categoria con nome: " + nome);
+                    throw new ConflittoException("Esiste già una categoria con nome: " + request.nome());
                 });
+        categoriaMapper.traduzioniEntity(request.traduzioni()).forEach((lingua, traduzione) -> {
+            if (categoriaRepository.esisteTraduzione(lingua, traduzione.getNome(), idEscluso)) {
+                throw new ConflittoException("Esiste già una categoria con nome " + lingua.toUpperCase()
+                        + ": " + traduzione.getNome());
+            }
+        });
     }
 
     Categoria recuperaOLancia(Long id) {

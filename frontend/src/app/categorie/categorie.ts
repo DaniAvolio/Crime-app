@@ -3,7 +3,9 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { LucideDynamicIcon } from '@lucide/angular';
+import { TranslocoService } from '@jsverse/transloco';
 import { CategoriaApi, CategoriaRequest } from './categoria-api';
+import { CategorieStore } from './categorie-store';
 import { Categoria } from '../models/categoria.model';
 import { GRAVITA, Gravita } from '../models/gravita.model';
 import { classeGravita } from '../shared/gravita';
@@ -19,6 +21,7 @@ import { ToastService } from '../shared/toast/toast';
 })
 export class Categorie implements OnInit {
   private readonly categoriaApi = inject(CategoriaApi);
+  private readonly store = inject(CategorieStore);
   private readonly fb = inject(FormBuilder);
   private readonly dialoghi = inject(DialoghiService);
   private readonly toast = inject(ToastService);
@@ -32,12 +35,30 @@ export class Categorie implements OnInit {
   /** Id della categoria in modifica, null quando il form serve a crearne una nuova. */
   protected readonly idInModifica = signal<number | null>(null);
 
+  /**
+   * Lingue da tradurre: tutte quelle dell'app tranne l'italiano, che è la lingua di nome e
+   * descrizione. Aggiungere una lingua in app.config.ts la fa comparire qui da sola.
+   */
+  protected readonly lingueTraduzione = inject(TranslocoService)
+    .getAvailableLangs()
+    .map((lingua) => (typeof lingua === 'string' ? lingua : lingua.id))
+    .filter((lingua) => lingua !== 'it');
+
   protected readonly form = this.fb.nonNullable.group({
     nome: ['', Validators.required],
     descrizione: [''],
     icona: [''],
     durataValiditaOre: [24, [Validators.required, Validators.min(1)]],
     gravita: [1 as Gravita, Validators.required],
+    // Nome vuoto = traduzione assente: per quella lingua si mostra l'italiano.
+    traduzioni: this.fb.nonNullable.group(
+      Object.fromEntries(
+        this.lingueTraduzione.map((lingua) => [
+          lingua,
+          this.fb.nonNullable.group({ nome: [''], descrizione: [''] }),
+        ]),
+      ),
+    ),
   });
 
   protected readonly livelliGravita = GRAVITA;
@@ -58,6 +79,8 @@ export class Categorie implements OnInit {
     this.categoriaApi.elenca().subscribe({
       next: (categorie) => {
         this.categorie.set(categorie);
+        // Mappa e home rileggono dallo store: vedono subito nomi e traduzioni aggiornati.
+        this.store.imposta(categorie);
         this.caricando.set(false);
       },
       error: (err: HttpErrorResponse) => {
@@ -96,6 +119,15 @@ export class Categorie implements OnInit {
       icona: categoria.icona ?? '',
       durataValiditaOre: categoria.durataValiditaOre,
       gravita: categoria.gravita,
+      traduzioni: Object.fromEntries(
+        this.lingueTraduzione.map((lingua) => [
+          lingua,
+          {
+            nome: categoria.traduzioni?.[lingua]?.nome ?? '',
+            descrizione: categoria.traduzioni?.[lingua]?.descrizione ?? '',
+          },
+        ]),
+      ),
     });
   }
 

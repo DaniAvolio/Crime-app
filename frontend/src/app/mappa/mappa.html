@@ -137,7 +137,7 @@
       [style.transform]="
         spostamentoPannello() ? 'translateY(' + spostamentoPannello() + 'px)' : null
       "
-      [attr.aria-label]="segnalazione.categoriaNome"
+      [attr.aria-label]="segnalazione | nomeCategoria"
     >
       <button
         type="button"
@@ -165,7 +165,7 @@
         </span>
         <div class="min-w-0 flex-1">
           <h2 class="font-display text-lg font-semibold leading-tight">
-            {{ segnalazione.categoriaNome }}
+            {{ segnalazione | nomeCategoria }}
           </h2>
           <p class="text-sm text-neutral-500 dark:text-muted">
             {{

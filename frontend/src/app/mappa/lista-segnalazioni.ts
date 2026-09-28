@@ -13,11 +13,14 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
+import { CategorieStore } from '../categorie/categorie-store';
+import { NomeCategoriaPipe } from '../categorie/nome-categoria.pipe';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Segnalazione } from '../models/segnalazione.model';
 import { GRAVITA, Gravita } from '../models/gravita.model';
 import { chiaveGravita, classeGravita, classePallinoGravita } from '../shared/gravita';
 import { NOME_ICONA_FALLBACK } from '../shared/icone-categoria';
+import { LinguaService } from '../shared/lingua';
 import { formattaDistanza, formattaTempoFa } from './formattazione';
 
 /** Raggi selezionabili attorno all'utente. */
@@ -58,7 +61,7 @@ function leggiRaggioSalvato(): number {
 @Component({
   selector: 'app-lista-segnalazioni',
   standalone: true,
-  imports: [TranslocoDirective, LucideDynamicIcon, NgClass],
+  imports: [TranslocoDirective, LucideDynamicIcon, NgClass, NomeCategoriaPipe],
   templateUrl: './lista-segnalazioni.html',
 })
 export class ListaSegnalazioni {
@@ -93,6 +96,8 @@ export class ListaSegnalazioni {
 
   private readonly transloco = inject(TranslocoService);
   private readonly segnalazioneApi = inject(SegnalazioneApi);
+  private readonly categorieStore = inject(CategorieStore);
+  private readonly lingua = inject(LinguaService);
 
   /** Tutte le segnalazioni caricate, con la distanza, dalla più vicina. */
   private readonly tutteLeVoci = computed<VoceLista[]>(() => {
@@ -114,12 +119,14 @@ export class ListaSegnalazioni {
   /** Chip delle categorie: solo quelle presenti nei risultati, con quante segnalazioni hanno. */
   protected readonly categorie = computed<CategoriaConConteggio[]>(() => {
     const perId = new Map<number, CategoriaConConteggio>();
-    for (const { categoriaId, categoriaNome } of this.segnalazioni()) {
-      const voce = perId.get(categoriaId) ?? { id: categoriaId, nome: categoriaNome, numero: 0 };
+    for (const segnalazione of this.segnalazioni()) {
+      const id = segnalazione.categoriaId;
+      const voce = perId.get(id) ?? { id, nome: this.categorieStore.nome(segnalazione), numero: 0 };
       voce.numero++;
-      perId.set(categoriaId, voce);
+      perId.set(id, voce);
     }
-    return [...perId.values()].sort((a, b) => a.nome.localeCompare(b.nome));
+    const lingua = this.lingua.attiva();
+    return [...perId.values()].sort((a, b) => a.nome.localeCompare(b.nome, lingua));
   });
 
   protected readonly totale = computed(() => this.segnalazioni().length);

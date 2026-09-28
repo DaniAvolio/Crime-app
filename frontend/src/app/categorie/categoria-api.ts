@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Categoria } from '../models/categoria.model';
+import { Categoria, TraduzioneCategoria } from '../models/categoria.model';
 import { Gravita } from '../models/gravita.model';
 
 /** Payload di creazione/modifica: nessun id, nessun flag "attiva" (gestito dal backend). */
@@ -12,6 +12,8 @@ export interface CategoriaRequest {
   icona?: string;
   durataValiditaOre: number;
   gravita: Gravita;
+  /** Le lingue assenti o senza nome usano l'italiano come fallback. */
+  traduzioni?: Record<string, TraduzioneCategoria>;
 }
 
 @Injectable({ providedIn: 'root' })

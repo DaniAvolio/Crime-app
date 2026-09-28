@@ -38,13 +38,13 @@ import { ExpressionSpecification, setWorkerUrl } from 'maplibre-gl';
 import { Subject, catchError, debounceTime, finalize, of, switchMap, tap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../auth/auth';
-import { CategoriaApi } from '../categorie/categoria-api';
+import { CategorieStore } from '../categorie/categorie-store';
+import { NomeCategoriaPipe } from '../categorie/nome-categoria.pipe';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Segnalazione, StatoSegnalazione } from '../models/segnalazione.model';
 import { NOME_ICONA_FALLBACK, svgIcona } from '../shared/icone-categoria';
 import { Tema, TemaService } from '../shared/tema';
 import { ToastService } from '../shared/toast/toast';
-import { Categoria } from '../models/categoria.model';
 import { GRAVITA, Gravita } from '../models/gravita.model';
 import { chiaveGravita, classeGravita, classePallinoGravita } from '../shared/gravita';
 import { formattaData, formattaDistanza } from './formattazione';
@@ -322,6 +322,7 @@ function aggiungiLuoghiUtili(sfondo: MaplibreGL): void {
     NuovaSegnalazione,
     SceltaPosizione,
     ListaSegnalazioni,
+    NomeCategoriaPipe,
   ],
   templateUrl: './mappa.html',
   host: { '(document:keydown.escape)': 'gestisciEscape()' },
@@ -382,7 +383,8 @@ export class Mappa {
   /** Nuova segnalazione in corso, in uno dei due passi (scelta del punto o dettagli). */
   protected readonly nuovaAperta = computed(() => this.pannello()?.startsWith('nuova') ?? false);
 
-  protected readonly categorie = signal<Categoria[]>([]);
+  private readonly categorieStore = inject(CategorieStore);
+  protected readonly categorie = this.categorieStore.categorie;
   protected readonly categorieAttive = computed(() => this.categorie().filter((c) => c.attiva));
 
   /** Punto della nuova segnalazione: parte dalla posizione dell'utente, si sposta col pin. */
@@ -427,7 +429,9 @@ export class Mappa {
   private readonly idSelezionata = computed(() => this.selezionata()?.id ?? null);
 
   /** categoriaId -> nome icona Lucide, per disegnare il marker con l'icona della categoria. */
-  protected readonly iconePerCategoria = signal(new Map<number, string>());
+  protected readonly iconePerCategoria = computed(
+    () => new Map(this.categorie().map((c) => [c.id, c.icona ?? NOME_ICONA_FALLBACK])),
+  );
   private readonly areaRichiesta = new Subject<AreaVisibile>();
   private areaCaricata: (AreaVisibile & { istante: number }) | null = null;
   private readonly livelloSegnalazioni = layerGroup();
@@ -492,13 +496,18 @@ export class Mappa {
         const icona = icone.get(segnalazione.categoriaId) ?? NOME_ICONA_FALLBACK;
         const gravita = segnalazione.categoriaGravita;
         const posizione = latLng(segnalazione.lat, segnalazione.lng);
-        const firma = `${segnalazione.lat},${segnalazione.lng},${icona},${gravita},${attiva}`;
+        // Nel nome c'è la lingua: al cambio lingua il marker va ritoccato anche se non si è mosso.
+        const nome = this.categorieStore.nome(segnalazione);
+        const firma = `${segnalazione.lat},${segnalazione.lng},${icona},${gravita},${attiva},${nome}`;
         const esistente = this.marcatori.get(segnalazione.id);
         if (esistente?.firma === firma) {
           continue;
         }
         if (esistente) {
           esistente.alone.setLatLng(posizione).setStyle(stileAlone(attiva, gravita));
+          // setIcon ricrea l'elemento del marker leggendo title/alt dalle options.
+          esistente.marker.options.title = nome;
+          esistente.marker.options.alt = nome;
           esistente.marker
             .setLatLng(posizione)
             .setIcon(iconaMarker(icona, attiva, gravita))
@@ -515,8 +524,8 @@ export class Mappa {
         }).addTo(this.livelloSegnalazioni);
         const nuovo = marker(posizione, {
           icon: iconaMarker(icona, attiva, gravita),
-          title: segnalazione.categoriaNome,
-          alt: segnalazione.categoriaNome,
+          title: nome,
+          alt: nome,
           keyboard: true,
           riseOnHover: true,
           zIndexOffset: attiva ? 1000 : 0,
@@ -612,19 +621,8 @@ export class Mappa {
         }
       });
 
-    inject(CategoriaApi)
-      .elenca()
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: (categorie) => {
-          this.categorie.set(categorie);
-          this.iconePerCategoria.set(
-            new Map(categorie.map((c) => [c.id, c.icona ?? NOME_ICONA_FALLBACK])),
-          );
-        },
-        // Senza categorie i marker usano l'icona di fallback: non serve un avviso dedicato.
-        error: () => {},
-      });
+    // Senza categorie i marker usano l'icona di fallback e il nome italiano della segnalazione.
+    this.categorieStore.carica();
 
     inject(DestroyRef).onDestroy(() => {
       this.fermaAutoScorrimento();

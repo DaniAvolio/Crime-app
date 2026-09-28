@@ -7,6 +7,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Categoria di segnalazione: tabella su DB (non enum) per permettere agli
@@ -61,6 +65,18 @@ public class Categoria {
     @Column(nullable = false)
     @Builder.Default
     private boolean attiva = true;
+
+    /**
+     * Traduzioni per lingua (codice ISO 639-1, es. "en"). Nome e descrizione
+     * della categoria sono in italiano e fanno da fallback per le lingue mancanti.
+     */
+    @ElementCollection
+    @CollectionTable(name = "categoria_traduzione", joinColumns = @JoinColumn(name = "categoria_id"))
+    @MapKeyColumn(name = "lingua", length = 10)
+    @BatchSize(size = 50)
+    @Builder.Default
+    @ToString.Exclude
+    private Map<String, TraduzioneCategoria> traduzioni = new HashMap<>();
 
     @Override
     public boolean equals(Object o) {

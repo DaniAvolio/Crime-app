@@ -14,7 +14,8 @@ import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { map, startWith } from 'rxjs';
 import { AuthService } from '../auth/auth';
-import { CategoriaApi } from '../categorie/categoria-api';
+import { CategorieStore } from '../categorie/categorie-store';
+import { NomeCategoriaPipe } from '../categorie/nome-categoria.pipe';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { formattaData, formattaTempoFa } from '../mappa/formattazione';
 import { Segnalazione, StatoSegnalazione } from '../models/segnalazione.model';
@@ -40,7 +41,14 @@ function passwordCoincidenti(gruppo: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-profilo',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslocoDirective, LucideDynamicIcon, NgClass],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    TranslocoDirective,
+    LucideDynamicIcon,
+    NgClass,
+    NomeCategoriaPipe,
+  ],
   templateUrl: './profilo.html',
 })
 export class Profilo {
@@ -97,7 +105,7 @@ export class Profilo {
   protected readonly caricamentoSegnalazioni = signal(true);
   protected readonly erroreSegnalazioni = signal(false);
   protected readonly scheda = signal<Scheda>('attive');
-  private readonly iconePerCategoria = signal(new Map<number, string>());
+  private readonly categorieStore = inject(CategorieStore);
 
   protected readonly attive = computed(() =>
     this.ordinaPerData(this.segnalazioni().filter((s) => s.stato === StatoSegnalazione.ATTIVA)),
@@ -117,15 +125,8 @@ export class Profilo {
         this.formDati.reset({ nome: utente.nome, cognome: utente.cognome });
       }
     });
-    inject(CategoriaApi)
-      .elenca()
-      .subscribe({
-        next: (categorie) =>
-          this.iconePerCategoria.set(new Map(categorie.map((c) => [c.id, c.icona ?? '']))),
-        error: () => {
-          // Senza categorie si usa l'icona di ripiego.
-        },
-      });
+    // Senza categorie si usano l'icona di ripiego e il nome italiano della segnalazione.
+    this.categorieStore.carica();
     this.caricaSegnalazioni();
   }
 
@@ -257,7 +258,7 @@ export class Profilo {
   }
 
   protected icona(categoriaId: number): string {
-    const nome = this.iconePerCategoria().get(categoriaId);
+    const nome = this.categorieStore.perId().get(categoriaId)?.icona;
     return nome && NOMI_ICONE_DISPONIBILI.includes(nome) ? nome : NOME_ICONA_FALLBACK;
   }
 
