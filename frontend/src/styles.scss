@@ -105,6 +105,12 @@ html.dark {
     bottom: var(--altezza-navbar-mappa);
   }
 
+  /* Controlli in alto (zoom) sotto la fila dei filtri di gravità, che occupa il bordo alto:
+     chip alte 36px + 12px di margine sopra + 4px sotto. */
+  .leaflet-top {
+    top: 3.25rem;
+  }
+
   @media (min-width: 1024px) {
     --altezza-navbar-mappa: 0px;
   }

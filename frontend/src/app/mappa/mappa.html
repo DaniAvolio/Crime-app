@@ -7,11 +7,26 @@
         <stop offset="55%" stop-color="#6b7280" stop-opacity="0.18" />
         <stop offset="100%" stop-color="#6b7280" stop-opacity="0" />
       </radialGradient>
-      <radialGradient id="alone-attivo">
-        <stop offset="0%" stop-color="#dc2626" stop-opacity="0.2" />
-        <stop offset="55%" stop-color="#dc2626" stop-opacity="0.16" />
-        <stop offset="100%" stop-color="#dc2626" stop-opacity="0" />
-      </radialGradient>
+      <!-- Segnalazione selezionata: alone nel colore della sua gravità (stessi token dei marker). -->
+      @for (gravita of livelliGravita; track gravita) {
+        <radialGradient [attr.id]="'alone-attivo-' + gravita">
+          <stop
+            offset="0%"
+            stop-opacity="0.2"
+            [style.stop-color]="'var(--color-gravita-' + gravita + ')'"
+          />
+          <stop
+            offset="55%"
+            stop-opacity="0.16"
+            [style.stop-color]="'var(--color-gravita-' + gravita + ')'"
+          />
+          <stop
+            offset="100%"
+            stop-opacity="0"
+            [style.stop-color]="'var(--color-gravita-' + gravita + ')'"
+          />
+        </radialGradient>
+      }
     </defs>
   </svg>
 
@@ -153,7 +168,9 @@
             {{ segnalazione.categoriaNome }}
           </h2>
           <p class="text-sm text-neutral-500 dark:text-muted">
-            {{ t('gravita.etichetta', { gravita: t(chiaveGravita(segnalazione.categoriaGravita)) }) }}
+            {{
+              t('gravita.etichetta', { gravita: t(chiaveGravita(segnalazione.categoriaGravita)) })
+            }}
           </p>
           @if (distanzaSelezionata(); as distanza) {
             <p class="text-sm text-neutral-500 dark:text-muted">

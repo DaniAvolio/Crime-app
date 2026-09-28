@@ -133,8 +133,9 @@ function iconaMarker(icona: string, attiva: boolean, gravita: Gravita) {
  * Alone sfumato con un gradiente radiale (definito una volta in mappa.html) invece di un
  * filter: blur() su ogni cerchio, che il browser ricalcola a ogni pan e zoom.
  */
-function stileAlone(attiva: boolean) {
-  return { fillColor: attiva ? 'url(#alone-attivo)' : 'url(#alone)', fillOpacity: 1 };
+function stileAlone(attiva: boolean, gravita: Gravita) {
+  // Selezionata: alone nel colore della gravità, come il marker; le altre restano grigie.
+  return { fillColor: attiva ? `url(#alone-attivo-${gravita})` : 'url(#alone)', fillOpacity: 1 };
 }
 
 /** Il filtro per gravità si ricorda tra una visita e l'altra (solo comodità: se manca, "Tutte"). */
@@ -491,7 +492,7 @@ export class Mappa {
           continue;
         }
         if (esistente) {
-          esistente.alone.setLatLng(posizione).setStyle(stileAlone(attiva));
+          esistente.alone.setLatLng(posizione).setStyle(stileAlone(attiva, gravita));
           esistente.marker
             .setLatLng(posizione)
             .setIcon(iconaMarker(icona, attiva, gravita))
@@ -504,7 +505,7 @@ export class Mappa {
           radius: RAGGIO_INCERTEZZA_METRI,
           stroke: false,
           interactive: false,
-          ...stileAlone(attiva),
+          ...stileAlone(attiva, gravita),
         }).addTo(this.livelloSegnalazioni);
         const nuovo = marker(posizione, {
           icon: iconaMarker(icona, attiva, gravita),
