@@ -1,9 +1,11 @@
 package com.daniele.crime_app_backend.controller;
 
+import com.daniele.crime_app_backend.dto.CambioPasswordRequest;
 import com.daniele.crime_app_backend.dto.UtenteAggiornamentoRequest;
 import com.daniele.crime_app_backend.dto.UtenteDto;
 import com.daniele.crime_app_backend.dto.UtenteRegistrazioneRequest;
 import com.daniele.crime_app_backend.dto.UtenteRuoloRequest;
+import com.daniele.crime_app_backend.service.UtenteCorrenteService;
 import com.daniele.crime_app_backend.service.UtenteService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,9 +20,25 @@ import java.util.List;
 public class UtenteController {
 
     private final UtenteService utenteService;
+    private final UtenteCorrenteService utenteCorrenteService;
 
-    public UtenteController(UtenteService utenteService) {
+    public UtenteController(UtenteService utenteService, UtenteCorrenteService utenteCorrenteService) {
         this.utenteService = utenteService;
+        this.utenteCorrenteService = utenteCorrenteService;
+    }
+
+    // Profilo: l'utente agisce su sé stesso, ricavato dal token (mai un id dal client).
+    // Coperto da "/api/utenti/me/**" -> authenticated in SecurityConfig.
+
+    @PutMapping("/me")
+    public UtenteDto aggiornaProfilo(@Valid @RequestBody UtenteAggiornamentoRequest request) {
+        return utenteService.aggiorna(utenteCorrenteService.utenteCorrente().getId(), request);
+    }
+
+    @PatchMapping("/me/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cambiaPassword(@Valid @RequestBody CambioPasswordRequest request) {
+        utenteService.cambiaPassword(utenteCorrenteService.utenteCorrente().getId(), request);
     }
 
     @GetMapping

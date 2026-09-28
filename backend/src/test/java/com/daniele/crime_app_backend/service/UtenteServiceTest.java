@@ -1,8 +1,10 @@
 package com.daniele.crime_app_backend.service;
 
+import com.daniele.crime_app_backend.dto.CambioPasswordRequest;
 import com.daniele.crime_app_backend.entity.Utente;
 import com.daniele.crime_app_backend.entity.enums.RuoloUtente;
 import com.daniele.crime_app_backend.exception.ConflittoException;
+import com.daniele.crime_app_backend.exception.RichiestaNonValidaException;
 import com.daniele.crime_app_backend.mapper.UtenteMapper;
 import com.daniele.crime_app_backend.repository.UtenteRepository;
 import org.junit.jupiter.api.Test;
@@ -29,6 +31,23 @@ class UtenteServiceTest {
 
     private UtenteService service(String emailAdmin) {
         return new UtenteService(utenteRepository, new UtenteMapper(), new BCryptPasswordEncoder(), emailAdmin);
+    }
+
+    @Test
+    void cambiaPasswordSoloConQuellaAttualeCorretta() {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        Utente utente = utente(1L, RuoloUtente.UTENTE);
+        utente.setPasswordHash(encoder.encode("vecchia123"));
+        when(utenteRepository.findById(1L)).thenReturn(Optional.of(utente));
+        UtenteService service = service("");
+
+        assertThatThrownBy(() -> service.cambiaPassword(1L, new CambioPasswordRequest("sbagliata", "nuova1234")))
+                .isInstanceOf(RichiestaNonValidaException.class);
+        assertThatThrownBy(() -> service.cambiaPassword(1L, new CambioPasswordRequest("vecchia123", "vecchia123")))
+                .isInstanceOf(RichiestaNonValidaException.class);
+
+        service.cambiaPassword(1L, new CambioPasswordRequest("vecchia123", "nuova1234"));
+        assertThat(encoder.matches("nuova1234", utente.getPasswordHash())).isTrue();
     }
 
     @Test

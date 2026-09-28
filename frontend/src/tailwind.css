@@ -42,6 +42,10 @@
     @apply absolute inset-x-0 bottom-[var(--altezza-navbar-mappa)] z-[1100] overflow-y-auto overscroll-contain rounded-t-2xl border-t border-neutral-200 bg-white px-5 pt-1 pb-5 text-neutral-900 shadow-[0_-4px_20px_rgb(0_0_0/0.15)] transition-[max-height] duration-200 lg:inset-x-auto lg:top-4 lg:right-4 lg:bottom-auto lg:max-h-[calc(100%-2rem)] lg:w-96 lg:rounded-xl lg:border lg:pt-4 lg:pb-6 dark:border-line dark:bg-panel dark:text-paper;
   }
 
+  .campo-profilo {
+    @apply mt-1.5 block h-11 w-full rounded-md border border-neutral-300 bg-white px-3 text-[15px] focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 aria-invalid:border-allerta dark:border-line dark:bg-ink;
+  }
+
   .chip-filtro {
     @apply flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-neutral-300 px-3.5 text-sm font-medium whitespace-nowrap text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 aria-pressed:border-allerta aria-pressed:bg-allerta aria-pressed:text-white dark:border-line dark:text-paper dark:hover:bg-panel dark:aria-pressed:border-allerta dark:aria-pressed:bg-allerta;
   }

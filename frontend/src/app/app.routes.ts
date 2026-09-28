@@ -6,7 +6,8 @@ import { Utenti } from './gestione/utenti/utenti';
 import { Segnalazioni } from './gestione/segnalazioni/segnalazioni';
 import { Login } from './auth/login';
 import { Registrazione } from './auth/registrazione';
-import { adminGuard, ospiteGuard, paginaInizialeGuard } from './auth/auth.guard';
+import { adminGuard, autenticatoGuard, ospiteGuard, paginaInizialeGuard } from './auth/auth.guard';
+import { Profilo } from './profilo/profilo';
 
 export const routes: Routes = [
   // Ospiti: landing. Utenti autenticati: direttamente la mappa.
@@ -16,6 +17,7 @@ export const routes: Routes = [
   { path: 'mappa', loadComponent: () => import('./mappa/mappa').then((m) => m.Mappa) },
   { path: 'login', component: Login, canActivate: [ospiteGuard] },
   { path: 'registrati', component: Registrazione, canActivate: [ospiteGuard] },
+  { path: 'profilo', component: Profilo, canActivate: [autenticatoGuard] },
   {
     path: 'gestione',
     canActivate: [adminGuard],

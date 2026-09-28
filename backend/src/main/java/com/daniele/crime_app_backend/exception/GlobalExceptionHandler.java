@@ -41,6 +41,11 @@ public class GlobalExceptionHandler {
         return costruisci(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
+    @ExceptionHandler(RichiestaNonValidaException.class)
+    public ResponseEntity<ErrorResponse> gestisciRichiestaNonValida(RichiestaNonValidaException ex) {
+        return costruisci(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     @ExceptionHandler(AccessoNegatoException.class)
     public ResponseEntity<ErrorResponse> gestisciAccessoNegato(AccessoNegatoException ex) {
         log.warn("Accesso negato: {}", ex.getMessage());

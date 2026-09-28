@@ -3,7 +3,8 @@
     "mappa": "Mappa",
     "gestione": "Gestione",
     "accedi": "Accedi",
-    "esci": "Esci"
+    "esci": "Esci",
+    "profilo": "Profilo"
   },
   "home": {
     "hero": {
@@ -37,12 +38,12 @@
     }
   },
   "gravita": {
-    "filtro": "Filtra per gravità",
-    "tutte": "Tutte",
-    "etichetta": "Gravità {{gravita}}",
     "1": "Bassa",
     "2": "Media",
-    "3": "Alta"
+    "3": "Alta",
+    "filtro": "Filtra per gravità",
+    "tutte": "Tutte",
+    "etichetta": "Gravità {{gravita}}"
   },
   "mappa": {
     "posizione": {
@@ -128,6 +129,10 @@
       "tutte": "Tutte",
       "vuotaCategoria": "Nessuna segnalazione di {{ categoria }} entro {{ raggio }}.",
       "allarga": "Cerca entro {{ raggio }}"
+    },
+    "link": {
+      "nonAttiva": "Questa segnalazione non è più attiva, quindi non è sulla mappa.",
+      "nonTrovata": "Non abbiamo trovato questa segnalazione."
     }
   },
   "condivisi": {
@@ -176,5 +181,73 @@
     "richiestoLogin": "Accedi per pubblicare o confermare una segnalazione.",
     "sessioneScaduta": "La sessione è scaduta: accedi di nuovo.",
     "soloAdmin": "Questa sezione è riservata agli amministratori."
+  },
+  "profilo": {
+    "admin": "Admin",
+    "verificata": "Identità verificata",
+    "nonVerificata": "Identità non verificata",
+    "iscrittoDa": "Iscritto da {{ data }}",
+    "obbligatorio": "Campo obbligatorio.",
+    "annulla": "Annulla",
+    "salvataggio": "Salvataggio…",
+    "riepilogo": {
+      "attive": "Segnalazioni attive",
+      "totali": "Segnalazioni fatte in totale"
+    },
+    "dati": {
+      "titolo": "I tuoi dati",
+      "nome": "Nome",
+      "cognome": "Cognome",
+      "email": "Email",
+      "emailNota": "L'email non si può modificare: è quella con cui accedi.",
+      "salva": "Salva modifiche",
+      "salvati": "Dati aggiornati.",
+      "errore": "Non siamo riusciti a salvare i dati. Riprova."
+    },
+    "password": {
+      "titolo": "Password",
+      "attuale": "Password attuale",
+      "nuova": "Nuova password",
+      "conferma": "Conferma nuova password",
+      "aiuto": "Almeno 8 caratteri.",
+      "mostra": "Mostra password",
+      "cambia": "Cambia password",
+      "cambiata": "Password cambiata.",
+      "troppoCorta": "La password deve avere almeno 8 caratteri.",
+      "nonCoincidenti": "Le due password non coincidono.",
+      "errore": "Non siamo riusciti a cambiare la password. Riprova."
+    },
+    "segnalazioni": {
+      "titolo": "Le mie segnalazioni",
+      "vaiMappa": "Vai alla mappa",
+      "attive": "Attive",
+      "concluse": "Concluse",
+      "caricamento": "Caricamento delle tue segnalazioni…",
+      "errore": "Non riusciamo a caricare le tue segnalazioni.",
+      "riprova": "Riprova",
+      "vuotaAttive": "Non hai segnalazioni attive.",
+      "vuotaConcluse": "Nessuna segnalazione conclusa.",
+      "segnala": "Segnala qualcosa sulla mappa",
+      "anonima": "Anonima",
+      "creata": "Segnalata {{ quando }}",
+      "scade": "Scade il {{ data }}",
+      "rimossa": "Rimossa il {{ data }}",
+      "apri": "Apri sulla mappa",
+      "rimuovi": {
+        "azione": "Rimuovi",
+        "titolo": "Rimuovere la segnalazione?",
+        "messaggio": "Sparirà dalla mappa per tutti. Resterà tra le tue segnalazioni concluse.",
+        "motivazione": "Motivo (facoltativo)",
+        "conferma": "Rimuovi",
+        "fatto": "Segnalazione rimossa.",
+        "errore": "Non siamo riusciti a rimuovere la segnalazione."
+      }
+    },
+    "stati": {
+      "ATTIVA": "Attiva",
+      "SCADUTA": "Scaduta",
+      "SOSPESA": "Sospesa",
+      "RIMOSSA": "Rimossa"
+    }
   }
 }

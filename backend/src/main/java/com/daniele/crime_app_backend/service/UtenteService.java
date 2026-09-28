@@ -1,11 +1,13 @@
 package com.daniele.crime_app_backend.service;
 
+import com.daniele.crime_app_backend.dto.CambioPasswordRequest;
 import com.daniele.crime_app_backend.dto.UtenteAggiornamentoRequest;
 import com.daniele.crime_app_backend.dto.UtenteDto;
 import com.daniele.crime_app_backend.dto.UtenteRegistrazioneRequest;
 import com.daniele.crime_app_backend.entity.Utente;
 import com.daniele.crime_app_backend.entity.enums.RuoloUtente;
 import com.daniele.crime_app_backend.exception.ConflittoException;
+import com.daniele.crime_app_backend.exception.RichiestaNonValidaException;
 import com.daniele.crime_app_backend.exception.RisorsaNonTrovataException;
 import com.daniele.crime_app_backend.mapper.UtenteMapper;
 import com.daniele.crime_app_backend.repository.UtenteRepository;
@@ -66,6 +68,20 @@ public class UtenteService {
         utente.setNome(request.nome());
         utente.setCognome(request.cognome());
         return utenteMapper.toDto(utente);
+    }
+
+    /** Cambio della propria password: va confermata quella attuale. */
+    @Transactional
+    public void cambiaPassword(Long id, CambioPasswordRequest request) {
+        Utente utente = recuperaOLancia(id);
+        if (!passwordEncoder.matches(request.passwordAttuale(), utente.getPasswordHash())) {
+            throw new RichiestaNonValidaException("La password attuale non è corretta");
+        }
+        if (passwordEncoder.matches(request.nuovaPassword(), utente.getPasswordHash())) {
+            throw new RichiestaNonValidaException("La nuova password deve essere diversa da quella attuale");
+        }
+        utente.setPasswordHash(passwordEncoder.encode(request.nuovaPassword()));
+        log.info("Password cambiata dall'utente {}", id);
     }
 
     @Transactional

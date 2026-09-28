@@ -4,10 +4,13 @@ import com.daniele.crime_app_backend.controller.AuthController;
 import com.daniele.crime_app_backend.controller.CategoriaController;
 import com.daniele.crime_app_backend.controller.SegnalazioneController;
 import com.daniele.crime_app_backend.controller.UtenteController;
+import com.daniele.crime_app_backend.entity.Utente;
+import com.daniele.crime_app_backend.entity.enums.RuoloUtente;
 import com.daniele.crime_app_backend.repository.UtenteRepository;
 import com.daniele.crime_app_backend.service.AuthService;
 import com.daniele.crime_app_backend.service.CategoriaService;
 import com.daniele.crime_app_backend.service.SegnalazioneService;
+import com.daniele.crime_app_backend.service.UtenteCorrenteService;
 import com.daniele.crime_app_backend.service.UtenteService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,6 +56,8 @@ class SecurityConfigTest {
     private AuthService authService;
     @MockitoBean
     private UtenteService utenteService;
+    @MockitoBean
+    private UtenteCorrenteService utenteCorrenteService;
     /** Richiesto da JwtUtenteConverter; il post-processor jwt() di questi test non passa dal converter. */
     @MockitoBean
     private UtenteRepository utenteRepository;
@@ -116,6 +122,26 @@ class SecurityConfigTest {
         mockMvc.perform(patch("/api/utenti/1/ruolo").with(ruolo("UTENTE"))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"ruolo\": \"ADMIN\"}"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void profiloRichiedeLoginMaNonIlRuoloAdmin() throws Exception {
+        when(utenteCorrenteService.utenteCorrente())
+                .thenReturn(Utente.builder().id(1L).ruolo(RuoloUtente.UTENTE).attivo(true).build());
+        mockMvc.perform(put("/api/utenti/me")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"nome\": \"A\", \"cognome\": \"B\"}"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(put("/api/utenti/me").with(ruolo("UTENTE"))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"nome\": \"A\", \"cognome\": \"B\"}"))
+                .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/utenti/me/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"passwordAttuale\": \"vecchia123\", \"nuovaPassword\": \"nuova1234\"}"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(patch("/api/utenti/me/password").with(ruolo("UTENTE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"passwordAttuale\": \"vecchia123\", \"nuovaPassword\": \"nuova1234\"}"))
+                .andExpect(status().isNoContent());
     }
 
     private static RequestPostProcessor ruolo(String ruolo) {

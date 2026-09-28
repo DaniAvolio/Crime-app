@@ -1,0 +1,412 @@
+<main
+  *transloco="let t"
+  class="min-h-full bg-neutral-50 text-neutral-900 dark:bg-ink dark:text-paper"
+>
+  <div class="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10">
+    @if (auth.utente(); as utente) {
+      <!-- Intestazione -->
+      <header class="flex items-center gap-4">
+        <span
+          class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-allerta font-display text-2xl font-semibold text-white"
+          aria-hidden="true"
+        >
+          {{ iniziali() }}
+        </span>
+        <div class="min-w-0">
+          <h1 class="truncate font-display text-2xl font-semibold leading-tight">
+            {{ utente.nome }} {{ utente.cognome }}
+          </h1>
+          <p class="truncate text-sm text-neutral-500 dark:text-muted">{{ utente.email }}</p>
+          <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
+            @if (utente.ruolo === 'ADMIN') {
+              <span
+                class="rounded-full bg-allerta/10 px-2 py-0.5 font-medium text-allerta dark:bg-allerta/20 dark:text-red-300"
+              >
+                {{ t('profilo.admin') }}
+              </span>
+            }
+            @if (utente.identitaVerificata) {
+              <span
+                class="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+              >
+                <svg lucideIcon="check" class="h-3 w-3" aria-hidden="true"></svg>
+                {{ t('profilo.verificata') }}
+              </span>
+            } @else {
+              <span
+                class="rounded-full bg-neutral-200 px-2 py-0.5 text-neutral-600 dark:bg-panel dark:text-muted"
+              >
+                {{ t('profilo.nonVerificata') }}
+              </span>
+            }
+            <span class="text-neutral-500 dark:text-muted">
+              {{ t('profilo.iscrittoDa', { data: meseAnno(utente.dataRegistrazione) }) }}
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Riepilogo segnalazioni -->
+      <div class="grid grid-cols-2 gap-3">
+        <div
+          class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-line dark:bg-panel"
+        >
+          <p class="font-display text-2xl font-semibold tabular-nums">{{ attive().length }}</p>
+          <p class="text-sm text-neutral-500 dark:text-muted">
+            {{ t('profilo.riepilogo.attive') }}
+          </p>
+        </div>
+        <div
+          class="rounded-xl border border-neutral-200 bg-white p-4 dark:border-line dark:bg-panel"
+        >
+          <p class="font-display text-2xl font-semibold tabular-nums">
+            {{ attive().length + concluse().length }}
+          </p>
+          <p class="text-sm text-neutral-500 dark:text-muted">
+            {{ t('profilo.riepilogo.totali') }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Le mie segnalazioni -->
+      <section
+        class="rounded-xl border border-neutral-200 bg-white p-5 sm:p-6 dark:border-line dark:bg-panel"
+        aria-labelledby="titolo-mie-segnalazioni"
+      >
+        <div class="flex items-center justify-between gap-3">
+          <h2 id="titolo-mie-segnalazioni" class="font-display text-lg font-semibold">
+            {{ t('profilo.segnalazioni.titolo') }}
+          </h2>
+          <a
+            routerLink="/mappa"
+            class="text-sm font-medium text-allerta underline-offset-2 hover:underline dark:text-red-400"
+          >
+            {{ t('profilo.segnalazioni.vaiMappa') }}
+          </a>
+        </div>
+
+        <div
+          role="tablist"
+          [attr.aria-label]="t('profilo.segnalazioni.titolo')"
+          class="mt-4 flex rounded-lg bg-neutral-100 p-1 dark:bg-ink"
+        >
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="scheda() === 'attive'"
+            class="h-9 flex-1 rounded-md text-sm font-medium text-neutral-600 transition-colors aria-selected:bg-white aria-selected:text-neutral-900 aria-selected:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 dark:text-muted dark:aria-selected:bg-panel dark:aria-selected:text-paper"
+            (click)="scheda.set('attive')"
+          >
+            {{ t('profilo.segnalazioni.attive') }}
+            <span class="tabular-nums opacity-70">{{ attive().length }}</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="scheda() === 'concluse'"
+            class="h-9 flex-1 rounded-md text-sm font-medium text-neutral-600 transition-colors aria-selected:bg-white aria-selected:text-neutral-900 aria-selected:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 dark:text-muted dark:aria-selected:bg-panel dark:aria-selected:text-paper"
+            (click)="scheda.set('concluse')"
+          >
+            {{ t('profilo.segnalazioni.concluse') }}
+            <span class="tabular-nums opacity-70">{{ concluse().length }}</span>
+          </button>
+        </div>
+
+        <div role="tabpanel" class="mt-2">
+          @if (caricamentoSegnalazioni()) {
+            <p role="status" class="py-8 text-center text-sm text-neutral-500 dark:text-muted">
+              {{ t('profilo.segnalazioni.caricamento') }}
+            </p>
+          } @else if (erroreSegnalazioni()) {
+            <div class="flex flex-col items-center gap-3 py-8 text-center">
+              <p role="alert" class="text-sm text-neutral-600 dark:text-muted">
+                {{ t('profilo.segnalazioni.errore') }}
+              </p>
+              <button
+                type="button"
+                class="h-10 rounded-md border border-neutral-300 px-4 text-sm font-medium hover:bg-neutral-100 dark:border-line dark:hover:bg-ink"
+                (click)="caricaSegnalazioni()"
+              >
+                {{ t('profilo.segnalazioni.riprova') }}
+              </button>
+            </div>
+          } @else if (elencoScheda().length === 0) {
+            <div class="flex flex-col items-center gap-3 py-8 text-center">
+              <p class="text-sm text-neutral-600 dark:text-muted">
+                {{
+                  t(
+                    scheda() === 'attive'
+                      ? 'profilo.segnalazioni.vuotaAttive'
+                      : 'profilo.segnalazioni.vuotaConcluse'
+                  )
+                }}
+              </p>
+              @if (scheda() === 'attive') {
+                <a
+                  routerLink="/mappa"
+                  class="flex h-10 items-center rounded-md bg-allerta px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  {{ t('profilo.segnalazioni.segnala') }}
+                </a>
+              }
+            </div>
+          } @else {
+            <ul class="divide-y divide-neutral-200 dark:divide-line">
+              @for (segnalazione of elencoScheda(); track segnalazione.id) {
+                <li class="flex items-start gap-3 py-4">
+                  <span
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                    [ngClass]="classeGravita(segnalazione.categoriaGravita)"
+                    aria-hidden="true"
+                  >
+                    <svg [lucideIcon]="icona(segnalazione.categoriaId)" class="h-5 w-5"></svg>
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span class="font-medium">{{ segnalazione.categoriaNome }}</span>
+                      @if (segnalazione.stato !== StatoSegnalazione.ATTIVA) {
+                        <span
+                          class="rounded-full bg-neutral-200 px-2 py-0.5 text-xs text-neutral-600 dark:bg-ink dark:text-muted"
+                        >
+                          {{ t('profilo.stati.' + segnalazione.stato) }}
+                        </span>
+                      }
+                      @if (segnalazione.anonima) {
+                        <span
+                          class="rounded-full border border-neutral-300 px-2 py-0.5 text-xs text-neutral-500 dark:border-line dark:text-muted"
+                        >
+                          {{ t('profilo.segnalazioni.anonima') }}
+                        </span>
+                      }
+                    </div>
+                    <p class="mt-1 line-clamp-2 text-sm text-neutral-600 dark:text-muted">
+                      {{ segnalazione.descrizione }}
+                    </p>
+                    <p class="mt-1 flex flex-wrap gap-x-3 text-xs text-neutral-500 dark:text-muted">
+                      <span>
+                        {{
+                          t('profilo.segnalazioni.creata', {
+                            quando: tempoFa(segnalazione.dataCreazione),
+                          })
+                        }}
+                      </span>
+                      @if (segnalazione.stato === StatoSegnalazione.ATTIVA) {
+                        <span>
+                          {{
+                            t('profilo.segnalazioni.scade', {
+                              data: data(segnalazione.dataScadenza),
+                            })
+                          }}
+                        </span>
+                      } @else if (segnalazione.dataRimozione) {
+                        <span>
+                          {{
+                            t('profilo.segnalazioni.rimossa', {
+                              data: data(segnalazione.dataRimozione),
+                            })
+                          }}
+                        </span>
+                      }
+                    </p>
+                    <div class="mt-2 flex flex-wrap gap-4 text-sm font-medium">
+                      @if (segnalazione.stato === StatoSegnalazione.ATTIVA) {
+                        <a
+                          routerLink="/mappa"
+                          [queryParams]="{ segnalazione: segnalazione.id }"
+                          class="flex items-center gap-1 text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-paper dark:decoration-line dark:hover:decoration-paper"
+                        >
+                          <svg lucideIcon="map-pin" class="h-4 w-4" aria-hidden="true"></svg>
+                          {{ t('profilo.segnalazioni.apri') }}
+                        </a>
+                        <button
+                          type="button"
+                          class="text-allerta underline-offset-2 hover:underline dark:text-red-400"
+                          (click)="rimuovi(segnalazione)"
+                        >
+                          {{ t('profilo.segnalazioni.rimuovi.azione') }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </section>
+
+      <!-- I tuoi dati -->
+      <section
+        class="rounded-xl border border-neutral-200 bg-white p-5 sm:p-6 dark:border-line dark:bg-panel"
+        aria-labelledby="titolo-dati"
+      >
+        <h2 id="titolo-dati" class="font-display text-lg font-semibold">
+          {{ t('profilo.dati.titolo') }}
+        </h2>
+        <form
+          class="mt-4 flex flex-col gap-4"
+          [formGroup]="formDati"
+          (ngSubmit)="salvaDati()"
+          novalidate
+        >
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="profilo-nome" class="text-sm font-medium">{{
+                t('profilo.dati.nome')
+              }}</label>
+              <input
+                id="profilo-nome"
+                formControlName="nome"
+                autocomplete="given-name"
+                class="campo-profilo"
+                [attr.aria-invalid]="erroreCampo('nome') !== null"
+              />
+              @if (erroreCampo('nome'); as errore) {
+                <p class="mt-1 text-sm text-allerta">{{ errore }}</p>
+              }
+            </div>
+            <div>
+              <label for="profilo-cognome" class="text-sm font-medium">
+                {{ t('profilo.dati.cognome') }}
+              </label>
+              <input
+                id="profilo-cognome"
+                formControlName="cognome"
+                autocomplete="family-name"
+                class="campo-profilo"
+                [attr.aria-invalid]="erroreCampo('cognome') !== null"
+              />
+              @if (erroreCampo('cognome'); as errore) {
+                <p class="mt-1 text-sm text-allerta">{{ errore }}</p>
+              }
+            </div>
+          </div>
+          <div>
+            <label for="profilo-email" class="text-sm font-medium">{{
+              t('profilo.dati.email')
+            }}</label>
+            <input
+              id="profilo-email"
+              type="email"
+              [value]="utente.email"
+              disabled
+              aria-describedby="profilo-email-nota"
+              class="campo-profilo cursor-not-allowed bg-neutral-100 text-neutral-500 dark:bg-ink dark:text-muted"
+            />
+            <p id="profilo-email-nota" class="mt-1 text-xs text-neutral-500 dark:text-muted">
+              {{ t('profilo.dati.emailNota') }}
+            </p>
+          </div>
+          <div class="flex flex-wrap justify-end gap-2">
+            @if (datiModificati()) {
+              <button
+                type="button"
+                class="h-10 rounded-md border border-neutral-300 px-4 text-sm font-medium hover:bg-neutral-100 dark:border-line dark:hover:bg-ink"
+                (click)="annullaDati()"
+              >
+                {{ t('profilo.annulla') }}
+              </button>
+            }
+            <button
+              type="submit"
+              class="h-10 rounded-md bg-allerta px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+              [disabled]="!datiModificati() || salvataggioDati()"
+            >
+              {{ t(salvataggioDati() ? 'profilo.salvataggio' : 'profilo.dati.salva') }}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Password -->
+      <section
+        class="rounded-xl border border-neutral-200 bg-white p-5 sm:p-6 dark:border-line dark:bg-panel"
+        aria-labelledby="titolo-password"
+      >
+        <h2 id="titolo-password" class="font-display text-lg font-semibold">
+          {{ t('profilo.password.titolo') }}
+        </h2>
+        <form
+          class="mt-4 flex flex-col gap-4"
+          [formGroup]="formPassword"
+          (ngSubmit)="cambiaPassword()"
+          novalidate
+        >
+          <div>
+            <label for="password-attuale" class="text-sm font-medium">
+              {{ t('profilo.password.attuale') }}
+            </label>
+            <input
+              id="password-attuale"
+              formControlName="passwordAttuale"
+              [type]="mostraPassword() ? 'text' : 'password'"
+              autocomplete="current-password"
+              class="campo-profilo"
+              [attr.aria-invalid]="erroreCampo('passwordAttuale') !== null"
+            />
+            @if (erroreCampo('passwordAttuale'); as errore) {
+              <p class="mt-1 text-sm text-allerta">{{ errore }}</p>
+            }
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="password-nuova" class="text-sm font-medium">
+                {{ t('profilo.password.nuova') }}
+              </label>
+              <input
+                id="password-nuova"
+                formControlName="nuovaPassword"
+                [type]="mostraPassword() ? 'text' : 'password'"
+                autocomplete="new-password"
+                aria-describedby="password-nuova-aiuto"
+                class="campo-profilo"
+                [attr.aria-invalid]="erroreCampo('nuovaPassword') !== null"
+              />
+              @if (erroreCampo('nuovaPassword'); as errore) {
+                <p class="mt-1 text-sm text-allerta">{{ errore }}</p>
+              } @else {
+                <p id="password-nuova-aiuto" class="mt-1 text-xs text-neutral-500 dark:text-muted">
+                  {{ t('profilo.password.aiuto') }}
+                </p>
+              }
+            </div>
+            <div>
+              <label for="password-conferma" class="text-sm font-medium">
+                {{ t('profilo.password.conferma') }}
+              </label>
+              <input
+                id="password-conferma"
+                formControlName="confermaPassword"
+                [type]="mostraPassword() ? 'text' : 'password'"
+                autocomplete="new-password"
+                class="campo-profilo"
+                [attr.aria-invalid]="erroreCampo('confermaPassword') !== null"
+              />
+              @if (erroreCampo('confermaPassword'); as errore) {
+                <p class="mt-1 text-sm text-allerta">{{ errore }}</p>
+              }
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <label class="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                class="h-4 w-4 accent-allerta"
+                [checked]="mostraPassword()"
+                (change)="mostraPassword.set(!mostraPassword())"
+              />
+              {{ t('profilo.password.mostra') }}
+            </label>
+            <button
+              type="submit"
+              class="h-10 rounded-md bg-allerta px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+              [disabled]="salvataggioPassword()"
+            >
+              {{ t(salvataggioPassword() ? 'profilo.salvataggio' : 'profilo.password.cambia') }}
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+  </div>
+</main>

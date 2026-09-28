@@ -26,6 +26,8 @@ export interface ConfermaSegnalazioneRequest {
 export interface FiltriSegnalazioni {
   stato?: StatoSegnalazione;
   autoreId?: number;
+  /** Solo quelle dell'utente autenticato (il backend lo ricava dal token). */
+  mie?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -40,6 +42,9 @@ export class SegnalazioneApi {
     }
     if (filtri?.autoreId != null) {
       params = params.set('autoreId', filtri.autoreId);
+    }
+    if (filtri?.mie) {
+      params = params.set('mie', true);
     }
     return this.http.get<Segnalazione[]>(this.baseUrl, { params });
   }

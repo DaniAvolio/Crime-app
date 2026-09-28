@@ -36,7 +36,7 @@ import {
 import { maplibreGL } from '@maplibre/maplibre-gl-leaflet';
 import { ExpressionSpecification, setWorkerUrl } from 'maplibre-gl';
 import { Subject, catchError, debounceTime, finalize, of, switchMap, tap } from 'rxjs';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../auth/auth';
 import { CategoriaApi } from '../categorie/categoria-api';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
@@ -413,7 +413,13 @@ export class Mappa {
   private readonly injector = inject(Injector);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly rotta = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
+  /**
+   * Al primo fix GPS la mappa si centra sull'utente, tranne quando è stata aperta su una
+   * segnalazione precisa (?segnalazione=<id>, es. dal profilo): lì deve restare su quella.
+   */
+  private centraSuPrimaPosizione = true;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly formNuova = viewChild(NuovaSegnalazione);
 
@@ -652,6 +658,7 @@ export class Mappa {
       }
     });
     this.richiediSegnalazioni(map);
+    this.apriSegnalazioneRichiesta();
     this.seguiPosizioneUtente(map);
   }
 
@@ -989,6 +996,35 @@ export class Mappa {
     this.apriDettaglio(segnalazione);
   }
 
+  /**
+   * Link diretto a una segnalazione (es. "Apri sulla mappa" dal profilo): la si carica, si
+   * centra la mappa e si apre il dettaglio. Il parametro viene poi tolto dall'URL, così un
+   * ricaricamento non riapre la stessa segnalazione.
+   */
+  private apriSegnalazioneRichiesta(): void {
+    const id = Number(this.rotta.snapshot.queryParamMap.get('segnalazione'));
+    if (!Number.isInteger(id) || id <= 0) {
+      return;
+    }
+    this.centraSuPrimaPosizione = false;
+    void this.router.navigate([], {
+      relativeTo: this.rotta,
+      queryParams: { segnalazione: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    this.segnalazioneApi.ottieni(id).subscribe({
+      next: (segnalazione) => {
+        if (segnalazione.stato !== StatoSegnalazione.ATTIVA) {
+          this.toast.info(this.transloco.translate('mappa.link.nonAttiva'));
+          return;
+        }
+        this.selezionaDaLista(segnalazione);
+      },
+      error: () => this.toast.errore(this.transloco.translate('mappa.link.nonTrovata')),
+    });
+  }
+
   protected iconaCategoria(categoriaId: number): string {
     return this.iconePerCategoria().get(categoriaId) ?? NOME_ICONA_FALLBACK;
   }
@@ -1088,7 +1124,9 @@ export class Mappa {
           fillOpacity: 1,
           interactive: false,
         }).addTo(map);
-        map.setView(posizione, ZOOM_POSIZIONE_UTENTE);
+        if (this.centraSuPrimaPosizione) {
+          map.setView(posizione, ZOOM_POSIZIONE_UTENTE);
+        }
       },
       (errore) => {
         // Se il pallino è già sulla mappa, un timeout isolato non merita un avviso.

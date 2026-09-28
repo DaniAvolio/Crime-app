@@ -3,7 +3,8 @@
     "mappa": "Map",
     "gestione": "Management",
     "accedi": "Sign in",
-    "esci": "Sign out"
+    "esci": "Sign out",
+    "profilo": "Profile"
   },
   "home": {
     "hero": {
@@ -37,12 +38,12 @@
     }
   },
   "gravita": {
-    "filtro": "Filter by severity",
-    "tutte": "All",
-    "etichetta": "{{gravita}} severity",
     "1": "Low",
     "2": "Medium",
-    "3": "High"
+    "3": "High",
+    "filtro": "Filter by severity",
+    "tutte": "All",
+    "etichetta": "{{gravita}} severity"
   },
   "mappa": {
     "posizione": {
@@ -128,6 +129,10 @@
       "tutte": "All",
       "vuotaCategoria": "No {{ categoria }} reports within {{ raggio }}.",
       "allarga": "Search within {{ raggio }}"
+    },
+    "link": {
+      "nonAttiva": "This report is no longer active, so it isn't on the map.",
+      "nonTrovata": "We couldn't find this report."
     }
   },
   "condivisi": {
@@ -176,5 +181,73 @@
     "richiestoLogin": "Sign in to publish or confirm a report.",
     "sessioneScaduta": "Your session has expired: please sign in again.",
     "soloAdmin": "This section is for administrators only."
+  },
+  "profilo": {
+    "admin": "Admin",
+    "verificata": "Verified identity",
+    "nonVerificata": "Identity not verified",
+    "iscrittoDa": "Member since {{ data }}",
+    "obbligatorio": "This field is required.",
+    "annulla": "Cancel",
+    "salvataggio": "Saving…",
+    "riepilogo": {
+      "attive": "Active reports",
+      "totali": "Reports made in total"
+    },
+    "dati": {
+      "titolo": "Your details",
+      "nome": "First name",
+      "cognome": "Last name",
+      "email": "Email",
+      "emailNota": "Your email can't be changed: it's the one you sign in with.",
+      "salva": "Save changes",
+      "salvati": "Details updated.",
+      "errore": "We couldn't save your details. Try again."
+    },
+    "password": {
+      "titolo": "Password",
+      "attuale": "Current password",
+      "nuova": "New password",
+      "conferma": "Confirm new password",
+      "aiuto": "At least 8 characters.",
+      "mostra": "Show passwords",
+      "cambia": "Change password",
+      "cambiata": "Password changed.",
+      "troppoCorta": "The password must be at least 8 characters.",
+      "nonCoincidenti": "The two passwords don't match.",
+      "errore": "We couldn't change your password. Try again."
+    },
+    "segnalazioni": {
+      "titolo": "My reports",
+      "vaiMappa": "Go to the map",
+      "attive": "Active",
+      "concluse": "Closed",
+      "caricamento": "Loading your reports…",
+      "errore": "We can't load your reports.",
+      "riprova": "Try again",
+      "vuotaAttive": "You don't have any active reports.",
+      "vuotaConcluse": "No closed reports.",
+      "segnala": "Report something on the map",
+      "anonima": "Anonymous",
+      "creata": "Reported {{ quando }}",
+      "scade": "Expires {{ data }}",
+      "rimossa": "Removed {{ data }}",
+      "apri": "Open on the map",
+      "rimuovi": {
+        "azione": "Remove",
+        "titolo": "Remove this report?",
+        "messaggio": "It will disappear from the map for everyone. It stays in your closed reports.",
+        "motivazione": "Reason (optional)",
+        "conferma": "Remove",
+        "fatto": "Report removed.",
+        "errore": "We couldn't remove the report."
+      }
+    },
+    "stati": {
+      "ATTIVA": "Active",
+      "SCADUTA": "Expired",
+      "SOSPESA": "Suspended",
+      "RIMOSSA": "Removed"
+    }
   }
 }
