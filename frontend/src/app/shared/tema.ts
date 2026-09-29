@@ -1,8 +1,11 @@
-import { Injectable, effect, signal } from '@angular/core';
+import { Injectable, computed, effect, signal } from '@angular/core';
 
 export type Tema = 'chiaro' | 'scuro';
+/** Tema dello sfondo della mappa: 'auto' segue il tema dell'app. */
+export type TemaMappa = 'auto' | Tema;
 
 const CHIAVE_STORAGE = 'crime-app-tema';
+const CHIAVE_TEMA_MAPPA = 'crime-app-tema-mappa';
 
 /**
  * Stato globale del tema chiaro/scuro, condiviso da tutte le pagine. Applica la classe
@@ -22,6 +25,15 @@ export class TemaService {
 
   readonly temaAttuale = this.tema.asReadonly();
 
+  /** Scelta dal profilo: la mappa può restare chiara con l'app scura, o viceversa. */
+  private readonly sceltaMappa = signal<TemaMappa>(this.leggiTemaMappa());
+  readonly temaMappaScelto = this.sceltaMappa.asReadonly();
+  /** Tema effettivo dello sfondo della mappa. */
+  readonly temaMappa = computed<Tema>(() => {
+    const scelta = this.sceltaMappa();
+    return scelta === 'auto' ? this.tema() : scelta;
+  });
+
   constructor() {
     this.applicaTema(this.tema());
     effect(() => this.applicaTema(this.tema()));
@@ -29,6 +41,24 @@ export class TemaService {
 
   alterna(): void {
     this.tema.update((tema) => (tema === 'scuro' ? 'chiaro' : 'scuro'));
+  }
+
+  impostaTemaMappa(scelta: TemaMappa): void {
+    this.sceltaMappa.set(scelta);
+    try {
+      localStorage.setItem(CHIAVE_TEMA_MAPPA, scelta);
+    } catch {
+      // Storage non disponibile (es. navigazione privata): la scelta vale per questa sessione.
+    }
+  }
+
+  private leggiTemaMappa(): TemaMappa {
+    try {
+      const salvato = localStorage.getItem(CHIAVE_TEMA_MAPPA);
+      return salvato === 'chiaro' || salvato === 'scuro' ? salvato : 'auto';
+    } catch {
+      return 'auto';
+    }
   }
 
   private applicaTema(tema: Tema): void {

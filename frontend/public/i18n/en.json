@@ -253,6 +253,17 @@
       "SCADUTA": "Expired",
       "SOSPESA": "Suspended",
       "RIMOSSA": "Removed"
+    },
+    "mappa": {
+      "titolo": "Map theme",
+      "descrizione": "You can keep the map light while the app is dark, or the other way round.",
+      "auto": "Match the app",
+      "autoAiuto": "Follows the light or dark theme you chose",
+      "chiaro": "Always light",
+      "chiaroAiuto": "Easier to read in daylight and outdoors",
+      "scuro": "Always dark",
+      "scuroAiuto": "Dimmer, suited to the evening",
+      "nota": "This setting applies to this device."
     }
   }
 }

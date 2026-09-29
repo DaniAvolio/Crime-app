@@ -253,6 +253,17 @@
       "SCADUTA": "Scaduta",
       "SOSPESA": "Sospesa",
       "RIMOSSA": "Rimossa"
+    },
+    "mappa": {
+      "titolo": "Tema della mappa",
+      "descrizione": "Puoi tenere la mappa chiara anche con l'app scura, o viceversa.",
+      "auto": "Come l'app",
+      "autoAiuto": "Segue il tema chiaro o scuro scelto",
+      "chiaro": "Sempre chiara",
+      "chiaroAiuto": "Più leggibile di giorno e all’aperto",
+      "scuro": "Sempre scura",
+      "scuroAiuto": "Meno luminosa, adatta alla sera",
+      "nota": "La scelta vale per questo dispositivo."
     }
   }
 }

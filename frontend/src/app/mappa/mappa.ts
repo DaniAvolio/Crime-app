@@ -170,7 +170,7 @@ const VALIDITA_AREA_MS = 60_000;
  * Stili vettoriali OpenFreeMap (open source, gratuiti, senza chiave), resi da MapLibre GL
  * dentro un layer Leaflet: pallino e overlay restano layer Leaflet normali sopra la mappa.
  */
-/** Stile vettoriale per tema. Oggi coincidono: il cambio tema non ricarica la mappa. */
+/** Stile vettoriale per tema: al cambio tema setStyle ricarica lo stile (vedi constructor). */
 const STILI_PER_TEMA: Record<Tema, string> = { chiaro: 'positron', scuro: 'fiord' };
 
 function urlStileOpenFreeMap(stile: string): string {
@@ -228,14 +228,49 @@ const ZOOM_NOMI_ZONE_SENSIBILI = 16;
 
 const NOME_LUOGO: ExpressionSpecification = ['coalesce', ['get', 'name:latin'], ['get', 'name']];
 
+/** Alone scuro delle etichette sullo stile scuro: stacca il testo da strade e aree (sfondo #45516E). */
+const ALONE_ETICHETTE_SCURO = 'rgba(22, 28, 44, 0.85)';
+
+/** Colori di testo e alone dei nostri livelli di luoghi, per tema. */
+const PALETTE_LUOGHI = {
+  chiaro: { luoghi: '#555', zone: '#888', alone: '#ffffff' },
+  scuro: { luoghi: '#dbe3ee', zone: '#aeb9c9', alone: ALONE_ETICHETTE_SCURO },
+} as const;
+
+/**
+ * Fiord (stile scuro) ha etichette quasi dello stesso tono dello sfondo: nomi dei quartieri a
+ * contrasto ~1,6:1, vie e acque poco sopra. Si schiariscono testo e alone di tutte le etichette
+ * dello stile (non font, dimensioni o posizioni): luoghi abitati più chiari (~7:1), il resto ~5:1.
+ */
+function schiarisciEtichette(glMap: ReturnType<MaplibreGL['getMaplibreMap']>): void {
+  for (const livello of glMap.getStyle().layers) {
+    if (livello.type !== 'symbol' || !livello.layout?.['text-field']) {
+      continue;
+    }
+    if (livello.id === ID_LIVELLO_LUOGHI_UTILI || ZONE_SENSIBILI.some((z) => z.id === livello.id)) {
+      continue;
+    }
+    const abitato = livello.id.startsWith('place_');
+    glMap.setPaintProperty(livello.id, 'text-color', abitato ? '#e8eef6' : '#c5cfdd');
+    glMap.setPaintProperty(livello.id, 'text-halo-color', ALONE_ETICHETTE_SCURO);
+    glMap.setPaintProperty(livello.id, 'text-halo-width', 1.5);
+    glMap.setPaintProperty(livello.id, 'text-halo-blur', 0.5);
+  }
+}
+
 /**
  * Positron (come gli altri stili minimali) non disegna i luoghi di interesse: si aggiunge un
  * livello con solo quelli utili per un'app di sicurezza. Gli stili ricchi (bright, liberty) li
  * hanno già. Va riaggiunto a ogni caricamento di stile: setStyle azzera i livelli aggiunti.
+ * Sullo stile scuro, allo stesso momento, si schiariscono le etichette (vedi schiarisciEtichette).
  */
-function aggiungiLuoghiUtili(sfondo: MaplibreGL): void {
+function aggiungiLuoghiUtili(sfondo: MaplibreGL, scuro: () => boolean): void {
   const glMap = sfondo.getMaplibreMap();
   const aggiungi = () => {
+    if (scuro()) {
+      schiarisciEtichette(glMap);
+    }
+    const palette = PALETTE_LUOGHI[scuro() ? 'scuro' : 'chiaro'];
     const haGiaLuoghi = glMap
       .getStyle()
       .layers.some((livello) => 'source-layer' in livello && livello['source-layer'] === 'poi');
@@ -265,8 +300,8 @@ function aggiungiLuoghiUtili(sfondo: MaplibreGL): void {
         'symbol-sort-key': ['index-of', ['get', 'class'], ['literal', CLASSI_LUOGHI_UTILI]],
       },
       paint: {
-        'text-color': '#555',
-        'text-halo-color': '#ffffff',
+        'text-color': palette.luoghi,
+        'text-halo-color': palette.alone,
         'text-halo-width': 1,
         'text-halo-blur': 0.5,
       },
@@ -294,8 +329,8 @@ function aggiungiLuoghiUtili(sfondo: MaplibreGL): void {
             'text-optional': true,
           },
           paint: {
-            'text-color': '#888',
-            'text-halo-color': '#ffffff',
+            'text-color': palette.zone,
+            'text-halo-color': palette.alone,
             'text-halo-width': 1,
             'icon-opacity': 0.85,
           },
@@ -451,8 +486,8 @@ export class Mappa {
    * Un solo sfondo vettoriale: al cambio tema si cambia lo stile sulla stessa mappa MapLibre
    * (setStyle), che riusa contesto WebGL e cache. Se lo stile non cambia non si fa nulla.
    */
-  private readonly sfondo = sfondoOpenFreeMap(STILI_PER_TEMA[this.tema.temaAttuale()]);
-  private stileSfondo = STILI_PER_TEMA[this.tema.temaAttuale()];
+  private readonly sfondo = sfondoOpenFreeMap(STILI_PER_TEMA[this.tema.temaMappa()]);
+  private stileSfondo = STILI_PER_TEMA[this.tema.temaMappa()];
   private resolverIconeImpostato = false;
 
   /** Centro di default (Lombardia): resta tale se l'utente non condivide la posizione. */
@@ -465,13 +500,13 @@ export class Mappa {
   constructor() {
     effect(() => {
       const map = this.mappa();
-      const tema = this.tema.temaAttuale();
+      const tema = this.tema.temaMappa();
       if (!map) {
         return;
       }
       if (!this.resolverIconeImpostato) {
         ignoraIconeMancanti(this.sfondo);
-        aggiungiLuoghiUtili(this.sfondo);
+        aggiungiLuoghiUtili(this.sfondo, () => this.stileSfondo === STILI_PER_TEMA.scuro);
         this.resolverIconeImpostato = true;
       }
       const stile = STILI_PER_TEMA[tema];

@@ -22,6 +22,7 @@ import { Segnalazione, StatoSegnalazione } from '../models/segnalazione.model';
 import { DialoghiService } from '../shared/dialoghi/dialoghi';
 import { chiaveGravita, classeGravita } from '../shared/gravita';
 import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-categoria';
+import { TemaMappa, TemaService } from '../shared/tema';
 import { ToastService } from '../shared/toast/toast';
 import { ProfiloApi } from './profilo-api';
 
@@ -60,6 +61,14 @@ export class Profilo {
   private readonly transloco = inject(TranslocoService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  protected readonly tema = inject(TemaService);
+
+  /** Tema dello sfondo della mappa: segue l'app oppure resta fisso chiaro/scuro. */
+  protected readonly opzioniTemaMappa: { valore: TemaMappa; icona: string }[] = [
+    { valore: 'auto', icona: 'sun-moon' },
+    { valore: 'chiaro', icona: 'sun' },
+    { valore: 'scuro', icona: 'moon' },
+  ];
 
   /** Dopo il logout si torna alla home: come dal pannello impostazioni della nav. */
   protected esci(): void {
