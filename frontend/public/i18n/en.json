@@ -138,7 +138,8 @@
     "link": {
       "nonAttiva": "This report is no longer active, so it isn't on the map.",
       "nonTrovata": "We couldn't find this report."
-    }
+    },
+    "crediti": "Map credits"
   },
   "condivisi": {
     "dialogo": {

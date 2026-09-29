@@ -138,7 +138,8 @@
     "link": {
       "nonAttiva": "Questa segnalazione non è più attiva, quindi non è sulla mappa.",
       "nonTrovata": "Non abbiamo trovato questa segnalazione."
-    }
+    },
+    "crediti": "Crediti della mappa"
   },
   "condivisi": {
     "dialogo": {

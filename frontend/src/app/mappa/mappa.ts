@@ -689,7 +689,9 @@ export class Mappa {
     });
     // Un tocco sulla mappa chiude il pannello aperto, come per il dettaglio. Il form può avere
     // dati non inviati: decide lui se chiudere subito o chiedere conferma.
+    this.attribuzioneCompatta(map);
     map.on('click', () => {
+      this.impostaAttribuzioneAperta(map, false);
       if (this.nuovaAperta()) {
         this.chiudiNuovaSegnalazione();
       } else {
@@ -707,6 +709,53 @@ export class Mappa {
       this.livelloAloni.addTo(map);
     } else if (!vicino && map.hasLayer(this.livelloAloni)) {
       this.livelloAloni.remove();
+    }
+  }
+
+  /**
+   * Crediti della mappa compatti, come Google Maps e MapLibre: al posto del prefisso
+   * "🇺🇦 Leaflet" (non richiesto dalla licenza) un pulsante "i" che mostra o nasconde i crediti
+   * di OpenFreeMap / OpenMapTiles / OpenStreetMap, che invece vanno sempre resi accessibili.
+   * Lo stato aperto/chiuso è solo una classe sul contenitore: l'HTML del controllo non va
+   * rigenerato durante il click, o Leaflet non riconoscerebbe più il pulsante (staccato dal DOM)
+   * come parte del controllo e tratterebbe il click come un tocco sulla mappa, che lo richiude.
+   */
+  private attribuzioneCompatta(map: LeafletMap): void {
+    const controllo = map.attributionControl;
+    const contenitore = controllo?.getContainer();
+    if (!controllo || !contenitore) {
+      return;
+    }
+    const etichetta = this.transloco.translate('mappa.crediti');
+    controllo.setPrefix(
+      `<button type="button" class="attribuzione-info" aria-label="${etichetta}" title="${etichetta}" aria-expanded="false">i</button>`,
+    );
+    contenitore.addEventListener('click', (evento) => {
+      if ((evento.target as HTMLElement).closest('.attribuzione-info')) {
+        const aperta = !contenitore.classList.contains('attribuzione-aperta');
+        this.impostaAttribuzioneAperta(map, aperta);
+      }
+    });
+    // Leaflet ricrea l'HTML quando cambiano i crediti (es. nuovo stile al cambio tema):
+    // il nuovo pulsante riprende lo stato dal contenitore.
+    new MutationObserver(() => this.impostaAttribuzioneAperta(map, null)).observe(contenitore, {
+      childList: true,
+    });
+  }
+
+  /** `null` riallinea solo `aria-expanded` allo stato attuale. */
+  private impostaAttribuzioneAperta(map: LeafletMap, aperta: boolean | null): void {
+    const contenitore = map.attributionControl?.getContainer();
+    if (!contenitore) {
+      return;
+    }
+    if (aperta !== null) {
+      contenitore.classList.toggle('attribuzione-aperta', aperta);
+    }
+    const pulsante = contenitore.querySelector('.attribuzione-info');
+    const stato = String(contenitore.classList.contains('attribuzione-aperta'));
+    if (pulsante && pulsante.getAttribute('aria-expanded') !== stato) {
+      pulsante.setAttribute('aria-expanded', stato);
     }
   }
 
