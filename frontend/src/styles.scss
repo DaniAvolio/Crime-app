@@ -241,6 +241,18 @@ html.dark {
   }
 }
 
+/* Spinner delle tabelle di gestione: invisibile per i primi 150ms, così le risposte rapide non
+   lo fanno lampeggiare. */
+.spinner-ritardato {
+  animation: spinner-comparsa 150ms 150ms both;
+}
+
+@keyframes spinner-comparsa {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Toast e dialoghi condivisi (shared/toast, shared/dialoghi): ingresso breve, poi fermi. */
 .toast-entra {
   animation: toast-entra 180ms ease-out;

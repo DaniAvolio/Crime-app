@@ -117,7 +117,10 @@
         "continua": "Continue",
         "puntoScelto": "Spot chosen on the map",
         "cambia": "Change"
-      }
+      },
+      "cercaCategoria": "Search category…",
+      "categoriaNessunRisultato": "No category found.",
+      "cambiaCategoria": "Change"
     },
     "lista": {
       "titolo": "Reports nearby",

@@ -2,7 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { Pagina } from '../../models/pagina.model';
 import { RuoloUtente, Utente } from '../../models/utente.model';
+import { RichiestaPagina, parametriPagina } from '../../shared/tabella/tabella';
 
 export interface UtenteRegistrazioneRequest {
   nome: string;
@@ -17,13 +19,29 @@ export interface UtenteAggiornamentoRequest {
   cognome: string;
 }
 
+/** Filtri della tabella in gestione, come scritti nei campi: stringa vuota = non filtrare. */
+export interface FiltriGestioneUtenti {
+  [campo: string]: string;
+  nome: string;
+  cognome: string;
+  email: string;
+  identitaVerificata: string;
+  fiduciaMin: string;
+  fiduciaMax: string;
+  attivo: string;
+  ruolo: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UtenteApi {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/utenti`;
 
-  elenca(): Observable<Utente[]> {
-    return this.http.get<Utente[]>(this.baseUrl);
+  /** Tabella di gestione: filtri, ordinamento e paginazione lato backend. */
+  pagina(richiesta: RichiestaPagina<FiltriGestioneUtenti>): Observable<Pagina<Utente>> {
+    return this.http.get<Pagina<Utente>>(`${this.baseUrl}/gestione`, {
+      params: parametriPagina(richiesta),
+    });
   }
 
   ottieni(id: number): Observable<Utente> {

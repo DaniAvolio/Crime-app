@@ -6,3 +6,4 @@ export * from './segnalazione-abuso.model';
 export * from './evento-moderazione.model';
 export * from './preferenze-notifica.model';
 export * from './device-token.model';
+export * from './pagina.model';

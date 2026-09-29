@@ -31,13 +31,8 @@ export class CategorieStore {
     this.ricarica();
   }
 
-  /** Allinea lo store a un elenco completo già scaricato altrove (es. la gestione categorie). */
-  imposta(categorie: Categoria[]): void {
-    this.elenco.set(categorie);
-    this.caricate.set(true);
-  }
-
-  private ricarica(): void {
+  /** Riscarica l'elenco, ad esempio dopo una modifica dalla gestione categorie. */
+  ricarica(): void {
     this.inCorso = true;
     this.categoriaApi.elenca().subscribe({
       next: (categorie) => {

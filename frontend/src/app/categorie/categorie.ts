@@ -1,25 +1,36 @@
 import { NgClass } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { TranslocoService } from '@jsverse/transloco';
-import { CategoriaApi, CategoriaRequest } from './categoria-api';
+import { CategoriaApi, CategoriaRequest, FiltriGestioneCategorie } from './categoria-api';
 import { CategorieStore } from './categorie-store';
 import { Categoria } from '../models/categoria.model';
 import { GRAVITA, Gravita } from '../models/gravita.model';
 import { classeGravita } from '../shared/gravita';
 import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-categoria';
 import { DialoghiService } from '../shared/dialoghi/dialoghi';
+import { IntestazioneOrdinabile } from '../shared/tabella/intestazione-ordinabile';
+import { IndicatoreCaricamento } from '../shared/tabella/indicatore-caricamento';
+import { Paginazione } from '../shared/tabella/paginazione';
+import { TabellaRemota } from '../shared/tabella/tabella';
 import { ToastService } from '../shared/toast/toast';
 
 @Component({
   selector: 'app-categorie',
   standalone: true,
-  imports: [ReactiveFormsModule, LucideDynamicIcon, NgClass],
+  imports: [
+    ReactiveFormsModule,
+    LucideDynamicIcon,
+    NgClass,
+    IntestazioneOrdinabile,
+    Paginazione,
+    IndicatoreCaricamento,
+  ],
   templateUrl: './categorie.html',
 })
-export class Categorie implements OnInit {
+export class Categorie {
   private readonly categoriaApi = inject(CategoriaApi);
   private readonly store = inject(CategorieStore);
   private readonly fb = inject(FormBuilder);
@@ -29,9 +40,19 @@ export class Categorie implements OnInit {
   /** Nomi delle icone selezionabili, suggeriti nel form tramite datalist. */
   protected readonly nomiIconeDisponibili = NOMI_ICONE_DISPONIBILI;
 
-  protected readonly categorie = signal<Categoria[]>([]);
-  protected readonly caricando = signal(false);
   protected readonly errore = signal<string | null>(null);
+
+  /** Paginata, filtrata e ordinata dal backend; di default le più gravi (3 -> 1), poi per nome. */
+  protected readonly tabella = new TabellaRemota<FiltriGestioneCategorie, Categoria>(
+    (richiesta) => this.categoriaApi.pagina(richiesta),
+    { nome: '', gravita: '', durataMin: '', durataMax: '', attiva: '' },
+    { campo: 'gravita', direzione: 'desc' },
+  );
+  protected readonly erroreTabella = computed(() => {
+    const err = this.tabella.errore();
+    return err ? this.estraiMessaggio(err) : null;
+  });
+
   /** Id della categoria in modifica, null quando il form serve a crearne una nuova. */
   protected readonly idInModifica = signal<number | null>(null);
 
@@ -69,25 +90,10 @@ export class Categorie implements OnInit {
   };
   protected readonly classeGravita = classeGravita;
 
-  ngOnInit(): void {
-    this.carica();
-  }
-
-  protected carica(): void {
-    this.caricando.set(true);
-    this.errore.set(null);
-    this.categoriaApi.elenca().subscribe({
-      next: (categorie) => {
-        this.categorie.set(categorie);
-        // Mappa e home rileggono dallo store: vedono subito nomi e traduzioni aggiornati.
-        this.store.imposta(categorie);
-        this.caricando.set(false);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.errore.set(this.estraiMessaggio(err));
-        this.caricando.set(false);
-      },
-    });
+  /** Dopo una modifica: ricarica la pagina e lo store usato da mappa e form di segnalazione. */
+  private aggiorna(): void {
+    this.tabella.aggiorna();
+    this.store.ricarica();
   }
 
   protected inviaForm(): void {
@@ -105,7 +111,7 @@ export class Categorie implements OnInit {
       next: () => {
         this.toast.successo(id === null ? 'Categoria creata.' : 'Categoria aggiornata.');
         this.resetForm();
-        this.carica();
+        this.aggiorna();
       },
       error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
     });
@@ -138,7 +144,7 @@ export class Categorie implements OnInit {
   protected disattiva(categoria: Categoria): void {
     this.errore.set(null);
     this.categoriaApi.disattiva(categoria.id).subscribe({
-      next: () => this.carica(),
+      next: () => this.aggiorna(),
       error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
     });
   }
@@ -146,7 +152,7 @@ export class Categorie implements OnInit {
   protected riattiva(categoria: Categoria): void {
     this.errore.set(null);
     this.categoriaApi.riattiva(categoria.id).subscribe({
-      next: () => this.carica(),
+      next: () => this.aggiorna(),
       error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
     });
   }
@@ -165,7 +171,7 @@ export class Categorie implements OnInit {
     this.categoriaApi.eliminaDefinitivamente(categoria.id).subscribe({
       next: () => {
         this.toast.successo(`Categoria "${categoria.nome}" eliminata.`);
-        this.carica();
+        this.aggiorna();
       },
       error: (err: HttpErrorResponse) => {
         this.errore.set(this.estraiMessaggio(err));

@@ -1,20 +1,29 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { RuoloUtente, Utente } from '../../models/utente.model';
 import { AuthService } from '../../auth/auth';
-import { UtenteAggiornamentoRequest, UtenteApi, UtenteRegistrazioneRequest } from './utente-api';
+import {
+  FiltriGestioneUtenti,
+  UtenteAggiornamentoRequest,
+  UtenteApi,
+  UtenteRegistrazioneRequest,
+} from './utente-api';
+import { IntestazioneOrdinabile } from '../../shared/tabella/intestazione-ordinabile';
+import { IndicatoreCaricamento } from '../../shared/tabella/indicatore-caricamento';
+import { Paginazione } from '../../shared/tabella/paginazione';
+import { TabellaRemota } from '../../shared/tabella/tabella';
 import { DialoghiService } from '../../shared/dialoghi/dialoghi';
 import { ToastService } from '../../shared/toast/toast';
 
 @Component({
   selector: 'app-utenti',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, IntestazioneOrdinabile, Paginazione, IndicatoreCaricamento],
   templateUrl: './utenti.html',
 })
-export class Utenti implements OnInit {
+export class Utenti {
   private readonly utenteApi = inject(UtenteApi);
   private readonly fb = inject(FormBuilder);
   private readonly dialoghi = inject(DialoghiService);
@@ -22,9 +31,27 @@ export class Utenti implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  protected readonly utenti = signal<Utente[]>([]);
-  protected readonly caricando = signal(false);
   protected readonly errore = signal<string | null>(null);
+
+  /** Paginata, filtrata e ordinata dal backend; di default per cognome e nome. */
+  protected readonly tabella = new TabellaRemota<FiltriGestioneUtenti, Utente>(
+    (richiesta) => this.utenteApi.pagina(richiesta),
+    {
+      nome: '',
+      cognome: '',
+      email: '',
+      identitaVerificata: '',
+      fiduciaMin: '',
+      fiduciaMax: '',
+      attivo: '',
+      ruolo: '',
+    },
+    { campo: 'cognome', direzione: 'asc' },
+  );
+  protected readonly erroreTabella = computed(() => {
+    const err = this.tabella.errore();
+    return err ? this.estraiMessaggio(err) : null;
+  });
   /** Id dell'utente in modifica, null quando il form serve a crearne uno nuovo. */
   protected readonly idInModifica = signal<number | null>(null);
 
@@ -34,25 +61,6 @@ export class Utenti implements OnInit {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
   });
-
-  ngOnInit(): void {
-    this.carica();
-  }
-
-  protected carica(): void {
-    this.caricando.set(true);
-    this.errore.set(null);
-    this.utenteApi.elenca().subscribe({
-      next: (utenti) => {
-        this.utenti.set(utenti);
-        this.caricando.set(false);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.errore.set(this.estraiMessaggio(err));
-        this.caricando.set(false);
-      },
-    });
-  }
 
   protected inviaForm(): void {
     if (this.form.invalid) {
@@ -67,7 +75,7 @@ export class Utenti implements OnInit {
       this.utenteApi.crea(payload).subscribe({
         next: () => {
           this.resetForm();
-          this.carica();
+          this.tabella.aggiorna();
         },
         error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
       });
@@ -77,7 +85,7 @@ export class Utenti implements OnInit {
       this.utenteApi.aggiorna(id, payload).subscribe({
         next: () => {
           this.resetForm();
-          this.carica();
+          this.tabella.aggiorna();
         },
         error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
       });
@@ -107,7 +115,7 @@ export class Utenti implements OnInit {
   protected disattiva(utente: Utente): void {
     this.errore.set(null);
     this.utenteApi.disattiva(utente.id).subscribe({
-      next: () => this.carica(),
+      next: () => this.tabella.aggiorna(),
       error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
     });
   }
@@ -115,7 +123,7 @@ export class Utenti implements OnInit {
   protected riattiva(utente: Utente): void {
     this.errore.set(null);
     this.utenteApi.riattiva(utente.id).subscribe({
-      next: () => this.carica(),
+      next: () => this.tabella.aggiorna(),
       error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
     });
   }
@@ -153,7 +161,7 @@ export class Utenti implements OnInit {
         this.toast.successo(
           promozione ? `${nome} ora è amministratore.` : `${nome} non è più amministratore.`,
         );
-        this.carica();
+        this.tabella.aggiorna();
       },
       error: (err: HttpErrorResponse) => {
         this.errore.set(this.estraiMessaggio(err));
@@ -177,7 +185,7 @@ export class Utenti implements OnInit {
     this.utenteApi.elimina(utente.id).subscribe({
       next: () => {
         this.toast.successo(`Utente ${nome} eliminato.`);
-        this.carica();
+        this.tabella.aggiorna();
       },
       error: (err: HttpErrorResponse) => {
         this.errore.set(this.estraiMessaggio(err));

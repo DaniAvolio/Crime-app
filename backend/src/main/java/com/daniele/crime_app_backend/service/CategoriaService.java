@@ -2,16 +2,22 @@ package com.daniele.crime_app_backend.service;
 
 import com.daniele.crime_app_backend.dto.CategoriaDto;
 import com.daniele.crime_app_backend.dto.CategoriaRequest;
+import com.daniele.crime_app_backend.dto.FiltriCategorie;
+import com.daniele.crime_app_backend.dto.PaginaDto;
 import com.daniele.crime_app_backend.entity.Categoria;
 import com.daniele.crime_app_backend.exception.ConflittoException;
 import com.daniele.crime_app_backend.exception.RisorsaNonTrovataException;
 import com.daniele.crime_app_backend.mapper.CategoriaMapper;
 import com.daniele.crime_app_backend.repository.CategoriaRepository;
+import com.daniele.crime_app_backend.repository.SpecificheGestione;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -26,14 +32,32 @@ public class CategoriaService {
         this.categoriaMapper = categoriaMapper;
     }
 
+    /** Prima le più gravi (3 -> 1), poi per nome: ordine usato da gestione, form e mappa. */
+    private static final Sort ORDINE_CATEGORIE = Sort.by(Sort.Order.desc("gravita"), Sort.Order.asc("nome"));
+
     public List<CategoriaDto> trovaTutte() {
-        return categoriaRepository.findAll().stream()
+        return categoriaRepository.findAll(ORDINE_CATEGORIE).stream()
                 .map(categoriaMapper::toDto)
                 .toList();
     }
 
+    /** Colonne ordinabili della tabella in gestione: nome esposto al client -> proprietà JPA. */
+    private static final Map<String, String> ORDINABILI_GESTIONE = Map.of(
+            "nome", "nome",
+            "gravita", "gravita",
+            "durataValiditaOre", "durataValiditaOre",
+            "attiva", "attiva");
+
+    /** Tabella di gestione: filtri, ordinamento (default gravità 3 -> 1, poi nome) e paginazione. */
+    public PaginaDto<CategoriaDto> trovaPerGestione(FiltriCategorie filtri, int pagina, int dimensione,
+                                                    String ordina) {
+        Pageable richiesta = Paginazione.crea(pagina, dimensione, ordina, ORDINABILI_GESTIONE, ORDINE_CATEGORIE);
+        return PaginaDto.da(categoriaRepository.findAll(SpecificheGestione.categorie(filtri), richiesta),
+                categoriaMapper::toDto);
+    }
+
     public List<CategoriaDto> trovaAttive() {
-        return categoriaRepository.findByAttivaTrue().stream()
+        return categoriaRepository.findByAttivaTrue(ORDINE_CATEGORIE).stream()
                 .map(categoriaMapper::toDto)
                 .toList();
     }

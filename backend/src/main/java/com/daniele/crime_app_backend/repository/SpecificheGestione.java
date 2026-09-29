@@ -1,12 +1,18 @@
 package com.daniele.crime_app_backend.repository;
 
+import com.daniele.crime_app_backend.dto.FiltriCategorie;
 import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
 import com.daniele.crime_app_backend.dto.FiltriUtenti;
+import com.daniele.crime_app_backend.entity.Categoria;
 import com.daniele.crime_app_backend.entity.Segnalazione;
+import com.daniele.crime_app_backend.entity.TraduzioneCategoria;
 import com.daniele.crime_app_backend.entity.Utente;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.MapJoin;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
@@ -42,6 +48,36 @@ public final class SpecificheGestione {
         };
     }
 
+    public static Specification<Categoria> categorie(FiltriCategorie filtri) {
+        return (root, query, cb) -> {
+            List<Predicate> condizioni = new ArrayList<>();
+            if (filtri.nome() != null && !filtri.nome().isBlank()) {
+                // Nome italiano o una delle traduzioni: subquery, così nessun join duplica le righe.
+                String modello = modelloContiene(filtri.nome());
+                Subquery<Long> tradotte = query.subquery(Long.class);
+                Root<Categoria> categoria = tradotte.from(Categoria.class);
+                MapJoin<Categoria, String, TraduzioneCategoria> traduzione = categoria.joinMap("traduzioni");
+                tradotte.select(categoria.get("id")).where(
+                        cb.equal(categoria.get("id"), root.get("id")),
+                        cb.like(cb.lower(traduzione.value().get("nome")), modello, '\\'));
+                condizioni.add(cb.or(cb.like(cb.lower(root.get("nome")), modello, '\\'), cb.exists(tradotte)));
+            }
+            if (filtri.gravita() != null) {
+                condizioni.add(cb.equal(root.get("gravita"), filtri.gravita()));
+            }
+            if (filtri.durataMin() != null) {
+                condizioni.add(cb.greaterThanOrEqualTo(root.get("durataValiditaOre"), filtri.durataMin()));
+            }
+            if (filtri.durataMax() != null) {
+                condizioni.add(cb.lessThanOrEqualTo(root.get("durataValiditaOre"), filtri.durataMax()));
+            }
+            if (filtri.attiva() != null) {
+                condizioni.add(cb.equal(root.get("attiva"), filtri.attiva()));
+            }
+            return cb.and(condizioni.toArray(Predicate[]::new));
+        };
+    }
+
     public static Specification<Utente> utenti(FiltriUtenti filtri) {
         return (root, query, cb) -> {
             List<Predicate> condizioni = new ArrayList<>();
@@ -73,9 +109,14 @@ public final class SpecificheGestione {
         if (testo == null || testo.isBlank()) {
             return;
         }
+        condizioni.add(cb.like(cb.lower(campo), modelloContiene(testo), '\\'));
+    }
+
+    /** Modello LIKE "%testo%" in minuscolo, con \ % _ dell'utente resi letterali (escape '\'). */
+    private static String modelloContiene(String testo) {
         String escape = testo.trim().toLowerCase()
                 .replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
-        condizioni.add(cb.like(cb.lower(campo), "%" + escape + "%", '\\'));
+        return "%" + escape + "%";
     }
 
     /** Estremi inclusi, a giorni interi: "al" arriva fino alla fine di quel giorno. */

@@ -19,8 +19,7 @@ const DIMENSIONE_PREDEFINITA = 25;
 const ATTESA_FILTRI_MS = 300;
 
 /**
- * Stato comune a ogni tabella di gestione, letto da `th[appOrdinabile]` e `<app-paginazione>`:
- * così tabelle paginate dal backend e tabelle paginate in locale hanno la stessa interfaccia.
+ * Stato comune a ogni tabella di gestione, letto da `th[appOrdinabile]` e `<app-paginazione>`.
  */
 export abstract class StatoTabella<F extends Filtri, T> {
   readonly ordinamento: WritableSignal<Ordinamento>;
@@ -99,6 +98,9 @@ export class TabellaRemota<F extends Filtri, T> extends StatoTabella<F, T> {
   private readonly filtriApplicati: WritableSignal<F>;
   private readonly versione = signal(0);
 
+  /** Richiesta in corso o filtri appena scritti in attesa di partire: mostra lo spinner. */
+  readonly occupata = computed(() => this.caricando() || this.filtri() !== this.filtriApplicati());
+
   constructor(
     carica: (richiesta: RichiestaPagina<F>) => Observable<Pagina<T>>,
     filtriIniziali: F,
@@ -164,41 +166,6 @@ export class TabellaRemota<F extends Filtri, T> extends StatoTabella<F, T> {
   }
 }
 
-/**
- * Tabella con tutti i dati già nel browser (poche righe, es. categorie): filtro, ordinamento e
- * paginazione calcolati in locale. A parità di valore si ordina per `confrontoFinale`.
- */
-export class TabellaLocale<F extends Filtri, T> extends StatoTabella<F, T> {
-  private readonly filtrate: Signal<T[]>;
-  readonly totale: Signal<number>;
-  readonly righe: Signal<T[]>;
-
-  constructor(
-    dati: Signal<T[]>,
-    corrisponde: (riga: T, filtri: F) => boolean,
-    confronti: Record<string, (a: T, b: T) => number>,
-    confrontoFinale: (a: T, b: T) => number,
-    filtriIniziali: F,
-    ordinamentoPredefinito: Ordinamento,
-  ) {
-    super(filtriIniziali, ordinamentoPredefinito);
-    this.filtrate = computed(() => {
-      const filtri = this.filtri();
-      const { campo, direzione } = this.ordinamento();
-      const confronto = confronti[campo] ?? (() => 0);
-      const verso = direzione === 'asc' ? 1 : -1;
-      return dati()
-        .filter((riga) => corrisponde(riga, filtri))
-        .sort((a, b) => verso * confronto(a, b) || confrontoFinale(a, b));
-    });
-    this.totale = computed(() => this.filtrate().length);
-    this.righe = computed(() => {
-      const inizio = this.pagina() * this.dimensione();
-      return this.filtrate().slice(inizio, inizio + this.dimensione());
-    });
-  }
-}
-
 /** Query string per gli endpoint `/gestione`: solo i filtri valorizzati, più pagina e ordinamento. */
 export function parametriPagina<F extends Filtri>(richiesta: RichiestaPagina<F>): HttpParams {
   let params = new HttpParams()
@@ -211,9 +178,4 @@ export function parametriPagina<F extends Filtri>(richiesta: RichiestaPagina<F>)
     }
   }
   return params;
-}
-
-/** Testo normalizzato per i filtri locali: senza maiuscole né accenti. */
-export function normalizzaTesto(testo: string): string {
-  return testo.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }

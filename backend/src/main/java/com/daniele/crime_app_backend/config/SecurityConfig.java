@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/registrazione").permitAll()
                         // Prima delle regole GET pubbliche: "/api/segnalazioni/*" non deve aprirle.
                         .requestMatchers(HttpMethod.GET,
+                                "/api/segnalazioni/gestione", "/api/categorie/gestione",
                                 "/api/segnalazioni/*/abusi", "/api/segnalazioni/*/eventi-moderazione").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET,
                                 "/api/segnalazioni", "/api/segnalazioni/*", "/api/categorie/**").permitAll()

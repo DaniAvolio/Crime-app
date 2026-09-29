@@ -1,6 +1,8 @@
 package com.daniele.crime_app_backend.controller;
 
 import com.daniele.crime_app_backend.dto.CambioPasswordRequest;
+import com.daniele.crime_app_backend.dto.FiltriUtenti;
+import com.daniele.crime_app_backend.dto.PaginaDto;
 import com.daniele.crime_app_backend.dto.UtenteAggiornamentoRequest;
 import com.daniele.crime_app_backend.dto.UtenteDto;
 import com.daniele.crime_app_backend.dto.UtenteRegistrazioneRequest;
@@ -44,6 +46,15 @@ public class UtenteController {
     @GetMapping
     public List<UtenteDto> elenca() {
         return utenteService.trovaTutti();
+    }
+
+    /** Tabella di gestione: ordina=campo,asc|desc. */
+    @GetMapping("/gestione")
+    public PaginaDto<UtenteDto> gestione(FiltriUtenti filtri,
+                                         @RequestParam(defaultValue = "0") int pagina,
+                                         @RequestParam(defaultValue = "25") int dimensione,
+                                         @RequestParam(required = false) String ordina) {
+        return utenteService.trovaPerGestione(filtri, pagina, dimensione, ordina);
     }
 
     @GetMapping("/{id}")

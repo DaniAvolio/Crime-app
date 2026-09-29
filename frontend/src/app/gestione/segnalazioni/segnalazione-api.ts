@@ -2,7 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { Pagina } from '../../models/pagina.model';
 import { Segnalazione, StatoSegnalazione } from '../../models/segnalazione.model';
+import { RichiestaPagina, parametriPagina } from '../../shared/tabella/tabella';
 
 /** L'autore è l'utente autenticato: il backend lo ricava dal token. */
 export interface SegnalazioneRequest {
@@ -30,6 +32,20 @@ export interface FiltriSegnalazioni {
   mie?: boolean;
 }
 
+/** Filtri della tabella in gestione, come scritti nei campi: stringa vuota = non filtrare. */
+export interface FiltriGestioneSegnalazioni {
+  [campo: string]: string;
+  id: string;
+  categoriaId: string;
+  descrizione: string;
+  anonima: string;
+  stato: string;
+  creataDal: string;
+  creataAl: string;
+  scadeDal: string;
+  scadeAl: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SegnalazioneApi {
   private readonly http = inject(HttpClient);
@@ -47,6 +63,13 @@ export class SegnalazioneApi {
       params = params.set('mie', true);
     }
     return this.http.get<Segnalazione[]>(this.baseUrl, { params });
+  }
+
+  /** Tabella di gestione (solo admin): filtri, ordinamento e paginazione lato backend. */
+  pagina(richiesta: RichiestaPagina<FiltriGestioneSegnalazioni>): Observable<Pagina<Segnalazione>> {
+    return this.http.get<Pagina<Segnalazione>>(`${this.baseUrl}/gestione`, {
+      params: parametriPagina(richiesta),
+    });
   }
 
   /** Segnalazioni ATTIVA entro `raggioMetri` dal punto indicato (query PostGIS lato backend). */

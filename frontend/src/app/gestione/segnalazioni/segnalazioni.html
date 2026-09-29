@@ -1,5 +1,5 @@
 <main class="min-h-screen bg-white text-gray-900 dark:bg-ink dark:text-paper">
-  <div class="mx-auto max-w-5xl px-6 py-10">
+  <div class="mx-auto max-w-6xl px-6 py-10">
     <h1 class="mb-6 font-display text-2xl font-bold text-gray-900 dark:text-paper">
       Gestione segnalazioni
     </h1>
@@ -84,42 +84,153 @@
       </button>
     </form>
 
-    <div class="mb-4 flex items-center gap-2">
-      <label class="text-sm font-medium text-gray-700 dark:text-muted">Filtra per stato</label>
-      <select
-        (change)="cambiaFiltro($any($event.target).value)"
-        class="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 dark:border-line dark:bg-panel dark:text-paper"
+    @if (erroreTabella(); as messaggio) {
+      <div
+        class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
       >
-        <option value="">Tutte</option>
-        <option [value]="StatoSegnalazione.ATTIVA">Attiva</option>
-        <option [value]="StatoSegnalazione.SCADUTA">Scaduta</option>
-        <option [value]="StatoSegnalazione.SOSPESA">Sospesa</option>
-        <option [value]="StatoSegnalazione.RIMOSSA">Rimossa</option>
-      </select>
+        {{ messaggio }}
+      </div>
+    }
+
+    <div class="mb-2 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <h2 class="font-semibold text-gray-800 dark:text-paper">Segnalazioni</h2>
+        <app-indicatore-caricamento [attivo]="tabella.occupata()" />
+      </div>
+      @if (tabella.modificata()) {
+        <button
+          type="button"
+          class="text-sm font-medium text-allerta hover:underline"
+          (click)="tabella.azzera()"
+        >
+          Azzera filtri e ordinamento
+        </button>
+      }
     </div>
 
-    @if (caricando()) {
-      <p class="text-sm text-gray-500 dark:text-muted">Caricamento...</p>
-    } @else if (segnalazioni().length === 0) {
-      <p class="text-sm text-gray-500 dark:text-muted">Nessuna segnalazione presente.</p>
-    } @else {
-      <table class="w-full border-collapse text-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[56rem] border-collapse text-sm">
         <thead>
           <tr
             class="border-b border-gray-200 text-left text-gray-500 dark:border-line dark:text-muted"
           >
-            <th class="py-2">Id</th>
-            <th class="py-2">Categoria</th>
-            <th class="py-2">Descrizione</th>
-            <th class="py-2">Anonima</th>
-            <th class="py-2">Stato</th>
-            <th class="py-2">Creata</th>
-            <th class="py-2">Scade</th>
+            <th appOrdinabile="id" [tabella]="tabella">Id</th>
+            <th appOrdinabile="categoria" [tabella]="tabella">Categoria</th>
+            <th appOrdinabile="descrizione" [tabella]="tabella">Descrizione</th>
+            <th appOrdinabile="anonima" [tabella]="tabella">Anonima</th>
+            <th appOrdinabile="stato" [tabella]="tabella">Stato</th>
+            <th appOrdinabile="dataCreazione" [tabella]="tabella">Creata</th>
+            <th appOrdinabile="dataScadenza" [tabella]="tabella">Scade</th>
             <th class="py-2"></th>
           </tr>
+          <tr class="border-b border-gray-200 align-top dark:border-line">
+            <td class="w-20 py-2 pr-2">
+              <input
+                type="number"
+                min="1"
+                class="filtro-tabella"
+                placeholder="Id"
+                aria-label="Filtra per id"
+                [value]="tabella.filtri().id"
+                (input)="tabella.filtra('id', $any($event.target).value)"
+              />
+            </td>
+            <td class="py-2 pr-2">
+              <select
+                class="filtro-tabella"
+                aria-label="Filtra per categoria"
+                (change)="tabella.filtra('categoriaId', $any($event.target).value)"
+              >
+                <option value="" [selected]="tabella.filtri().categoriaId === ''">Tutte</option>
+                @for (categoria of categorie(); track categoria.id) {
+                  <option
+                    [value]="categoria.id"
+                    [selected]="tabella.filtri().categoriaId === '' + categoria.id"
+                  >
+                    {{ categoria.nome }}
+                  </option>
+                }
+              </select>
+            </td>
+            <td class="py-2 pr-2">
+              <input
+                type="search"
+                class="filtro-tabella"
+                placeholder="Contiene…"
+                aria-label="Filtra per descrizione"
+                [value]="tabella.filtri().descrizione"
+                (input)="tabella.filtra('descrizione', $any($event.target).value)"
+              />
+            </td>
+            <td class="py-2 pr-2">
+              <select
+                class="filtro-tabella"
+                aria-label="Filtra per anonimato"
+                (change)="tabella.filtra('anonima', $any($event.target).value)"
+              >
+                <option value="" [selected]="tabella.filtri().anonima === ''">Tutte</option>
+                <option value="true" [selected]="tabella.filtri().anonima === 'true'">Sì</option>
+                <option value="false" [selected]="tabella.filtri().anonima === 'false'">No</option>
+              </select>
+            </td>
+            <td class="py-2 pr-2">
+              <select
+                class="filtro-tabella"
+                aria-label="Filtra per stato"
+                (change)="tabella.filtra('stato', $any($event.target).value)"
+              >
+                <option value="" [selected]="tabella.filtri().stato === ''">Tutti</option>
+                @for (stato of stati; track stato.valore) {
+                  <option
+                    [value]="stato.valore"
+                    [selected]="tabella.filtri().stato === stato.valore"
+                  >
+                    {{ stato.etichetta }}
+                  </option>
+                }
+              </select>
+            </td>
+            <td class="w-36 py-2 pr-2">
+              <input
+                type="date"
+                class="filtro-tabella"
+                aria-label="Creata dal"
+                title="Dal"
+                [value]="tabella.filtri().creataDal"
+                (change)="tabella.filtra('creataDal', $any($event.target).value)"
+              />
+              <input
+                type="date"
+                class="filtro-tabella mt-1"
+                aria-label="Creata fino al"
+                title="Al"
+                [value]="tabella.filtri().creataAl"
+                (change)="tabella.filtra('creataAl', $any($event.target).value)"
+              />
+            </td>
+            <td class="w-36 py-2 pr-2">
+              <input
+                type="date"
+                class="filtro-tabella"
+                aria-label="Scade dal"
+                title="Dal"
+                [value]="tabella.filtri().scadeDal"
+                (change)="tabella.filtra('scadeDal', $any($event.target).value)"
+              />
+              <input
+                type="date"
+                class="filtro-tabella mt-1"
+                aria-label="Scade fino al"
+                title="Al"
+                [value]="tabella.filtri().scadeAl"
+                (change)="tabella.filtra('scadeAl', $any($event.target).value)"
+              />
+            </td>
+            <td></td>
+          </tr>
         </thead>
-        <tbody>
-          @for (segnalazione of segnalazioni(); track segnalazione.id) {
+        <tbody [class.opacity-50]="tabella.occupata()" [attr.aria-busy]="tabella.caricando()">
+          @for (segnalazione of tabella.righe(); track segnalazione.id) {
             <tr class="border-b border-gray-100 dark:border-line">
               <td class="py-2">{{ segnalazione.id }}</td>
               <td class="py-2">{{ segnalazione.categoriaNome }}</td>
@@ -191,9 +302,22 @@
                 </button>
               </td>
             </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="py-6 text-center text-gray-500 dark:text-muted">
+                {{
+                  tabella.caricando()
+                    ? 'Caricamento...'
+                    : tabella.modificata()
+                      ? 'Nessuna segnalazione corrisponde ai filtri.'
+                      : 'Nessuna segnalazione presente.'
+                }}
+              </td>
+            </tr>
           }
         </tbody>
       </table>
-    }
+    </div>
+    <app-paginazione [tabella]="tabella" />
   </div>
 </main>

@@ -1,5 +1,7 @@
 package com.daniele.crime_app_backend.service;
 
+import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
+import com.daniele.crime_app_backend.dto.PaginaDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneRequest;
 import com.daniele.crime_app_backend.dto.SegnalazioneTransizioneRequest;
@@ -18,12 +20,16 @@ import com.daniele.crime_app_backend.repository.ConfermaSegnalazioneRepository;
 import com.daniele.crime_app_backend.repository.EventoModerazioneRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneAbusoRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneRepository;
+import com.daniele.crime_app_backend.repository.SpecificheGestione;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -74,6 +80,25 @@ public class SegnalazioneService {
                     .toList();
         }
         return risultati.stream().map(segnalazioneMapper::toDto).toList();
+    }
+
+    /** Colonne ordinabili della tabella in gestione: nome esposto al client -> proprietà JPA. */
+    private static final Map<String, String> ORDINABILI_GESTIONE = Map.of(
+            "id", "id",
+            "categoria", "categoria.nome",
+            "descrizione", "descrizione",
+            "anonima", "anonima",
+            "stato", "stato",
+            "dataCreazione", "dataCreazione",
+            "dataScadenza", "dataScadenza");
+
+    /** Tabella di gestione (solo admin): filtri per colonna, ordinamento e paginazione lato database. */
+    public PaginaDto<SegnalazioneDto> trovaPerGestione(FiltriSegnalazioni filtri, int pagina, int dimensione,
+                                                       String ordina) {
+        Pageable richiesta = Paginazione.crea(pagina, dimensione, ordina, ORDINABILI_GESTIONE,
+                Sort.by(Sort.Order.desc("dataCreazione")));
+        return PaginaDto.da(segnalazioneRepository.findAll(SpecificheGestione.segnalazioni(filtri), richiesta),
+                segnalazioneMapper::toDto);
     }
 
     public SegnalazioneDto trovaPerId(Long id) {

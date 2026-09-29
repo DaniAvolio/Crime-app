@@ -27,6 +27,10 @@ import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-cat
 const LUNGHEZZA_MASSIMA_DESCRIZIONE = 2000;
 const SOGLIA_CHIUSURA_PX = 60;
 
+function normalizza(testo: string): string {
+  return testo.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
 /**
  * Form di nuova segnalazione. La posizione non è un campo: arriva dal pin trascinabile che
  * la pagina mappa mostra mentre il form è aperto (input `posizione`).
@@ -56,6 +60,19 @@ export class NuovaSegnalazione {
   });
   protected readonly classePallinoGravita = classePallinoGravita;
 
+  /** Testo cercato nell'elenco categorie e visibilità dell'elenco (chiuso una volta scelta). */
+  protected readonly ricerca = signal('');
+  protected readonly elencoAperto = signal(true);
+  private readonly campoRicerca = viewChild<ElementRef<HTMLInputElement>>('campoRicerca');
+
+  /** Filtro senza maiuscole né accenti sul nome già tradotto nella lingua attiva. */
+  protected readonly categorieFiltrate = computed(() => {
+    const testo = normalizza(this.ricerca());
+    return this.categorieOrdinate().filter((categoria) =>
+      normalizza(categoria.nome).includes(testo),
+    );
+  });
+
   protected readonly lunghezzaMassima = LUNGHEZZA_MASSIMA_DESCRIZIONE;
   protected readonly invio = signal(false);
   protected readonly errore = signal(false);
@@ -76,6 +93,13 @@ export class NuovaSegnalazione {
     descrizione: ['', [Validators.required, Validators.maxLength(LUNGHEZZA_MASSIMA_DESCRIZIONE)]],
     anonima: [false],
   });
+
+  private readonly categoriaId = toSignal(this.form.controls.categoriaId.valueChanges, {
+    initialValue: 0,
+  });
+  protected readonly categoriaScelta = computed(() =>
+    this.categorieOrdinate().find((categoria) => categoria.id === this.categoriaId()),
+  );
 
   private readonly descrizione = toSignal(this.form.controls.descrizione.valueChanges, {
     initialValue: '',
@@ -136,6 +160,27 @@ export class NuovaSegnalazione {
     if (delta > SOGLIA_CHIUSURA_PX) {
       this.richiediChiusura();
     }
+  }
+
+  protected scegliCategoria(id: number): void {
+    this.form.controls.categoriaId.setValue(id);
+    this.form.controls.categoriaId.markAsTouched();
+    this.elencoAperto.set(false);
+    this.ricerca.set('');
+  }
+
+  /** Invio nel campo di ricerca sceglie il primo risultato (senza inviare il form). */
+  protected scegliPrimaCategoria(evento: Event): void {
+    evento.preventDefault();
+    const prima = this.categorieFiltrate()[0];
+    if (prima) {
+      this.scegliCategoria(prima.id);
+    }
+  }
+
+  protected cambiaCategoria(): void {
+    this.elencoAperto.set(true);
+    afterNextRender(() => this.campoRicerca()?.nativeElement.focus(), { injector: this.injector });
   }
 
   protected iconaCategoria(nome: string | undefined): string {

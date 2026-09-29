@@ -83,31 +83,79 @@
           {{ t('mappa.nuova.categorieNonDisponibili') }}
         </p>
       } @else {
-        <div class="mt-2 grid grid-cols-3 gap-2">
-          @for (categoria of categorieOrdinate(); track categoria.id) {
-            <label
-              class="relative flex cursor-pointer flex-col items-center gap-1.5 rounded-md border border-neutral-200 px-1 py-2.5 text-center text-xs leading-tight transition-colors hover:bg-neutral-50 has-[:checked]:border-allerta has-[:checked]:bg-allerta/10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-600 dark:border-line dark:hover:bg-ink"
+        @if (categoriaScelta(); as scelta) {
+          @if (!elencoAperto()) {
+            <div
+              class="mt-2 flex items-center gap-2 rounded-md border border-allerta bg-allerta/10 py-1.5 pr-1.5 pl-3 text-sm"
             >
-              <input
-                type="radio"
-                class="sr-only"
-                formControlName="categoriaId"
-                [value]="categoria.id"
-              />
               <span
-                class="absolute right-1.5 top-1.5 h-2 w-2 rounded-full"
-                [ngClass]="classePallinoGravita(categoria.gravita)"
+                class="h-2 w-2 shrink-0 rounded-full"
+                [ngClass]="classePallinoGravita(scelta.gravita)"
                 aria-hidden="true"
               ></span>
               <svg
-                [lucideIcon]="iconaCategoria(categoria.icona)"
-                class="h-5 w-5"
+                [lucideIcon]="iconaCategoria(scelta.icona)"
+                class="h-4 w-4 shrink-0"
                 aria-hidden="true"
               ></svg>
-              {{ categoria.nome }}
-            </label>
+              <span class="min-w-0 flex-1 truncate font-medium">{{ scelta.nome }}</span>
+              <button
+                type="button"
+                class="h-8 shrink-0 rounded-md px-2 font-medium text-blue-600 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-blue-400"
+                (click)="cambiaCategoria()"
+              >
+                {{ t('mappa.nuova.cambiaCategoria') }}
+              </button>
+            </div>
           }
-        </div>
+        }
+        @if (elencoAperto()) {
+          <input
+            #campoRicerca
+            type="search"
+            autocomplete="off"
+            class="mt-2 block h-10 w-full rounded-md border border-neutral-300 bg-white px-3 text-[15px] placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-ink dark:placeholder:text-muted"
+            [placeholder]="t('mappa.nuova.cercaCategoria')"
+            [attr.aria-label]="t('mappa.nuova.cercaCategoria')"
+            [value]="ricerca()"
+            (input)="ricerca.set(campoRicerca.value)"
+            (keydown.enter)="scegliPrimaCategoria($event)"
+          />
+          <div
+            role="radiogroup"
+            [attr.aria-label]="t('mappa.nuova.categoria')"
+            class="mt-2 max-h-44 overflow-y-auto overscroll-contain rounded-md border border-neutral-200 dark:border-line"
+          >
+            @for (categoria of categorieFiltrate(); track categoria.id) {
+              <label
+                class="flex cursor-pointer items-center gap-2.5 border-b border-neutral-100 px-3 py-2.5 text-sm last:border-b-0 hover:bg-neutral-50 has-[:checked]:bg-allerta/10 has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-blue-600 dark:border-line/60 dark:hover:bg-ink"
+              >
+                <input
+                  type="radio"
+                  class="sr-only"
+                  formControlName="categoriaId"
+                  [value]="categoria.id"
+                  (change)="scegliCategoria(categoria.id)"
+                />
+                <span
+                  class="h-2 w-2 shrink-0 rounded-full"
+                  [ngClass]="classePallinoGravita(categoria.gravita)"
+                  aria-hidden="true"
+                ></span>
+                <svg
+                  [lucideIcon]="iconaCategoria(categoria.icona)"
+                  class="h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                ></svg>
+                <span class="min-w-0 truncate">{{ categoria.nome }}</span>
+              </label>
+            } @empty {
+              <p class="px-3 py-3 text-sm text-neutral-500 dark:text-muted">
+                {{ t('mappa.nuova.categoriaNessunRisultato') }}
+              </p>
+            }
+          </div>
+        }
       }
       @if (form.controls.categoriaId.touched && form.controls.categoriaId.invalid) {
         <p class="mt-1.5 text-sm text-allerta">{{ t('mappa.nuova.erroreCategoria') }}</p>

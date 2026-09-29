@@ -1,22 +1,33 @@
 import { SlicePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CategoriaApi } from '../../categorie/categoria-api';
 import { Categoria } from '../../models/categoria.model';
 import { Segnalazione, StatoSegnalazione } from '../../models/segnalazione.model';
 import {
+  FiltriGestioneSegnalazioni,
   SegnalazioneApi,
   SegnalazioneRequest,
   SegnalazioneTransizioneRequest,
 } from './segnalazione-api';
+import { IntestazioneOrdinabile } from '../../shared/tabella/intestazione-ordinabile';
+import { IndicatoreCaricamento } from '../../shared/tabella/indicatore-caricamento';
+import { Paginazione } from '../../shared/tabella/paginazione';
+import { TabellaRemota } from '../../shared/tabella/tabella';
 import { DialoghiService } from '../../shared/dialoghi/dialoghi';
 import { ToastService } from '../../shared/toast/toast';
 
 @Component({
   selector: 'app-segnalazioni',
   standalone: true,
-  imports: [ReactiveFormsModule, SlicePipe],
+  imports: [
+    ReactiveFormsModule,
+    SlicePipe,
+    IntestazioneOrdinabile,
+    Paginazione,
+    IndicatoreCaricamento,
+  ],
   templateUrl: './segnalazioni.html',
 })
 export class Segnalazioni implements OnInit {
@@ -27,12 +38,36 @@ export class Segnalazioni implements OnInit {
   private readonly toast = inject(ToastService);
 
   protected readonly StatoSegnalazione = StatoSegnalazione;
+  protected readonly stati = [
+    { valore: StatoSegnalazione.ATTIVA, etichetta: 'Attiva' },
+    { valore: StatoSegnalazione.SCADUTA, etichetta: 'Scaduta' },
+    { valore: StatoSegnalazione.SOSPESA, etichetta: 'Sospesa' },
+    { valore: StatoSegnalazione.RIMOSSA, etichetta: 'Rimossa' },
+  ];
 
-  protected readonly segnalazioni = signal<Segnalazione[]>([]);
   protected readonly categorie = signal<Categoria[]>([]);
-  protected readonly caricando = signal(false);
   protected readonly errore = signal<string | null>(null);
-  protected readonly filtroStato = signal<StatoSegnalazione | ''>('');
+
+  /** Paginata, filtrata e ordinata dal backend; di default le più recenti in alto. */
+  protected readonly tabella = new TabellaRemota<FiltriGestioneSegnalazioni, Segnalazione>(
+    (richiesta) => this.segnalazioneApi.pagina(richiesta),
+    {
+      id: '',
+      categoriaId: '',
+      descrizione: '',
+      anonima: '',
+      stato: '',
+      creataDal: '',
+      creataAl: '',
+      scadeDal: '',
+      scadeAl: '',
+    },
+    { campo: 'dataCreazione', direzione: 'desc' },
+  );
+  protected readonly erroreTabella = computed(() => {
+    const err = this.tabella.errore();
+    return err ? this.estraiMessaggio(err) : null;
+  });
 
   protected readonly form = this.fb.nonNullable.group({
     categoriaId: this.fb.control<number | null>(null, Validators.required),
@@ -44,28 +79,6 @@ export class Segnalazioni implements OnInit {
 
   ngOnInit(): void {
     this.categoriaApi.elenca().subscribe({ next: (categorie) => this.categorie.set(categorie) });
-    this.carica();
-  }
-
-  protected carica(): void {
-    this.caricando.set(true);
-    this.errore.set(null);
-    const stato = this.filtroStato();
-    this.segnalazioneApi.elenca(stato ? { stato } : undefined).subscribe({
-      next: (segnalazioni) => {
-        this.segnalazioni.set(segnalazioni);
-        this.caricando.set(false);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.errore.set(this.estraiMessaggio(err));
-        this.caricando.set(false);
-      },
-    });
-  }
-
-  protected cambiaFiltro(stato: string): void {
-    this.filtroStato.set(stato as StatoSegnalazione | '');
-    this.carica();
   }
 
   protected inviaForm(): void {
@@ -85,7 +98,7 @@ export class Segnalazioni implements OnInit {
     this.segnalazioneApi.crea(payload).subscribe({
       next: () => {
         this.resetForm();
-        this.carica();
+        this.tabella.aggiorna();
       },
       error: (err: HttpErrorResponse) => this.errore.set(this.estraiMessaggio(err)),
     });
@@ -100,7 +113,7 @@ export class Segnalazioni implements OnInit {
     this.segnalazioneApi.rimuovi(segnalazione.id, richiesta).subscribe({
       next: () => {
         this.toast.successo('Segnalazione rimossa.');
-        this.carica();
+        this.tabella.aggiorna();
       },
       error: (err: HttpErrorResponse) => {
         this.errore.set(this.estraiMessaggio(err));
@@ -118,7 +131,7 @@ export class Segnalazioni implements OnInit {
     this.segnalazioneApi.riattiva(segnalazione.id, richiesta).subscribe({
       next: () => {
         this.toast.successo('Segnalazione riattivata.');
-        this.carica();
+        this.tabella.aggiorna();
       },
       error: (err: HttpErrorResponse) => {
         this.errore.set(this.estraiMessaggio(err));
@@ -146,7 +159,7 @@ export class Segnalazioni implements OnInit {
     this.segnalazioneApi.eliminaDefinitivamente(segnalazione.id).subscribe({
       next: () => {
         this.toast.successo('Segnalazione eliminata definitivamente.');
-        this.carica();
+        this.tabella.aggiorna();
       },
       error: (err: HttpErrorResponse) => {
         this.errore.set(this.estraiMessaggio(err));

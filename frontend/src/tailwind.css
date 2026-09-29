@@ -75,6 +75,19 @@
     @apply flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-neutral-300 px-3.5 text-sm font-medium whitespace-nowrap text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 aria-pressed:border-allerta aria-pressed:bg-allerta aria-pressed:text-white dark:border-line dark:text-paper dark:hover:bg-panel dark:aria-pressed:border-allerta dark:aria-pressed:bg-allerta;
   }
 
+  /* Tabelle di gestione (shared/tabella): campi della riga filtri e pulsanti di paginazione. */
+  .filtro-tabella {
+    @apply block w-full min-w-0 rounded border border-gray-300 bg-white px-2 py-1 text-xs font-normal text-gray-900 placeholder:text-gray-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:text-paper dark:placeholder:text-muted;
+  }
+
+  .pulsante-pagina {
+    @apply flex h-8 min-w-8 items-center justify-center rounded border border-gray-200 px-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-40 disabled:hover:bg-transparent dark:border-line dark:text-paper dark:hover:bg-panel;
+  }
+
+  .pulsante-pagina--attivo {
+    @apply border-allerta bg-allerta text-white hover:bg-allerta dark:border-allerta dark:hover:bg-allerta;
+  }
+
   .voce-navbar-mappa {
     @apply flex h-full flex-col items-center justify-start gap-1 pt-2.5 text-xs font-medium transition-colors hover:text-neutral-900 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-blue-600 lg:justify-center lg:pt-0 dark:hover:text-paper;
   }

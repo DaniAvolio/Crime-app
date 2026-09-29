@@ -3,13 +3,15 @@ package com.daniele.crime_app_backend.repository;
 import com.daniele.crime_app_backend.entity.Segnalazione;
 import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface SegnalazioneRepository extends JpaRepository<Segnalazione, Long> {
+public interface SegnalazioneRepository extends JpaRepository<Segnalazione, Long>,
+        JpaSpecificationExecutor<Segnalazione> {
 
     List<Segnalazione> findByStato(StatoSegnalazione stato);
 

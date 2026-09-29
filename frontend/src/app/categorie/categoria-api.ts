@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Categoria, TraduzioneCategoria } from '../models/categoria.model';
 import { Gravita } from '../models/gravita.model';
+import { Pagina } from '../models/pagina.model';
+import { RichiestaPagina, parametriPagina } from '../shared/tabella/tabella';
 
 /** Payload di creazione/modifica: nessun id, nessun flag "attiva" (gestito dal backend). */
 export interface CategoriaRequest {
@@ -16,6 +18,17 @@ export interface CategoriaRequest {
   traduzioni?: Record<string, TraduzioneCategoria>;
 }
 
+/** Filtri della tabella in gestione, come scritti nei campi: stringa vuota = non filtrare. */
+export interface FiltriGestioneCategorie {
+  [campo: string]: string;
+  /** Cerca nel nome italiano e nelle traduzioni. */
+  nome: string;
+  gravita: string;
+  durataMin: string;
+  durataMax: string;
+  attiva: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CategoriaApi {
   private readonly http = inject(HttpClient);
@@ -23,6 +36,13 @@ export class CategoriaApi {
 
   elenca(): Observable<Categoria[]> {
     return this.http.get<Categoria[]>(this.baseUrl);
+  }
+
+  /** Tabella di gestione (solo admin): filtri, ordinamento e paginazione lato backend. */
+  pagina(richiesta: RichiestaPagina<FiltriGestioneCategorie>): Observable<Pagina<Categoria>> {
+    return this.http.get<Pagina<Categoria>>(`${this.baseUrl}/gestione`, {
+      params: parametriPagina(richiesta),
+    });
   }
 
   crea(payload: CategoriaRequest): Observable<Categoria> {

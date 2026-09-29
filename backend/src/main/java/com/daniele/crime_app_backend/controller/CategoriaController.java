@@ -2,6 +2,8 @@ package com.daniele.crime_app_backend.controller;
 
 import com.daniele.crime_app_backend.dto.CategoriaDto;
 import com.daniele.crime_app_backend.dto.CategoriaRequest;
+import com.daniele.crime_app_backend.dto.FiltriCategorie;
+import com.daniele.crime_app_backend.dto.PaginaDto;
 import com.daniele.crime_app_backend.service.CategoriaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,15 @@ public class CategoriaController {
     @GetMapping
     public List<CategoriaDto> elenca(@RequestParam(name = "soloAttive", defaultValue = "false") boolean soloAttive) {
         return soloAttive ? categoriaService.trovaAttive() : categoriaService.trovaTutte();
+    }
+
+    /** Tabella di gestione (solo admin, vedi SecurityConfig): ordina=campo,asc|desc. */
+    @GetMapping("/gestione")
+    public PaginaDto<CategoriaDto> gestione(FiltriCategorie filtri,
+                                            @RequestParam(defaultValue = "0") int pagina,
+                                            @RequestParam(defaultValue = "25") int dimensione,
+                                            @RequestParam(required = false) String ordina) {
+        return categoriaService.trovaPerGestione(filtri, pagina, dimensione, ordina);
     }
 
     @GetMapping("/{id}")

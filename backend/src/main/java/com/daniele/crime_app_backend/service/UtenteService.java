@@ -1,6 +1,8 @@
 package com.daniele.crime_app_backend.service;
 
 import com.daniele.crime_app_backend.dto.CambioPasswordRequest;
+import com.daniele.crime_app_backend.dto.FiltriUtenti;
+import com.daniele.crime_app_backend.dto.PaginaDto;
 import com.daniele.crime_app_backend.dto.UtenteAggiornamentoRequest;
 import com.daniele.crime_app_backend.dto.UtenteDto;
 import com.daniele.crime_app_backend.dto.UtenteRegistrazioneRequest;
@@ -10,14 +12,18 @@ import com.daniele.crime_app_backend.exception.ConflittoException;
 import com.daniele.crime_app_backend.exception.RichiestaNonValidaException;
 import com.daniele.crime_app_backend.exception.RisorsaNonTrovataException;
 import com.daniele.crime_app_backend.mapper.UtenteMapper;
+import com.daniele.crime_app_backend.repository.SpecificheGestione;
 import com.daniele.crime_app_backend.repository.UtenteRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -41,6 +47,25 @@ public class UtenteService {
         return utenteRepository.findAll().stream()
                 .map(utenteMapper::toDto)
                 .toList();
+    }
+
+    /** Colonne ordinabili della tabella in gestione: nome esposto al client -> proprietà JPA. */
+    private static final Map<String, String> ORDINABILI_GESTIONE = Map.of(
+            "nome", "nome",
+            "cognome", "cognome",
+            "email", "email",
+            "identitaVerificata", "identitaVerificata",
+            "punteggioFiducia", "punteggioFiducia",
+            "attivo", "attivo",
+            "ruolo", "ruolo",
+            "dataRegistrazione", "dataRegistrazione");
+
+    /** Tabella di gestione: filtri per colonna, ordinamento e paginazione lato database. */
+    public PaginaDto<UtenteDto> trovaPerGestione(FiltriUtenti filtri, int pagina, int dimensione, String ordina) {
+        Pageable richiesta = Paginazione.crea(pagina, dimensione, ordina, ORDINABILI_GESTIONE,
+                Sort.by(Sort.Order.asc("cognome"), Sort.Order.asc("nome")));
+        return PaginaDto.da(utenteRepository.findAll(SpecificheGestione.utenti(filtri), richiesta),
+                utenteMapper::toDto);
     }
 
     public UtenteDto trovaPerId(Long id) {

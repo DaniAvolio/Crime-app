@@ -52,7 +52,9 @@
           </p>
           @for (lingua of lingueTraduzione; track lingua) {
             <div [formGroupName]="lingua" class="mb-2 grid gap-2 sm:grid-cols-[3rem_1fr_2fr]">
-              <span class="self-center text-xs font-semibold text-gray-500 uppercase dark:text-muted">
+              <span
+                class="self-center text-xs font-semibold text-gray-500 uppercase dark:text-muted"
+              >
                 {{ lingua }}
               </span>
               <input
@@ -146,26 +148,112 @@
       </div>
     </form>
 
-    @if (caricando()) {
-      <p class="text-sm text-gray-500 dark:text-muted">Caricamento...</p>
-    } @else if (categorie().length === 0) {
-      <p class="text-sm text-gray-500 dark:text-muted">Nessuna categoria presente.</p>
-    } @else {
-      <table class="w-full border-collapse text-sm">
+    @if (erroreTabella(); as messaggio) {
+      <div
+        class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+      >
+        {{ messaggio }}
+      </div>
+    }
+
+    <div class="mb-2 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <h2 class="font-semibold text-gray-800 dark:text-paper">Categorie</h2>
+        <app-indicatore-caricamento [attivo]="tabella.occupata()" />
+      </div>
+      @if (tabella.modificata()) {
+        <button
+          type="button"
+          class="text-sm font-medium text-allerta hover:underline"
+          (click)="tabella.azzera()"
+        >
+          Azzera filtri e ordinamento
+        </button>
+      }
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[40rem] border-collapse text-sm">
         <thead>
           <tr
             class="border-b border-gray-200 text-left text-gray-500 dark:border-line dark:text-muted"
           >
             <th class="py-2"></th>
-            <th class="py-2">Nome</th>
-            <th class="py-2">Gravità</th>
-            <th class="py-2">Durata (ore)</th>
-            <th class="py-2">Stato</th>
+            <th appOrdinabile="nome" [tabella]="tabella">Nome</th>
+            <th appOrdinabile="gravita" [tabella]="tabella">Gravità</th>
+            <th appOrdinabile="durataValiditaOre" [tabella]="tabella">Durata (ore)</th>
+            <th appOrdinabile="attiva" [tabella]="tabella">Stato</th>
             <th class="py-2"></th>
           </tr>
+          <tr class="border-b border-gray-200 align-top dark:border-line">
+            <td></td>
+            <td class="py-2 pr-2">
+              <input
+                type="search"
+                class="filtro-tabella"
+                placeholder="Nome o traduzione…"
+                aria-label="Filtra per nome"
+                [value]="tabella.filtri()['nome']"
+                (input)="tabella.filtra('nome', $any($event.target).value)"
+              />
+            </td>
+            <td class="py-2 pr-2">
+              <select
+                class="filtro-tabella"
+                aria-label="Filtra per gravità"
+                (change)="tabella.filtra('gravita', $any($event.target).value)"
+              >
+                <option value="" [selected]="tabella.filtri()['gravita'] === ''">Tutte</option>
+                @for (gravita of livelliGravita; track gravita) {
+                  <option
+                    [value]="gravita"
+                    [selected]="tabella.filtri()['gravita'] === '' + gravita"
+                  >
+                    {{ gravita }} – {{ etichetteGravita[gravita] }}
+                  </option>
+                }
+              </select>
+            </td>
+            <td class="w-28 py-2 pr-2">
+              <input
+                type="number"
+                min="1"
+                class="filtro-tabella"
+                placeholder="Min"
+                aria-label="Durata minima (ore)"
+                [value]="tabella.filtri()['durataMin']"
+                (input)="tabella.filtra('durataMin', $any($event.target).value)"
+              />
+              <input
+                type="number"
+                min="1"
+                class="filtro-tabella mt-1"
+                placeholder="Max"
+                aria-label="Durata massima (ore)"
+                [value]="tabella.filtri()['durataMax']"
+                (input)="tabella.filtra('durataMax', $any($event.target).value)"
+              />
+            </td>
+            <td class="py-2 pr-2">
+              <select
+                class="filtro-tabella"
+                aria-label="Filtra per stato"
+                (change)="tabella.filtra('attiva', $any($event.target).value)"
+              >
+                <option value="" [selected]="tabella.filtri()['attiva'] === ''">Tutte</option>
+                <option value="true" [selected]="tabella.filtri()['attiva'] === 'true'">
+                  Attiva
+                </option>
+                <option value="false" [selected]="tabella.filtri()['attiva'] === 'false'">
+                  Disattivata
+                </option>
+              </select>
+            </td>
+            <td></td>
+          </tr>
         </thead>
-        <tbody>
-          @for (categoria of categorie(); track categoria.id) {
+        <tbody [class.opacity-50]="tabella.occupata()" [attr.aria-busy]="tabella.caricando()">
+          @for (categoria of tabella.righe(); track categoria.id) {
             <tr class="border-b border-gray-100 dark:border-line">
               <td class="py-2">
                 <svg
@@ -178,11 +266,13 @@
                 @for (lingua of lingueTraduzione; track lingua) {
                   @if (categoria.traduzioni?.[lingua]; as traduzione) {
                     <span class="block text-xs text-gray-400 dark:text-muted">
-                      <span class="uppercase">{{ lingua }}</span>: {{ traduzione.nome }}
+                      <span class="uppercase">{{ lingua }}</span
+                      >: {{ traduzione.nome }}
                     </span>
                   } @else {
                     <span class="block text-xs text-amber-600 dark:text-beacon">
-                      <span class="uppercase">{{ lingua }}</span>: traduzione mancante
+                      <span class="uppercase">{{ lingua }}</span
+                      >: traduzione mancante
                     </span>
                   }
                 }
@@ -242,9 +332,22 @@
                 </button>
               </td>
             </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="py-6 text-center text-gray-500 dark:text-muted">
+                {{
+                  tabella.caricando()
+                    ? 'Caricamento...'
+                    : tabella.modificata()
+                      ? 'Nessuna categoria corrisponde ai filtri.'
+                      : 'Nessuna categoria presente.'
+                }}
+              </td>
+            </tr>
           }
         </tbody>
       </table>
-    }
+    </div>
+    <app-paginazione [tabella]="tabella" />
   </div>
 </main>

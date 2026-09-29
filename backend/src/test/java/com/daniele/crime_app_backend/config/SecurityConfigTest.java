@@ -4,7 +4,11 @@ import com.daniele.crime_app_backend.controller.AuthController;
 import com.daniele.crime_app_backend.controller.CategoriaController;
 import com.daniele.crime_app_backend.controller.SegnalazioneController;
 import com.daniele.crime_app_backend.controller.UtenteController;
+import com.daniele.crime_app_backend.dto.FiltriCategorie;
+import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
+import com.daniele.crime_app_backend.dto.FiltriUtenti;
 import com.daniele.crime_app_backend.entity.Utente;
+import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 import com.daniele.crime_app_backend.entity.enums.RuoloUtente;
 import com.daniele.crime_app_backend.repository.UtenteRepository;
 import com.daniele.crime_app_backend.service.AuthService;
@@ -22,6 +26,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import java.time.LocalDate;
+
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -122,6 +129,42 @@ class SecurityConfigTest {
         mockMvc.perform(patch("/api/utenti/1/ruolo").with(ruolo("UTENTE"))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"ruolo\": \"ADMIN\"}"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void tabelleDiGestioneRiservateAgliAdmin() throws Exception {
+        // "/api/segnalazioni/*" è pubblico in GET: "/gestione" non deve ricadere in quella regola.
+        mockMvc.perform(get("/api/segnalazioni/gestione")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/segnalazioni/gestione").with(ruolo("UTENTE"))).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/segnalazioni/gestione").with(ruolo("ADMIN"))).andExpect(status().isOk());
+        // Idem per "/api/categorie/**", pubblico in GET.
+        mockMvc.perform(get("/api/categorie/gestione")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/categorie/gestione").with(ruolo("UTENTE"))).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/categorie/gestione").with(ruolo("ADMIN"))).andExpect(status().isOk());
+        mockMvc.perform(get("/api/utenti/gestione").with(ruolo("UTENTE"))).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/utenti/gestione").with(ruolo("ADMIN"))).andExpect(status().isOk());
+    }
+
+    @Test
+    void filtriDellaGestioneLettiDallaQueryString() throws Exception {
+        mockMvc.perform(get("/api/segnalazioni/gestione").with(ruolo("ADMIN"))
+                        .param("categoriaId", "3").param("descrizione", "fumo").param("anonima", "true")
+                        .param("stato", "ATTIVA").param("creataDal", "2026-09-01").param("creataAl", "2026-09-30")
+                        .param("pagina", "2").param("dimensione", "10").param("ordina", "categoria,desc"))
+                .andExpect(status().isOk());
+        verify(segnalazioneService).trovaPerGestione(
+                new FiltriSegnalazioni(null, 3L, "fumo", true, StatoSegnalazione.ATTIVA,
+                        LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30), null, null),
+                2, 10, "categoria,desc");
+        mockMvc.perform(get("/api/utenti/gestione").with(ruolo("ADMIN"))
+                        .param("email", "rossi").param("fiduciaMin", "20").param("ruolo", "ADMIN"))
+                .andExpect(status().isOk());
+        verify(utenteService).trovaPerGestione(
+                new FiltriUtenti(null, null, "rossi", null, 20, null, null, RuoloUtente.ADMIN), 0, 25, null);
+        mockMvc.perform(get("/api/categorie/gestione").with(ruolo("ADMIN"))
+                        .param("nome", "furto").param("gravita", "3").param("attiva", "false").param("ordina", "nome"))
+                .andExpect(status().isOk());
+        verify(categoriaService).trovaPerGestione(new FiltriCategorie("furto", 3, null, null, false), 0, 25, "nome");
     }
 
     @Test

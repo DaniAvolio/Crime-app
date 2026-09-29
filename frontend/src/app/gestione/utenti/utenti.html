@@ -1,5 +1,5 @@
 <main class="min-h-screen bg-white text-gray-900 dark:bg-ink dark:text-paper">
-  <div class="mx-auto max-w-4xl px-6 py-10">
+  <div class="mx-auto max-w-6xl px-6 py-10">
     <h1 class="mb-6 font-display text-2xl font-bold text-gray-900 dark:text-paper">
       Gestione utenti
     </h1>
@@ -87,28 +87,142 @@
       </div>
     </form>
 
-    @if (caricando()) {
-      <p class="text-sm text-gray-500 dark:text-muted">Caricamento...</p>
-    } @else if (utenti().length === 0) {
-      <p class="text-sm text-gray-500 dark:text-muted">Nessun utente presente.</p>
-    } @else {
-      <table class="w-full border-collapse text-sm">
+    @if (erroreTabella(); as messaggio) {
+      <div
+        class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+      >
+        {{ messaggio }}
+      </div>
+    }
+
+    <div class="mb-2 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <h2 class="font-semibold text-gray-800 dark:text-paper">Utenti</h2>
+        <app-indicatore-caricamento [attivo]="tabella.occupata()" />
+      </div>
+      @if (tabella.modificata()) {
+        <button
+          type="button"
+          class="text-sm font-medium text-allerta hover:underline"
+          (click)="tabella.azzera()"
+        >
+          Azzera filtri e ordinamento
+        </button>
+      }
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[56rem] border-collapse text-sm">
         <thead>
           <tr
             class="border-b border-gray-200 text-left text-gray-500 dark:border-line dark:text-muted"
           >
-            <th class="py-2">Nome</th>
-            <th class="py-2">Cognome</th>
-            <th class="py-2">Email</th>
-            <th class="py-2">Identità</th>
-            <th class="py-2">Fiducia</th>
-            <th class="py-2">Stato</th>
-            <th class="py-2">Ruolo</th>
+            <th appOrdinabile="nome" [tabella]="tabella">Nome</th>
+            <th appOrdinabile="cognome" [tabella]="tabella">Cognome</th>
+            <th appOrdinabile="email" [tabella]="tabella">Email</th>
+            <th appOrdinabile="identitaVerificata" [tabella]="tabella">Identità</th>
+            <th appOrdinabile="punteggioFiducia" [tabella]="tabella">Fiducia</th>
+            <th appOrdinabile="attivo" [tabella]="tabella">Stato</th>
+            <th appOrdinabile="ruolo" [tabella]="tabella">Ruolo</th>
             <th class="py-2"></th>
           </tr>
+          <tr class="border-b border-gray-200 align-top dark:border-line">
+            <td class="py-2 pr-2">
+              <input
+                type="search"
+                class="filtro-tabella"
+                placeholder="Contiene…"
+                aria-label="Filtra per nome"
+                [value]="tabella.filtri().nome"
+                (input)="tabella.filtra('nome', $any($event.target).value)"
+              />
+            </td>
+            <td class="py-2 pr-2">
+              <input
+                type="search"
+                class="filtro-tabella"
+                placeholder="Contiene…"
+                aria-label="Filtra per cognome"
+                [value]="tabella.filtri().cognome"
+                (input)="tabella.filtra('cognome', $any($event.target).value)"
+              />
+            </td>
+            <td class="py-2 pr-2">
+              <input
+                type="search"
+                class="filtro-tabella"
+                placeholder="Contiene…"
+                aria-label="Filtra per email"
+                [value]="tabella.filtri().email"
+                (input)="tabella.filtra('email', $any($event.target).value)"
+              />
+            </td>
+            <td class="py-2 pr-2">
+              <select
+                class="filtro-tabella"
+                aria-label="Filtra per identità"
+                (change)="tabella.filtra('identitaVerificata', $any($event.target).value)"
+              >
+                <option value="" [selected]="tabella.filtri().identitaVerificata === ''">
+                  Tutte
+                </option>
+                <option value="true" [selected]="tabella.filtri().identitaVerificata === 'true'">
+                  Verificata
+                </option>
+                <option value="false" [selected]="tabella.filtri().identitaVerificata === 'false'">
+                  Non verificata
+                </option>
+              </select>
+            </td>
+            <td class="w-24 py-2 pr-2">
+              <input
+                type="number"
+                class="filtro-tabella"
+                placeholder="Min"
+                aria-label="Fiducia minima"
+                [value]="tabella.filtri().fiduciaMin"
+                (input)="tabella.filtra('fiduciaMin', $any($event.target).value)"
+              />
+              <input
+                type="number"
+                class="filtro-tabella mt-1"
+                placeholder="Max"
+                aria-label="Fiducia massima"
+                [value]="tabella.filtri().fiduciaMax"
+                (input)="tabella.filtra('fiduciaMax', $any($event.target).value)"
+              />
+            </td>
+            <td class="py-2 pr-2">
+              <select
+                class="filtro-tabella"
+                aria-label="Filtra per stato"
+                (change)="tabella.filtra('attivo', $any($event.target).value)"
+              >
+                <option value="" [selected]="tabella.filtri().attivo === ''">Tutti</option>
+                <option value="true" [selected]="tabella.filtri().attivo === 'true'">Attivo</option>
+                <option value="false" [selected]="tabella.filtri().attivo === 'false'">
+                  Disattivato
+                </option>
+              </select>
+            </td>
+            <td class="min-w-28 py-2 pr-2">
+              <select
+                class="filtro-tabella"
+                aria-label="Filtra per ruolo"
+                (change)="tabella.filtra('ruolo', $any($event.target).value)"
+              >
+                <option value="" [selected]="tabella.filtri().ruolo === ''">Tutti</option>
+                <option value="ADMIN" [selected]="tabella.filtri().ruolo === 'ADMIN'">Admin</option>
+                <option value="UTENTE" [selected]="tabella.filtri().ruolo === 'UTENTE'">
+                  Utente
+                </option>
+              </select>
+            </td>
+            <td></td>
+          </tr>
         </thead>
-        <tbody>
-          @for (utente of utenti(); track utente.id) {
+        <tbody [class.opacity-50]="tabella.occupata()" [attr.aria-busy]="tabella.caricando()">
+          @for (utente of tabella.righe(); track utente.id) {
             <tr class="border-b border-gray-100 dark:border-line">
               <td class="py-2">{{ utente.nome }}</td>
               <td class="py-2">{{ utente.cognome }}</td>
@@ -204,9 +318,22 @@
                 </button>
               </td>
             </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="py-6 text-center text-gray-500 dark:text-muted">
+                {{
+                  tabella.caricando()
+                    ? 'Caricamento...'
+                    : tabella.modificata()
+                      ? 'Nessun utente corrisponde ai filtri.'
+                      : 'Nessun utente presente.'
+                }}
+              </td>
+            </tr>
           }
         </tbody>
       </table>
-    }
+    </div>
+    <app-paginazione [tabella]="tabella" />
   </div>
 </main>

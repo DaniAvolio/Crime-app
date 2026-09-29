@@ -117,7 +117,10 @@
         "continua": "Continua",
         "puntoScelto": "Punto scelto sulla mappa",
         "cambia": "Cambia"
-      }
+      },
+      "cercaCategoria": "Cerca categoria…",
+      "categoriaNessunRisultato": "Nessuna categoria trovata.",
+      "cambiaCategoria": "Cambia"
     },
     "lista": {
       "titolo": "Segnalazioni in zona",

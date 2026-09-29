@@ -1,5 +1,7 @@
 package com.daniele.crime_app_backend.controller;
 
+import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
+import com.daniele.crime_app_backend.dto.PaginaDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneRequest;
 import com.daniele.crime_app_backend.dto.SegnalazioneTransizioneRequest;
@@ -28,6 +30,15 @@ public class SegnalazioneController {
                                          @RequestParam(required = false) Long autoreId,
                                          @RequestParam(defaultValue = "false") boolean mie) {
         return segnalazioneService.trova(stato, autoreId, mie);
+    }
+
+    /** Tabella di gestione (solo admin, vedi SecurityConfig): ordina=campo,asc|desc. */
+    @GetMapping("/gestione")
+    public PaginaDto<SegnalazioneDto> gestione(FiltriSegnalazioni filtri,
+                                               @RequestParam(defaultValue = "0") int pagina,
+                                               @RequestParam(defaultValue = "25") int dimensione,
+                                               @RequestParam(required = false) String ordina) {
+        return segnalazioneService.trovaPerGestione(filtri, pagina, dimensione, ordina);
     }
 
     @GetMapping("/vicine")
