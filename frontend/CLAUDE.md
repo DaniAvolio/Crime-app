@@ -26,7 +26,7 @@ There is no lint script or ESLint config in this project; formatting is via Pret
 
 ## Architecture
 
-Angular 22, standalone components (no NgModules). Routes are declared flat in `src/app/app.routes.ts`; global providers (router, `HttpClient`, Lucide icon set) are wired in `src/app/app.config.ts`.
+Angular 22, standalone components (no NgModules). Routes are declared flat in `src/app/app.routes.ts`; every page except the landing `Home` is lazy (`loadComponent`), so new pages should be added the same way to keep the initial bundle small; global providers (router, `HttpClient`, Lucide icon set) are wired in `src/app/app.config.ts`.
 
 Feature folders under `src/app/` mirror backend resources (e.g. `categorie/`) and follow this pattern:
 - An injectable `*Api` service (`providedIn: 'root'`) wrapping `HttpClient` calls against `${environment.apiUrl}/<resource>`.

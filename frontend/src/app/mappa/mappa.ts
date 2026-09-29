@@ -148,6 +148,12 @@ function leggiFiltroGravitaSalvato(): Gravita | null {
 /** Aprendo una segnalazione da uno zoom più lontano di così, ci si avvicina prima di centrarla. */
 const ZOOM_MINIMO_CENTRATURA = 15;
 
+/**
+ * Sotto questo zoom gli aloni (100 m) sono larghi pochi pixel e non si vedono: il loro livello
+ * si toglie dalla mappa, così pan e zoom da lontano non ridisegnano centinaia di cerchi SVG.
+ */
+const ZOOM_MINIMO_ALONI = 14;
+
 type PannelloMappa = 'nuova-posizione' | 'nuova-dettagli' | 'soccorsi' | null;
 
 interface AreaVisibile {
@@ -165,7 +171,7 @@ const VALIDITA_AREA_MS = 60_000;
  * dentro un layer Leaflet: pallino e overlay restano layer Leaflet normali sopra la mappa.
  */
 /** Stile vettoriale per tema. Oggi coincidono: il cambio tema non ricarica la mappa. */
-const STILI_PER_TEMA: Record<Tema, string> = { chiaro: 'positron', scuro: 'positron' };
+const STILI_PER_TEMA: Record<Tema, string> = { chiaro: 'positron', scuro: 'fiord' };
 
 function urlStileOpenFreeMap(stile: string): string {
   return `https://tiles.openfreemap.org/styles/${stile}`;
@@ -430,6 +436,8 @@ export class Mappa {
   private readonly areaRichiesta = new Subject<AreaVisibile>();
   private areaCaricata: (AreaVisibile & { istante: number }) | null = null;
   private readonly livelloSegnalazioni = layerGroup();
+  /** Aloni separati dai marker: il gruppo sta sulla mappa solo da ZOOM_MINIMO_ALONI in su. */
+  private readonly livelloAloni = layerGroup();
   /** Marker e alone per id di segnalazione, con una "firma" per capire se vanno ritoccati. */
   private readonly marcatori = new Map<number, { marker: Marker; alone: Circle; firma: string }>();
 
@@ -516,7 +524,7 @@ export class Mappa {
           stroke: false,
           interactive: false,
           ...stileAlone(attiva, gravita),
-        }).addTo(this.livelloSegnalazioni);
+        }).addTo(this.livelloAloni);
         const nuovo = marker(posizione, {
           icon: iconaMarker(icona, attiva, gravita),
           title: nome,
@@ -537,8 +545,9 @@ export class Mappa {
       }
       for (const [id, { marker: vecchio, alone }] of this.marcatori) {
         if (!presenti.has(id)) {
-          vecchio.remove();
-          alone.remove();
+          // Dal gruppo, non solo dalla mappa: un gruppo riaggiunto rimetterebbe i layer rimasti.
+          this.livelloSegnalazioni.removeLayer(vecchio);
+          this.livelloAloni.removeLayer(alone);
           this.marcatori.delete(id);
         }
       }
@@ -638,6 +647,8 @@ export class Mappa {
     setTimeout(() => map.invalidateSize(), 250);
     this.mappa.set(map);
     this.livelloSegnalazioni.addTo(map);
+    this.mostraAloniSeVicino(map);
+    map.on('zoomend', () => this.mostraAloniSeVicino(map));
     map.on('moveend', () => {
       this.richiediSegnalazioni(map);
     });
@@ -653,6 +664,15 @@ export class Mappa {
     this.richiediSegnalazioni(map);
     this.apriSegnalazioneRichiesta();
     this.seguiPosizioneUtente(map);
+  }
+
+  private mostraAloniSeVicino(map: LeafletMap): void {
+    const vicino = map.getZoom() >= ZOOM_MINIMO_ALONI;
+    if (vicino && !map.hasLayer(this.livelloAloni)) {
+      this.livelloAloni.addTo(map);
+    } else if (!vicino && map.hasLayer(this.livelloAloni)) {
+      this.livelloAloni.remove();
+    }
   }
 
   protected chiudiAvviso(): void {

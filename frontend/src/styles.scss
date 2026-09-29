@@ -34,10 +34,10 @@ html.dark {
 /* Marker delle segnalazioni sulla mappa: HTML generato per i divIcon di Leaflet, fuori dai
    template Angular, quindi gli stili vanno qui e non nel componente. Il colore dipende dalla
    gravità della categoria (modificatori --g1/--g2/--g3), distinto dal pallino blu dell'utente.
-   Forma a spillo: cerchio con l'icona e una punta sotto che indica il punto esatto (iconAnchor
-   in mappa.ts), così il pallino della posizione, disegnato sopra, non copre mai l'icona.
-   Struttura: .spillo (36x46, ingrandito da fermo attorno alla punta) contiene la punta, disegnata
-   prima, e il cerchio, che la copre nel punto d'attacco. */
+   Forma: badge quadrato arrotondato con l'icona e una punta sotto che indica il punto esatto
+   (iconAnchor in mappa.ts), così il pallino della posizione, disegnato sopra, non copre mai
+   l'icona. Struttura: .spillo (36x46, ingrandito attorno alla punta) contiene la punta, disegnata
+   prima, e il badge, che la copre nel punto d'attacco. */
 .spillo {
   position: relative;
   width: 36px;
@@ -52,7 +52,7 @@ html.dark {
 }
 
 /* Punta: quadratino ruotato nel colore della gravità; il bordo bianco (scuro se selezionato) è
-   solo sui due lati esterni. Metà resta sotto il cerchio, che è disegnato dopo. */
+   solo sui due lati esterni. Metà resta sotto il badge, che è disegnato dopo. */
 .spillo-punta {
   position: absolute;
   left: 50%;
@@ -80,7 +80,7 @@ html.dark {
   background-color: var(--color-gravita-3);
 }
 
-/* Contorno scuro anche sulla punta: quello del cerchio è un box-shadow, non un bordo. */
+/* Contorno scuro anche sulla punta: quello del badge è un box-shadow, non un bordo. */
 .spillo--attiva .spillo-punta {
   border-color: var(--color-ink);
   border-width: 0 3px 3px 0;
@@ -95,7 +95,7 @@ html.dark {
   height: 36px;
   box-sizing: border-box;
   border: 2px solid #ffffff;
-  border-radius: 9999px;
+  border-radius: 9px;
   background-color: var(--color-allerta);
   color: #ffffff;
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);

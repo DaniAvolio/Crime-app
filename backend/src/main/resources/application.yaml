@@ -1,3 +1,10 @@
+server:
+  # Risposte JSON compresse (gzip): /vicine passa da ~50 KB a pochi KB, conta su rete mobile.
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 1KB
+
 spring:
   application:
     name: crime-app-backend

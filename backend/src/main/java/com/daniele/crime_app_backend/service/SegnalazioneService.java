@@ -105,9 +105,15 @@ public class SegnalazioneService {
         return segnalazioneMapper.toDto(recuperaOLancia(id));
     }
 
+    /**
+     * Tetto di sicurezza per /vicine: in una zona densa la mappa non riceve migliaia di marker.
+     * Oltre il tetto restano le più gravi e, a parità, le più recenti.
+     */
+    static final int LIMITE_VICINE = 500;
+
     /** Segnalazioni ATTIVA entro un raggio da un punto, per la vista mappa e le notifiche di prossimità. */
     public List<SegnalazioneDto> trovaVicine(double lat, double lng, double raggioMetri) {
-        return segnalazioneRepository.trovaAttiveNelRaggio(lat, lng, raggioMetri).stream()
+        return segnalazioneRepository.trovaAttiveNelRaggio(lat, lng, raggioMetri, LIMITE_VICINE).stream()
                 .map(segnalazioneMapper::toDto)
                 .toList();
     }
