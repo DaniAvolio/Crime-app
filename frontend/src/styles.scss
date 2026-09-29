@@ -33,8 +33,61 @@ html.dark {
 
 /* Marker delle segnalazioni sulla mappa: HTML generato per i divIcon di Leaflet, fuori dai
    template Angular, quindi gli stili vanno qui e non nel componente. Il colore dipende dalla
-   gravità della categoria (modificatori --g1/--g2/--g3), distinto dal pallino blu dell'utente. */
+   gravità della categoria (modificatori --g1/--g2/--g3), distinto dal pallino blu dell'utente.
+   Forma a spillo: cerchio con l'icona e una punta sotto che indica il punto esatto (iconAnchor
+   in mappa.ts), così il pallino della posizione, disegnato sopra, non copre mai l'icona.
+   Struttura: .spillo (36x46, ingrandito da fermo attorno alla punta) contiene la punta, disegnata
+   prima, e il cerchio, che la copre nel punto d'attacco. */
+.spillo {
+  position: relative;
+  width: 36px;
+  height: 46px;
+  transition: transform 120ms ease-out;
+  /* Ingrandita (--attiva) attorno alla punta, in basso al centro: resta sul punto esatto. */
+  transform-origin: 50% 100%;
+}
+
+.spillo--attiva {
+  transform: scale(1.25);
+}
+
+/* Punta: quadratino ruotato nel colore della gravità; il bordo bianco (scuro se selezionato) è
+   solo sui due lati esterni. Metà resta sotto il cerchio, che è disegnato dopo. */
+.spillo-punta {
+  position: absolute;
+  left: 50%;
+  top: 31.5px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  box-sizing: border-box;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  background-color: var(--color-allerta);
+  box-shadow: 2px 2px 3px rgb(0 0 0 / 0.25);
+  transform: rotate(45deg);
+}
+
+.spillo--g1 .spillo-punta {
+  background-color: var(--color-gravita-1);
+}
+
+.spillo--g2 .spillo-punta {
+  background-color: var(--color-gravita-2);
+}
+
+.spillo--g3 .spillo-punta {
+  background-color: var(--color-gravita-3);
+}
+
+/* Contorno scuro anche sulla punta: quello del cerchio è un box-shadow, non un bordo. */
+.spillo--attiva .spillo-punta {
+  border-color: var(--color-ink);
+  border-width: 0 3px 3px 0;
+}
+
 .marker-segnalazione {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,7 +99,6 @@ html.dark {
   background-color: var(--color-allerta);
   color: #ffffff;
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
-  transition: transform 120ms ease-out;
 
   svg {
     width: 18px;
@@ -69,7 +121,6 @@ html.dark {
 }
 
 .marker-segnalazione--attiva {
-  transform: scale(1.25);
   box-shadow:
     0 0 0 3px var(--color-ink),
     0 2px 8px rgb(0 0 0 / 0.45);

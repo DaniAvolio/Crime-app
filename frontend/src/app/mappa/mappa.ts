@@ -116,9 +116,11 @@ function spostaMappaTenendoPin(map: LeafletMap, pin: Marker, movimento: Point): 
 function iconaMarker(icona: string, attiva: boolean, gravita: Gravita) {
   return divIcon({
     className: '',
-    html: `<span class="marker-segnalazione marker-segnalazione--g${gravita}${attiva ? ' marker-segnalazione--attiva' : ''}">${svgIcona(icona)}</span>`,
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
+    html: `<span class="spillo spillo--g${gravita}${attiva ? ' spillo--attiva' : ''}"><span class="spillo-punta"></span><span class="marker-segnalazione marker-segnalazione--g${gravita}${attiva ? ' marker-segnalazione--attiva' : ''}">${svgIcona(icona)}</span></span>`,
+    // Spillo: cerchio da 36px più la punta sotto; l'ancora è la punta, sul punto esatto. Così il
+    // pallino della posizione (che sta sopra) non copre l'icona se i due coincidono.
+    iconSize: [36, 46],
+    iconAnchor: [18, 46],
   });
 }
 
@@ -1100,9 +1102,10 @@ export class Mappa {
           fillOpacity: 0.15,
           interactive: false,
         }).addTo(map);
-        // Marker HTML (non un cerchio SVG): sta nel pane dei marker, quindi sopra aloni e cerchio
-        // di precisione, ma sotto i marker delle segnalazioni (zIndexOffset negativo) per non
-        // coprirne l'icona. Non interattivo: i clic passano alle segnalazioni.
+        // Marker HTML (non un cerchio SVG): sta nel pane dei marker, sopra aloni, cerchio di
+        // precisione e marker delle segnalazioni (anche quella attiva, +1000), così resta visibile
+        // anche segnalando sulla propria posizione; sotto solo il pin della nuova segnalazione
+        // (+2000). Non interattivo: i clic passano alla segnalazione sottostante.
         const etichetta = this.transloco.translate('mappa.posizione.tu');
         this.pallino = marker(posizione, {
           icon: divIcon({
@@ -1113,7 +1116,7 @@ export class Mappa {
           }),
           interactive: false,
           keyboard: false,
-          zIndexOffset: -1000,
+          zIndexOffset: 1500,
           title: etichetta,
           alt: etichetta,
         }).addTo(map);
