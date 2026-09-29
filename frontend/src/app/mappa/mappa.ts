@@ -82,11 +82,6 @@ const RAGGIO_MASSIMO_METRI = 20_000;
  */
 const RAGGIO_INCERTEZZA_METRI = 100;
 
-/**
- * Stesso breakpoint di `lg:` di Tailwind: sotto (telefono e tablet) i pannelli della mappa
- * salgono dal basso; sopra sono laterali e non coprono il centro della mappa.
- */
-const MEDIA_MOBILE = '(max-width: 1023px)';
 const SOGLIA_TRASCINAMENTO_PX = 40;
 
 /** Trascinando il pin: distanza dal bordo visibile a cui la mappa inizia a scorrere, e velocità. */
@@ -390,7 +385,7 @@ export class Mappa {
   /** Id dell'ultima segnalazione pubblicata, per confermarlo nel suo pannello di dettaglio. */
   protected readonly idAppenaPubblicata = signal<number | null>(null);
 
-  /** Su mobile pulsante "torna a me" e avvisi lasciano spazio ai pannelli dal basso. */
+  /** Pulsante "torna a me" e avvisi lasciano spazio ai pannelli dal basso. */
   protected readonly pannelloInBassoAperto = computed(
     () => this.selezionata() !== null || this.nuovaAperta(),
   );
@@ -679,8 +674,7 @@ export class Mappa {
   }
 
   /**
-   * Centra `posizione` nella parte di mappa non coperta: sopra il pannello e la navbar su
-   * mobile, a sinistra del pannello laterale su desktop. Le misure si leggono dopo il render,
+   * Centra `posizione` nella parte di mappa non coperta, sopra il pannello e la navbar. Le misure si leggono dopo il render,
    * quando il pannello appena aperto esiste; offsetTop/offsetLeft ignorano l'animazione
    * d'ingresso (transform), che falserebbe getBoundingClientRect.
    */
@@ -703,16 +697,8 @@ export class Mappa {
     );
   }
 
-  /**
-   * Punto (px nel contenitore della mappa) in cui centrare: su telefono/tablet il centro della
-   * parte sopra il pannello dal basso; su desktop il centro vero della mappa, come per "torna
-   * alla mia posizione" (il pannello laterale non lo copre).
-   */
+  /** Punto (px nel contenitore della mappa) in cui centrare: il centro della parte sopra il pannello. */
   private centroZonaLibera(map: LeafletMap): { x: number; y: number } {
-    if (!matchMedia(MEDIA_MOBILE).matches) {
-      const { x, y } = map.getSize();
-      return { x: Math.round(x / 2), y: Math.round(y / 2) };
-    }
     const { destra, basso } = this.zonaLibera(map);
     return { x: Math.round(destra / 2), y: Math.round(basso / 2) };
   }
@@ -726,13 +712,12 @@ export class Mappa {
     );
     const navbar = radice.querySelector<HTMLElement>('app-navbar-mappa nav');
     const { x: larghezza, y: altezza } = map.getSize();
-    const mobile = matchMedia(MEDIA_MOBILE).matches;
-    const bordoDestro = !mobile && pannello ? pannello.offsetLeft : larghezza;
+    // Il pannello (a tutta larghezza o card centrata) sta sempre in basso: conta solo il bordo alto.
     const bordoBasso = Math.min(
       navbar ? navbar.offsetTop : altezza,
-      mobile && pannello ? pannello.offsetTop : altezza,
+      pannello ? pannello.offsetTop : altezza,
     );
-    return { destra: bordoDestro, basso: bordoBasso };
+    return { destra: larghezza, basso: bordoBasso };
   }
 
   /**

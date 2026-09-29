@@ -221,11 +221,9 @@ html.dark {
   }
 }
 
-/* Sotto i 1024px (telefono e tablet) i pannelli della mappa salgono dal basso all'apertura. */
-@media (max-width: 1023px) {
-  .pannello-mappa {
-    animation: pannello-sale 200ms ease-out;
-  }
+/* I pannelli della mappa salgono dal basso all'apertura, a ogni larghezza. */
+.pannello-mappa {
+  animation: pannello-sale 200ms ease-out;
 }
 
 @keyframes pannello-sale {

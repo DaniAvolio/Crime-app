@@ -1,13 +1,13 @@
 <section
   #pannello
   *transloco="let t"
-  class="pannello-mappa max-lg:max-h-[62%]"
+  class="pannello-mappa max-h-[62%]"
   aria-labelledby="titolo-nuova-segnalazione"
   [style.transform]="spostamento() ? 'translateY(' + spostamento() + 'px)' : null"
 >
   <!-- Solo mobile: trascinando in giù si chiude il form (con conferma se ci sono dati). -->
   <div
-    class="mx-auto flex h-7 w-20 cursor-grab touch-none items-center justify-center lg:hidden"
+    class="mx-auto flex h-7 w-20 cursor-grab touch-none items-center justify-center"
     aria-hidden="true"
     (pointerdown)="iniziaTrascinamento($event)"
     (pointermove)="trascina($event)"

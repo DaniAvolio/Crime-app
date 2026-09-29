@@ -59,12 +59,13 @@
 }
 
 /*
- * Pannelli della pagina mappa (dettaglio segnalazione, nuova segnalazione). Sotto i 1024px (telefono e
- * tablet): dal basso, appoggiati sopra la navbar (--altezza-navbar-mappa). Desktop: in alto a destra.
+ * Pannelli della pagina mappa (dettaglio, scelta del punto, nuova segnalazione): salgono sempre dal
+ * basso. Sotto i 1024px occupano tutta la larghezza sopra la navbar (--altezza-navbar-mappa); da
+ * 1024px sono una card centrata appoggiata sopra la navbar a pillola, con la mappa visibile ai lati.
  */
 @layer components {
   .pannello-mappa {
-    @apply absolute inset-x-0 bottom-[var(--altezza-navbar-mappa)] z-[1100] overflow-y-auto overscroll-contain rounded-t-2xl border-t border-neutral-200 bg-white px-5 pt-1 pb-5 text-neutral-900 shadow-[0_-4px_20px_rgb(0_0_0/0.15)] transition-[max-height] duration-200 lg:inset-x-auto lg:top-4 lg:right-4 lg:bottom-auto lg:max-h-[calc(100%-2rem)] lg:w-96 lg:rounded-xl lg:border lg:pt-4 lg:pb-6 dark:border-line dark:bg-panel dark:text-paper;
+    @apply absolute inset-x-0 bottom-[var(--altezza-navbar-mappa)] z-[1100] overflow-y-auto overscroll-contain rounded-t-2xl border-t border-neutral-200 bg-white px-5 pt-1 pb-5 text-neutral-900 shadow-[0_-4px_20px_rgb(0_0_0/0.15)] transition-[max-height] duration-200 lg:bottom-24 lg:mx-auto lg:max-w-xl lg:rounded-2xl lg:border lg:shadow-xl dark:border-line dark:bg-panel dark:text-paper;
   }
 
   .campo-profilo {
