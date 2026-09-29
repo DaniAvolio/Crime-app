@@ -44,6 +44,14 @@
             </span>
           </div>
         </div>
+        <button
+          type="button"
+          (click)="esci()"
+          class="ml-auto flex shrink-0 items-center gap-1.5 self-start rounded-sm px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-black/5 hover:text-neutral-900 dark:text-muted dark:hover:bg-white/10 dark:hover:text-paper"
+        >
+          <svg lucideIcon="log-out" class="h-4 w-4" aria-hidden="true"></svg>
+          {{ t('nav.esci') }}
+        </button>
       </header>
 
       <!-- Riepilogo segnalazioni -->

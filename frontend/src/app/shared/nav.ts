@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { Component, ElementRef, HostListener, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
@@ -38,12 +38,6 @@ export class Nav {
   private readonly tema = inject(TemaService);
   private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
-
-  /** Iniziali dell'utente per l'avatar che porta al profilo. */
-  protected readonly iniziali = computed(() => {
-    const utente = this.auth.utente();
-    return utente ? `${utente.nome.charAt(0)}${utente.cognome.charAt(0)}`.toUpperCase() : '';
-  });
 
   constructor() {
     // Nav è sempre montata: all'avvio riallinea ruolo e dati dell'utente salvato.

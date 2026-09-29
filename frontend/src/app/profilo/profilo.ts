@@ -9,7 +9,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { map, startWith } from 'rxjs';
@@ -59,6 +59,13 @@ export class Profilo {
   private readonly toast = inject(ToastService);
   private readonly transloco = inject(TranslocoService);
   private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+
+  /** Dopo il logout si torna alla home: come dal pannello impostazioni della nav. */
+  protected esci(): void {
+    this.auth.logout();
+    void this.router.navigateByUrl('/');
+  }
 
   protected readonly StatoSegnalazione = StatoSegnalazione;
   protected readonly classeGravita = classeGravita;

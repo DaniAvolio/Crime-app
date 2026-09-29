@@ -34,6 +34,31 @@
 }
 
 /*
+ * Tailwind v4 non mette più cursor: pointer ai pulsanti (preflight lascia quello di default):
+ * lo ripristiniamo per tutti gli elementi cliccabili, tranne quelli disabilitati.
+ */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  summary,
+  select:not(:disabled),
+  input:is(
+      [type='button'],
+      [type='submit'],
+      [type='reset'],
+      [type='checkbox'],
+      [type='radio'],
+      [type='file']
+    ):not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+/*
  * Pannelli della pagina mappa (dettaglio segnalazione, nuova segnalazione). Sotto i 1024px (telefono e
  * tablet): dal basso, appoggiati sopra la navbar (--altezza-navbar-mappa). Desktop: in alto a destra.
  */
