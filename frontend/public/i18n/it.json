@@ -65,9 +65,15 @@
         "domanda": "È ancora in atto?",
         "si": "Sì",
         "no": "No",
-        "grazie": "Grazie, abbiamo registrato la tua risposta.",
         "chiusa": "Segnalazione chiusa: diversi utenti hanno indicato che non è più in atto.",
-        "errore": "Non riusciamo a registrare la tua risposta. Riprova."
+        "errore": "Non riusciamo a registrare la tua risposta. Riprova.",
+        "prolungata": "Grazie, abbiamo prolungato la segnalazione.",
+        "registrata": "Grazie, abbiamo registrato la tua risposta.",
+        "chiusaAutore": "La tua segnalazione è stata chiusa.",
+        "chiudiTitolo": "Chiudere la tua segnalazione?",
+        "chiudiMessaggio": "Sparirà dalla mappa per tutti. Solo un amministratore potrà riattivarla.",
+        "chiudiConferma": "Chiudi segnalazione",
+        "tuaRisposta": "Hai risposto: {{ risposta }}"
       },
       "espandi": "Mostra tutti i dettagli",
       "riduci": "Riduci dettagli",

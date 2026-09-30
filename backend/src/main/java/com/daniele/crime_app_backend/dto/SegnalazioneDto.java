@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
  * Rappresentazione di Segnalazione esposta via API. La posizione PostGIS è appiattita in lat/lng.
  * autoreId è null per le segnalazioni anonime, salvo per l'autore stesso e gli admin (vedi SegnalazioneMapper).
  * autoreNome ("Mario R.") segue la stessa regola ed è inoltre null per chi non è autenticato.
+ * mioVoto è la risposta dell'utente autenticato a "è ancora in atto?" (null se non ha votato,
+ * per gli ospiti e negli elenchi che non la calcolano, es. gestione e profilo).
  */
 public record SegnalazioneDto(
         Long id,
@@ -24,5 +26,6 @@ public record SegnalazioneDto(
         LocalDateTime dataCreazione,
         LocalDateTime dataScadenza,
         LocalDateTime dataRimozione,
-        LocalDateTime dataUltimaConferma
+        LocalDateTime dataUltimaConferma,
+        Boolean mioVoto
 ) {}

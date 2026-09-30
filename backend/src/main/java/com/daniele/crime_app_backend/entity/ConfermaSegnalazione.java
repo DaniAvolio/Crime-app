@@ -48,6 +48,13 @@ public class ConfermaSegnalazione {
     @Column(name = "data_voto", nullable = false)
     private LocalDateTime dataVoto;
 
+    /**
+     * Ultimo "sì" che ha prolungato la segnalazione: un utente può prolungarla al massimo una
+     * volta per durata della categoria, così alternare No/Sì non la tiene in vita per sempre.
+     */
+    @Column(name = "data_ultimo_si")
+    private LocalDateTime dataUltimoSi;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

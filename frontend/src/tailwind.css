@@ -27,10 +27,11 @@
   --color-beacon: #e2a33b;
   /* Colore principale dell'app: CTA, marker, badge delle segnalazioni. */
   --color-allerta: #dc2626;
-  /* Gravità delle categorie: 1 degrado/quiete (giallo), 2 patrimonio (arancione), 3 persona (rosso). */
-  --color-gravita-1: #e2a33b;
-  --color-gravita-2: #ea580c;
-  --color-gravita-3: #dc2626;
+  /* Gravità delle categorie, a gerarchia d'allarme: 1 degrado/quiete (ardesia, informativa),
+     2 patrimonio (arancio bruciato), 3 persona (rosso scarlatto). Icone bianche su tutte. */
+  --color-gravita-1: #5b6472;
+  --color-gravita-2: #e8590c;
+  --color-gravita-3: #d7191c;
 }
 
 /*

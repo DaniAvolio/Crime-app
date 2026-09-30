@@ -23,6 +23,11 @@ public class SegnalazioneMapper {
     }
 
     public SegnalazioneDto toDto(Segnalazione segnalazione) {
+        return toDto(segnalazione, null);
+    }
+
+    /** Con il voto dell'utente corrente ("è ancora in atto?"), per mappa e dettaglio. */
+    public SegnalazioneDto toDto(Segnalazione segnalazione, Boolean mioVoto) {
         boolean autoreVisibile = autoreVisibile(segnalazione);
         // Il nome si mostra solo a chi ha fatto l'accesso: la mappa è consultabile anche da anonimi.
         boolean nomeVisibile = autoreVisibile && utenteCorrenteService.idCorrenteOpzionale().isPresent();
@@ -41,7 +46,8 @@ public class SegnalazioneMapper {
                 segnalazione.getDataCreazione(),
                 segnalazione.getDataScadenza(),
                 segnalazione.getDataRimozione(),
-                segnalazione.getDataUltimaConferma()
+                segnalazione.getDataUltimaConferma(),
+                mioVoto
         );
     }
 

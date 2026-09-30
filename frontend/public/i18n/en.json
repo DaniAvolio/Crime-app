@@ -65,9 +65,15 @@
         "domanda": "Is this still happening?",
         "si": "Yes",
         "no": "No",
-        "grazie": "Thanks, we've recorded your answer.",
-        "chiusa": "Report closed: several people said it's no longer happening.",
-        "errore": "We couldn't record your answer. Try again."
+        "chiusa": "Report closed: several people said it is no longer happening.",
+        "errore": "We couldn't record your answer. Try again.",
+        "prolungata": "Thanks, we've extended the report.",
+        "registrata": "Thanks, we've recorded your answer.",
+        "chiusaAutore": "Your report has been closed.",
+        "chiudiTitolo": "Close your report?",
+        "chiudiMessaggio": "It will disappear from the map for everyone. Only an administrator can reopen it.",
+        "chiudiConferma": "Close report",
+        "tuaRisposta": "You answered: {{ risposta }}"
       },
       "espandi": "Show all details",
       "riduci": "Show fewer details",

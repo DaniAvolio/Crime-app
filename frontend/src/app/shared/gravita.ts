@@ -2,10 +2,10 @@ import { Gravita } from '../models/gravita.model';
 
 /**
  * Classi Tailwind per gravità, scritte per intero perché Tailwind le trovi scansionando i
- * sorgenti. Sul giallo l'icona è scura: il bianco non avrebbe abbastanza contrasto.
+ * sorgenti. Testo e icone bianchi su tutte e tre le gravità.
  */
 const SFONDO_CON_TESTO: Record<Gravita, string> = {
-  1: 'bg-gravita-1 text-ink',
+  1: 'bg-gravita-1 text-white',
   2: 'bg-gravita-2 text-white',
   3: 'bg-gravita-3 text-white',
 };

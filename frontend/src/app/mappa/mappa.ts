@@ -42,6 +42,7 @@ import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Segnalazione, StatoSegnalazione } from '../models/segnalazione.model';
 import { NOME_ICONA_FALLBACK, svgIcona } from '../shared/icone-categoria';
 import { Tema, TemaService } from '../shared/tema';
+import { DialoghiService } from '../shared/dialoghi/dialoghi';
 import { ToastService } from '../shared/toast/toast';
 import { GRAVITA, Gravita } from '../models/gravita.model';
 import { chiaveGravita, classeGravita, classePallinoGravita } from '../shared/gravita';
@@ -113,11 +114,21 @@ function spostaMappaTenendoPin(map: LeafletMap, pin: Marker, movimento: Point): 
   DomUtil.setPosition(icona, trascinamento._draggable._newPos);
   trascinamento._onDrag({});
 }
-function iconaMarker(icona: string, attiva: boolean, gravita: Gravita) {
+
+/** Una segnalazione grave "pulsa" sulla mappa per la sua prima ora. */
+const DURATA_IMPULSO_MS = 60 * 60_000;
+
+/**
+ * Tutti i marker sono badge quadrati con la punta sotto; la gravità bassa è un po' più piccola e
+ * discreta (vedi .marker-segnalazione--g1), media e alta hanno la misura piena.
+ */
+function iconaMarker(icona: string, attiva: boolean, gravita: Gravita, recente: boolean) {
+  const classiSpillo = `spillo spillo--g${gravita}${attiva ? ' spillo--attiva' : ''}${recente ? ' spillo--recente' : ''}`;
+  const classiBadge = `marker-segnalazione marker-segnalazione--g${gravita}${attiva ? ' marker-segnalazione--attiva' : ''}`;
   return divIcon({
     className: '',
-    html: `<span class="spillo spillo--g${gravita}${attiva ? ' spillo--attiva' : ''}"><span class="spillo-punta"></span><span class="marker-segnalazione marker-segnalazione--g${gravita}${attiva ? ' marker-segnalazione--attiva' : ''}">${svgIcona(icona)}</span></span>`,
-    // Spillo: cerchio da 36px più la punta sotto; l'ancora è la punta, sul punto esatto. Così il
+    html: `<span class="${classiSpillo}"><span class="spillo-punta"></span><span class="${classiBadge}">${svgIcona(icona)}</span></span>`,
+    // Spillo: badge da 36px più la punta sotto; l'ancora è la punta, sul punto esatto. Così il
     // pallino della posizione (che sta sopra) non copre l'icona se i due coincidono.
     iconSize: [36, 46],
     iconAnchor: [18, 46],
@@ -388,7 +399,8 @@ export class Mappa {
 
   /** Stato della risposta a "è ancora in atto?" per la segnalazione aperta. */
   protected readonly invioConferma = signal(false);
-  protected readonly esitoConferma = signal<'grazie' | 'errore' | null>(null);
+  /** Errore del voto, mostrato nel pannello (che resta aperto per riprovare). */
+  protected readonly esitoConferma = signal<'errore' | null>(null);
 
   /** Solo mobile: il pannello di dettaglio si apre compatto e si espande su richiesta. */
   protected readonly pannelloEspanso = signal(false);
@@ -396,8 +408,6 @@ export class Mappa {
   protected readonly spostamentoPannello = signal(0);
   private inizioTrascinamentoY: number | null = null;
   private trascinamentoAppenaFinito = false;
-  /** Avviso mostrato quando i voti "non più in atto" hanno chiuso la segnalazione aperta. */
-  protected readonly segnalazioneChiusa = signal(false);
 
   /** Distanza dal pallino alla segnalazione aperta, se la posizione dell'utente è nota. */
   protected readonly distanzaSelezionata = computed(() => {
@@ -453,6 +463,7 @@ export class Mappa {
   private readonly router = inject(Router);
   private readonly rotta = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
+  private readonly dialoghi = inject(DialoghiService);
   /**
    * Al primo fix GPS la mappa si centra sull'utente, tranne quando è stata aperta su una
    * segnalazione precisa (?segnalazione=<id>, es. dal profilo): lì deve restare su quella.
@@ -471,6 +482,9 @@ export class Mappa {
   private readonly areaRichiesta = new Subject<AreaVisibile>();
   private areaCaricata: (AreaVisibile & { istante: number }) | null = null;
   private readonly livelloSegnalazioni = layerGroup();
+  /** Istante corrente, aggiornato ogni minuto: fa scadere l'impulso delle segnalazioni gravi. */
+  private readonly orologio = signal(Date.now());
+  private readonly timerOrologio = setInterval(() => this.orologio.set(Date.now()), 60_000);
   /** Aloni separati dai marker: il gruppo sta sulla mappa solo da ZOOM_MINIMO_ALONI in su. */
   private readonly livelloAloni = layerGroup();
   /** Marker e alone per id di segnalazione, con una "firma" per capire se vanno ritoccati. */
@@ -528,15 +542,19 @@ export class Mappa {
       const icone = this.iconePerCategoria();
       const selezionataId = this.selezionata()?.id;
       const presenti = new Set<number>();
+      // Letto qui così l'effect riparte ogni minuto e l'impulso delle gravi si spegne da solo.
+      const adesso = this.orologio();
       for (const segnalazione of this.segnalazioniVisibili()) {
         presenti.add(segnalazione.id);
         const attiva = segnalazione.id === selezionataId;
         const icona = icone.get(segnalazione.categoriaId) ?? NOME_ICONA_FALLBACK;
         const gravita = segnalazione.categoriaGravita;
+        const recente =
+          gravita === 3 && adesso - Date.parse(segnalazione.dataCreazione) < DURATA_IMPULSO_MS;
         const posizione = latLng(segnalazione.lat, segnalazione.lng);
         // Nel nome c'è la lingua: al cambio lingua il marker va ritoccato anche se non si è mosso.
         const nome = this.categorieStore.nome(segnalazione);
-        const firma = `${segnalazione.lat},${segnalazione.lng},${icona},${gravita},${attiva},${nome}`;
+        const firma = `${segnalazione.lat},${segnalazione.lng},${icona},${gravita},${attiva},${recente},${nome}`;
         const esistente = this.marcatori.get(segnalazione.id);
         if (esistente?.firma === firma) {
           continue;
@@ -548,7 +566,7 @@ export class Mappa {
           esistente.marker.options.alt = nome;
           esistente.marker
             .setLatLng(posizione)
-            .setIcon(iconaMarker(icona, attiva, gravita))
+            .setIcon(iconaMarker(icona, attiva, gravita, recente))
             .setZIndexOffset(attiva ? 1000 : 0);
           esistente.firma = firma;
           continue;
@@ -561,7 +579,7 @@ export class Mappa {
           ...stileAlone(attiva, gravita),
         }).addTo(this.livelloAloni);
         const nuovo = marker(posizione, {
-          icon: iconaMarker(icona, attiva, gravita),
+          icon: iconaMarker(icona, attiva, gravita, recente),
           title: nome,
           alt: nome,
           keyboard: true,
@@ -664,6 +682,7 @@ export class Mappa {
     this.categorieStore.carica();
 
     inject(DestroyRef).onDestroy(() => {
+      clearInterval(this.timerOrologio);
       this.fermaAutoScorrimento();
       if (this.idWatch !== null) {
         navigator.geolocation.clearWatch(this.idWatch);
@@ -906,18 +925,30 @@ export class Mappa {
     this.pannelloEspanso.update((espanso) => !espanso);
   }
 
-  protected chiudiAvvisoChiusura(): void {
-    this.segnalazioneChiusa.set(false);
-  }
-
   /**
-   * Risposta a "è ancora in atto?". Il backend restituisce la segnalazione aggiornata: se è
-   * ancora ATTIVA ha la nuova scadenza, altrimenti i voti "no" l'hanno chiusa e va tolta.
+   * Risposta a "è ancora in atto?". Il voto è l'azione conclusiva del dettaglio: a buon fine il
+   * pannello si chiude con un toast; in errore resta aperto per riprovare. Il backend restituisce
+   * la segnalazione aggiornata: se è ancora ATTIVA ha la nuova scadenza, altrimenti è stata chiusa
+   * (dai "no" oltre soglia, o dal "no" dell'autore) e va tolta dalla mappa.
    */
-  protected conferma(ancoraInAtto: boolean): void {
+  protected async conferma(ancoraInAtto: boolean): Promise<void> {
     const segnalazione = this.selezionata();
     if (!segnalazione || this.invioConferma() || !this.verificaLogin()) {
       return;
+    }
+    // Il "no" dell'autore chiude subito la segnalazione per tutti: si chiede conferma.
+    const autore =
+      segnalazione.autoreId != null && segnalazione.autoreId === this.auth.utente()?.id;
+    if (autore && !ancoraInAtto) {
+      const confermato = await this.dialoghi.conferma({
+        titolo: this.transloco.translate('mappa.dettaglio.conferma.chiudiTitolo'),
+        messaggio: this.transloco.translate('mappa.dettaglio.conferma.chiudiMessaggio'),
+        conferma: this.transloco.translate('mappa.dettaglio.conferma.chiudiConferma'),
+        pericolo: true,
+      });
+      if (!confermato || this.idSelezionata() !== segnalazione.id) {
+        return;
+      }
     }
     this.invioConferma.set(true);
     this.esitoConferma.set(null);
@@ -929,22 +960,32 @@ export class Mappa {
       )
       .subscribe({
         next: (aggiornata) => {
-          const ancoraAperta = this.idSelezionata() === aggiornata.id;
+          if (this.idSelezionata() === aggiornata.id) {
+            this.selezionata.set(null);
+          }
           if (aggiornata.stato === StatoSegnalazione.ATTIVA) {
             this.segnalazioni.update((elenco) =>
               elenco.map((s) => (s.id === aggiornata.id ? aggiornata : s)),
             );
-            if (ancoraAperta) {
-              this.selezionata.set(aggiornata);
-              this.esitoConferma.set('grazie');
-            }
+            // "Prolungata" solo se il backend l'ha davvero prolungata: un sì ripetuto o troppo
+            // ravvicinato al proprio precedente vale solo come voto.
+            const prolungata =
+              ancoraInAtto && aggiornata.dataUltimaConferma !== segnalazione.dataUltimaConferma;
+            this.toast.successo(
+              this.transloco.translate(
+                prolungata
+                  ? 'mappa.dettaglio.conferma.prolungata'
+                  : 'mappa.dettaglio.conferma.registrata',
+              ),
+            );
             return;
           }
           this.segnalazioni.update((elenco) => elenco.filter((s) => s.id !== aggiornata.id));
-          if (ancoraAperta) {
-            this.selezionata.set(null);
-          }
-          this.segnalazioneChiusa.set(true);
+          this.toast.successo(
+            this.transloco.translate(
+              autore ? 'mappa.dettaglio.conferma.chiusaAutore' : 'mappa.dettaglio.conferma.chiusa',
+            ),
+          );
         },
         error: () => {
           if (this.idSelezionata() === segnalazione.id) {

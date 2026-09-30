@@ -6,6 +6,7 @@ import com.daniele.crime_app_backend.dto.SegnalazioneDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneRequest;
 import com.daniele.crime_app_backend.dto.SegnalazioneTransizioneRequest;
 import com.daniele.crime_app_backend.entity.Categoria;
+import com.daniele.crime_app_backend.entity.ConfermaSegnalazione;
 import com.daniele.crime_app_backend.entity.EventoModerazione;
 import com.daniele.crime_app_backend.entity.Segnalazione;
 import com.daniele.crime_app_backend.entity.Utente;
@@ -30,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -102,7 +105,19 @@ public class SegnalazioneService {
     }
 
     public SegnalazioneDto trovaPerId(Long id) {
-        return segnalazioneMapper.toDto(recuperaOLancia(id));
+        Segnalazione segnalazione = recuperaOLancia(id);
+        return segnalazioneMapper.toDto(segnalazione, votiUtenteCorrente(List.of(segnalazione)).get(id));
+    }
+
+    /** Risposte dell'utente autenticato alle segnalazioni date (vuoto per gli ospiti, senza query). */
+    private Map<Long, Boolean> votiUtenteCorrente(List<Segnalazione> segnalazioni) {
+        Optional<Long> utenteId = utenteCorrenteService.idCorrenteOpzionale();
+        if (utenteId.isEmpty() || segnalazioni.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> ids = segnalazioni.stream().map(Segnalazione::getId).toList();
+        return confermaSegnalazioneRepository.findByUtenteIdAndSegnalazioneIdIn(utenteId.get(), ids).stream()
+                .collect(Collectors.toMap(c -> c.getSegnalazione().getId(), ConfermaSegnalazione::isAncoraInAtto));
     }
 
     /**
@@ -113,8 +128,10 @@ public class SegnalazioneService {
 
     /** Segnalazioni ATTIVA entro un raggio da un punto, per la vista mappa e le notifiche di prossimità. */
     public List<SegnalazioneDto> trovaVicine(double lat, double lng, double raggioMetri) {
-        return segnalazioneRepository.trovaAttiveNelRaggio(lat, lng, raggioMetri, LIMITE_VICINE).stream()
-                .map(segnalazioneMapper::toDto)
+        List<Segnalazione> vicine = segnalazioneRepository.trovaAttiveNelRaggio(lat, lng, raggioMetri, LIMITE_VICINE);
+        Map<Long, Boolean> voti = votiUtenteCorrente(vicine);
+        return vicine.stream()
+                .map(s -> segnalazioneMapper.toDto(s, voti.get(s.getId())))
                 .toList();
     }
 
@@ -233,6 +250,17 @@ public class SegnalazioneService {
     void scadiPerConfermeNegative(Segnalazione segnalazione, String motivazione) {
         transiziona(segnalazione, StatoSegnalazione.SCADUTA, TipoAttoreModerazione.SISTEMA, null, motivazione);
         log.info("Segnalazione {} scaduta: {}", segnalazione.getId(), motivazione);
+    }
+
+    /**
+     * ATTIVA -> SCADUTA quando l'autore stesso risponde che non è più in atto: la fonte vale più
+     * della soglia di voti. SCADUTA (conclusa), non RIMOSSA (ritirata o moderata).
+     */
+    @Transactional
+    void concludiDaAutore(Segnalazione segnalazione) {
+        transiziona(segnalazione, StatoSegnalazione.SCADUTA, TipoAttoreModerazione.AUTORE, null,
+                "Conclusa dall'autore: non più in atto");
+        log.info("Segnalazione {} conclusa dall'autore", segnalazione.getId());
     }
 
     /** ATTIVA -> SCADUTA per le segnalazioni la cui data di scadenza è passata. Pensato per un job schedulato. */

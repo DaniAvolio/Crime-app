@@ -7,12 +7,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface ConfermaSegnalazioneRepository extends JpaRepository<ConfermaSegnalazione, Long> {
 
     /** Un voto per utente per Segnalazione (vedi vincolo DB): se esiste va aggiornato. */
     Optional<ConfermaSegnalazione> findBySegnalazioneIdAndUtenteId(Long segnalazioneId, Long utenteId);
+
+    /** Voti dell'utente su un elenco di segnalazioni (una sola query per tutta la vista mappa). */
+    List<ConfermaSegnalazione> findByUtenteIdAndSegnalazioneIdIn(Long utenteId, Collection<Long> segnalazioniId);
 
     /** Voti "non più in atto" espressi dopo un certo istante (l'ultima conferma positiva). */
     long countBySegnalazioneIdAndAncoraInAttoFalseAndDataVotoAfter(Long segnalazioneId, LocalDateTime istante);

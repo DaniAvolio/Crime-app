@@ -39,6 +39,9 @@ html.dark {
    l'icona. Struttura: .spillo (36x46, ingrandito attorno alla punta) contiene la punta, disegnata
    prima, e il badge, che la copre nel punto d'attacco. */
 .spillo {
+  /* Bordo di badge e punta, condiviso. */
+  --bordo-marker: rgb(18 22 29 / 0.9);
+
   position: relative;
   width: 36px;
   height: 46px;
@@ -51,8 +54,35 @@ html.dark {
   transform: scale(1.25);
 }
 
-/* Punta: quadratino ruotato nel colore della gravità; il bordo bianco (scuro se selezionato) è
-   solo sui due lati esterni. Metà resta sotto il badge, che è disegnato dopo. */
+/* Gravità alta creata da meno di un'ora (mappa.ts): un'onda rossa si allarga dal badge, come un
+   radar. Solo transform e opacity: animazione gestita dal compositor. Disegnata prima di punta e
+   badge, quindi resta dietro. */
+.spillo--recente::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  box-sizing: border-box;
+  border: 2px solid var(--color-gravita-3);
+  border-radius: 6px;
+  animation: spillo-radar 1.8s ease-out infinite;
+}
+
+@keyframes spillo-radar {
+  from {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* Punta: quadratino ruotato nel colore della gravità; il bordo scuro è solo sui due lati
+   esterni. Metà resta sotto il badge, che è disegnato dopo. */
 .spillo-punta {
   position: absolute;
   left: 50%;
@@ -61,10 +91,10 @@ html.dark {
   height: 12px;
   margin-left: -6px;
   box-sizing: border-box;
-  border-right: 2px solid #ffffff;
-  border-bottom: 2px solid #ffffff;
+  border-right: 2px solid var(--bordo-marker);
+  border-bottom: 2px solid var(--bordo-marker);
   background-color: var(--color-allerta);
-  box-shadow: 2px 2px 3px rgb(0 0 0 / 0.25);
+  box-shadow: 2px 2px 0 rgb(0 0 0 / 0.3);
   transform: rotate(45deg);
 }
 
@@ -86,6 +116,7 @@ html.dark {
   border-width: 0 3px 3px 0;
 }
 
+/* Stile "segnaletica": bordo scuro netto, angoli poco arrotondati, ombra dura (non sfumata). */
 .marker-segnalazione {
   position: relative;
   display: flex;
@@ -94,11 +125,11 @@ html.dark {
   width: 36px;
   height: 36px;
   box-sizing: border-box;
-  border: 2px solid #ffffff;
-  border-radius: 9px;
+  border: 2px solid var(--bordo-marker);
+  border-radius: 4px;
   background-color: var(--color-allerta);
   color: #ffffff;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.35);
 
   svg {
     width: 18px;
@@ -106,10 +137,18 @@ html.dark {
   }
 }
 
-/* Giallo: icona scura, il bianco non avrebbe contrasto sufficiente. */
+/* Bassa: badge quadrato un poco più piccolo (32px contro 36) in grigio ardesia, informativo; la
+   base resta a 36px dall'alto, così la punta cade sempre sul punto esatto. */
 .marker-segnalazione--g1 {
+  width: 32px;
+  height: 32px;
+  margin: 4px 0 0 2px;
   background-color: var(--color-gravita-1);
-  color: var(--color-ink);
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .marker-segnalazione--g2 {
@@ -120,10 +159,12 @@ html.dark {
   background-color: var(--color-gravita-3);
 }
 
+/* Selezionata: anello bianco più anello scuro, distinguibile dal bordo scuro di tutti i marker. */
 .marker-segnalazione--attiva {
   box-shadow:
-    0 0 0 3px var(--color-ink),
-    0 2px 8px rgb(0 0 0 / 0.45);
+    0 0 0 2px #ffffff,
+    0 0 0 4px var(--color-ink),
+    0 3px 6px rgb(0 0 0 / 0.4);
 }
 
 .leaflet-marker-icon:focus-visible {
@@ -132,13 +173,20 @@ html.dark {
   .marker-segnalazione {
     box-shadow:
       0 0 0 3px #2563eb,
-      0 1px 4px rgb(0 0 0 / 0.35);
+      0 2px 0 rgb(0 0 0 / 0.35);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .marker-segnalazione {
     transition: none;
+  }
+
+  /* Senza animazione resta un anello fisso tenue attorno alle gravi recenti. */
+  .spillo--recente::before {
+    animation: none;
+    transform: scale(1.35);
+    opacity: 0.5;
   }
 }
 

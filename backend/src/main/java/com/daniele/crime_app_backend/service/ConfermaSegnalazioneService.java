@@ -43,7 +43,9 @@ public class ConfermaSegnalazioneService {
      * scadenza e azzera il conteggio dei "no"; al raggiungimento della soglia di
      * "no" successivi all'ultimo "sì" la Segnalazione passa in SCADUTA.
      * Ripetere lo stesso voto non ha effetto, così un "sì" ripetuto non prolunga
-     * la scadenza all'infinito.
+     * la scadenza all'infinito. Un "no" dell'autore conclude subito la Segnalazione.
+     * Un utente prolunga al massimo una volta per durata della categoria: un suo "sì" più
+     * ravvicinato (es. dopo un No -> Sì) aggiorna il voto ma non prolunga né azzera i "no".
      */
     @Transactional
     public SegnalazioneDto vota(Long segnalazioneId, ConfermaSegnalazioneRequest request) {
@@ -64,19 +66,29 @@ public class ConfermaSegnalazioneService {
                 confermaSegnalazioneRepository.findBySegnalazioneIdAndUtenteId(segnalazioneId, utente.getId());
         if (esistente.isPresent() && esistente.get().isAncoraInAtto() == ancoraInAtto
                 && (ancoraInAtto || esistente.get().getDataVoto().isAfter(inizioConteggio))) {
-            return segnalazioneMapper.toDto(segnalazione);
+            return segnalazioneMapper.toDto(segnalazione, ancoraInAtto);
         }
 
         ConfermaSegnalazione conferma = esistente.orElseGet(() -> ConfermaSegnalazione.builder()
                 .segnalazione(segnalazione)
                 .utente(utente)
                 .build());
+        LocalDateTime adesso = LocalDateTime.now();
+        boolean prolunga = ancoraInAtto && puoProlungare(conferma, segnalazione, adesso);
         conferma.setAncoraInAtto(ancoraInAtto);
-        conferma.setDataVoto(LocalDateTime.now());
+        conferma.setDataVoto(adesso);
+        if (prolunga) {
+            conferma.setDataUltimoSi(adesso);
+        }
         confermaSegnalazioneRepository.save(conferma);
 
         if (ancoraInAtto) {
-            segnalazioneService.prolungaScadenza(segnalazione);
+            // Un "sì" troppo ravvicinato al precedente dello stesso utente vale solo come voto.
+            if (prolunga) {
+                segnalazioneService.prolungaScadenza(segnalazione);
+            }
+        } else if (segnalazione.getAutore().getId().equals(utente.getId())) {
+            segnalazioneService.concludiDaAutore(segnalazione);
         } else {
             long numeroNonInAtto = confermaSegnalazioneRepository
                     .countBySegnalazioneIdAndAncoraInAttoFalseAndDataVotoAfter(segnalazioneId, inizioConteggio);
@@ -86,6 +98,14 @@ public class ConfermaSegnalazioneService {
             }
         }
 
-        return segnalazioneMapper.toDto(segnalazione);
+        return segnalazioneMapper.toDto(segnalazione, ancoraInAtto);
+    }
+
+    /** Primo "sì" dell'utente, o il precedente risale a più di una durata della categoria fa. */
+    private static boolean puoProlungare(ConfermaSegnalazione conferma, Segnalazione segnalazione,
+                                         LocalDateTime adesso) {
+        LocalDateTime ultimoSi = conferma.getDataUltimoSi();
+        return ultimoSi == null
+                || ultimoSi.isBefore(adesso.minusHours(segnalazione.getCategoria().getDurataValiditaOre()));
     }
 }

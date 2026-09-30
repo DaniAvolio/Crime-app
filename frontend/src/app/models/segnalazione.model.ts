@@ -25,4 +25,6 @@ export interface Segnalazione {
   dataScadenza: string;
   dataRimozione?: string;
   dataUltimaConferma?: string;
+  /** Risposta dell'utente autenticato a "è ancora in atto?"; null se non ha votato o è ospite. */
+  mioVoto?: boolean | null;
 }

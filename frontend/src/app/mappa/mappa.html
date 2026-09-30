@@ -97,22 +97,6 @@
       </p>
     }
 
-    @if (segnalazioneChiusa()) {
-      <div
-        role="status"
-        class="pointer-events-auto flex items-start gap-3 rounded-md border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 shadow-md dark:border-line dark:bg-panel dark:text-paper"
-      >
-        <p class="flex-1">{{ t('mappa.dettaglio.conferma.chiusa') }}</p>
-        <button
-          type="button"
-          class="shrink-0 font-medium underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
-          (click)="chiudiAvvisoChiusura()"
-        >
-          {{ t('mappa.posizione.chiudi') }}
-        </button>
-      </div>
-    }
-
     @if (avvisoPosizione(); as chiave) {
       <div
         role="status"
@@ -238,21 +222,51 @@
         [attr.aria-label]="t('mappa.dettaglio.conferma.domanda')"
       >
         <p class="text-sm font-medium">{{ t('mappa.dettaglio.conferma.domanda') }}</p>
+        <!-- La risposta già data resta evidenziata: si può cambiare idea, non rivotare per sbaglio. -->
+        @if (segnalazione.mioVoto != null) {
+          <p class="mt-0.5 text-xs text-neutral-500 dark:text-muted">
+            {{
+              t('mappa.dettaglio.conferma.tuaRisposta', {
+                risposta: t(
+                  segnalazione.mioVoto
+                    ? 'mappa.dettaglio.conferma.si'
+                    : 'mappa.dettaglio.conferma.no'
+                ),
+              })
+            }}
+          </p>
+        }
         <div class="mt-3 flex gap-2">
           <button
             type="button"
-            class="h-10 flex-1 rounded-md bg-allerta font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            class="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-md bg-allerta font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            [ngClass]="{
+              'ring-2 ring-allerta ring-offset-2 ring-offset-white dark:ring-offset-panel':
+                segnalazione.mioVoto === true,
+            }"
+            [attr.aria-pressed]="segnalazione.mioVoto === true"
             [disabled]="invioConferma()"
             (click)="conferma(true)"
           >
+            @if (segnalazione.mioVoto === true) {
+              <svg lucideIcon="check" class="h-4 w-4" aria-hidden="true"></svg>
+            }
             {{ t('mappa.dettaglio.conferma.si') }}
           </button>
           <button
             type="button"
-            class="h-10 flex-1 rounded-md border border-neutral-300 font-medium transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-line dark:hover:bg-ink"
+            class="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-md border border-neutral-300 font-medium transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-line dark:hover:bg-ink"
+            [ngClass]="{
+              'border-2 border-neutral-900 bg-neutral-100 dark:border-paper dark:bg-ink':
+                segnalazione.mioVoto === false,
+            }"
+            [attr.aria-pressed]="segnalazione.mioVoto === false"
             [disabled]="invioConferma()"
             (click)="conferma(false)"
           >
+            @if (segnalazione.mioVoto === false) {
+              <svg lucideIcon="check" class="h-4 w-4" aria-hidden="true"></svg>
+            }
             {{ t('mappa.dettaglio.conferma.no') }}
           </button>
         </div>
