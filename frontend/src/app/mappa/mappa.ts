@@ -26,11 +26,17 @@ import {
   MaplibreGL,
   MapOptions,
   Marker,
+  MarkerCluster,
+  MarkerClusterGroup,
+  MarkerClusterGroupOptions,
+  MarkerOptions,
   marker,
   DomUtil,
   Point,
   point,
 } from 'leaflet';
+// Estende l'oggetto globale L di Leaflet (il bundle UMD di Leaflet 1.9 lo espone sempre).
+import 'leaflet.markercluster';
 import { maplibreGL } from '@maplibre/maplibre-gl-leaflet';
 import { ExpressionSpecification, setWorkerUrl } from 'maplibre-gl';
 import { Subject, catchError, debounceTime, finalize, of, switchMap, tap } from 'rxjs';
@@ -160,10 +166,68 @@ function leggiFiltroGravitaSalvato(): Gravita | null {
 const ZOOM_MINIMO_CENTRATURA = 15;
 
 /**
- * Sotto questo zoom gli aloni (100 m) sono larghi pochi pixel e non si vedono: il loro livello
- * si toglie dalla mappa, così pan e zoom da lontano non ridisegnano centinaia di cerchi SVG.
+ * Sotto questo zoom i marker vicini si raggruppano in cluster con il numero; da qui in su si
+ * vedono sempre singoli. È anche lo zoom minimo a cui si apre un dettaglio
+ * (ZOOM_MINIMO_CENTRATURA), quindi la segnalazione aperta non è mai nascosta in un cluster.
  */
-const ZOOM_MINIMO_ALONI = 14;
+const ZOOM_SENZA_CLUSTER = 15;
+
+/**
+ * Gli aloni (100 m) compaiono con i marker singoli: sotto questo zoom sarebbero larghi pochi
+ * pixel e attorno a un cluster non avrebbero senso. Il livello si toglie dalla mappa, così pan e
+ * zoom da lontano non ridisegnano centinaia di cerchi SVG.
+ */
+const ZOOM_MINIMO_ALONI = ZOOM_SENZA_CLUSTER;
+
+/** Opzioni dei marker delle segnalazioni: la gravità serve al colore del cluster che li contiene. */
+interface OpzioniMarkerSegnalazione extends MarkerOptions {
+  gravita: Gravita;
+}
+
+/**
+ * Gruppo che raggruppa i marker vicini. Cluster misto: cerchio scuro neutro con il totale e un
+ * badge rosso con il numero delle gravi, se ce ne sono (colorarlo tutto di rosso per una sola
+ * grave renderebbe rossa quasi ogni zona). Cluster di una sola gravità (es. col filtro): il
+ * colore di quella gravità, senza badge. La funzione arriva dal plugin sull'oggetto globale L,
+ * non dall'import di 'leaflet'.
+ */
+function creaGruppoCluster(
+  etichetta: (numero: number, gravi: number) => string,
+): MarkerClusterGroup {
+  const opzioni: MarkerClusterGroupOptions = {
+    disableClusteringAtZoom: ZOOM_SENZA_CLUSTER,
+    showCoverageOnHover: false,
+    spiderfyOnMaxZoom: false,
+    chunkedLoading: true,
+    maxClusterRadius: 50,
+    iconCreateFunction: (cluster: MarkerCluster) => {
+      const numero = cluster.getChildCount();
+      const gravita = cluster
+        .getAllChildMarkers()
+        .map((figlio) => (figlio.options as OpzioniMarkerSegnalazione).gravita ?? 1);
+      const gravi = gravita.filter((g) => g === 3).length;
+      const unica = gravita.every((g) => g === gravita[0]) ? gravita[0] : null;
+      const lato = numero < 10 ? 36 : numero < 100 ? 42 : 48;
+      const testo = etichetta(numero, gravi);
+      const classe =
+        unica === null ? 'cluster-segnalazioni--misto' : `cluster-segnalazioni--g${unica}`;
+      const badge =
+        unica === null && gravi > 0
+          ? `<span class="cluster-segnalazioni-gravi" aria-hidden="true">${gravi}</span>`
+          : '';
+      return divIcon({
+        className: '',
+        html: `<span class="cluster-segnalazioni ${classe}" style="width:${lato}px;height:${lato}px" role="img" aria-label="${testo}" title="${testo}">${numero}${badge}</span>`,
+        iconSize: [lato, lato],
+        iconAnchor: [lato / 2, lato / 2],
+      });
+    },
+  };
+  const L = (
+    window as unknown as { L: { markerClusterGroup: typeof import('leaflet').markerClusterGroup } }
+  ).L;
+  return L.markerClusterGroup(opzioni);
+}
 
 type PannelloMappa = 'nuova-posizione' | 'nuova-dettagli' | 'soccorsi' | null;
 
@@ -481,7 +545,13 @@ export class Mappa {
   );
   private readonly areaRichiesta = new Subject<AreaVisibile>();
   private areaCaricata: (AreaVisibile & { istante: number }) | null = null;
-  private readonly livelloSegnalazioni = layerGroup();
+  /** Marker delle segnalazioni, raggruppati in cluster sotto ZOOM_SENZA_CLUSTER. */
+  private readonly livelloSegnalazioni = creaGruppoCluster((numero, gravi) =>
+    this.transloco.translate(gravi > 0 ? 'mappa.clusterConGravi' : 'mappa.cluster', {
+      numero,
+      gravi,
+    }),
+  );
   /** Istante corrente, aggiornato ogni minuto: fa scadere l'impulso delle segnalazioni gravi. */
   private readonly orologio = signal(Date.now());
   private readonly timerOrologio = setInterval(() => this.orologio.set(Date.now()), 60_000);
@@ -508,6 +578,9 @@ export class Mappa {
   protected readonly options: MapOptions = {
     layers: [this.sfondo],
     zoom: 13,
+    // Obbligatorio per il raggruppamento dei marker (lo sfondo MapLibre non ne dichiara uno):
+    // 19 è il dettaglio dei singoli edifici, come nelle mappe stradali.
+    maxZoom: 19,
     center: latLng(45.3181, 8.8589),
   };
 
@@ -561,13 +634,19 @@ export class Mappa {
         }
         if (esistente) {
           esistente.alone.setLatLng(posizione).setStyle(stileAlone(attiva, gravita));
+          // Il gruppo dei cluster non segue posizione e gravità di un marker già dentro: lo si
+          // toglie, si aggiorna e lo si rimette, così cluster e conteggi restano giusti.
+          this.livelloSegnalazioni.removeLayer(esistente.marker);
           // setIcon ricrea l'elemento del marker leggendo title/alt dalle options.
-          esistente.marker.options.title = nome;
-          esistente.marker.options.alt = nome;
+          const opzioni = esistente.marker.options as OpzioniMarkerSegnalazione;
+          opzioni.title = nome;
+          opzioni.alt = nome;
+          opzioni.gravita = gravita;
           esistente.marker
             .setLatLng(posizione)
             .setIcon(iconaMarker(icona, attiva, gravita, recente))
             .setZIndexOffset(attiva ? 1000 : 0);
+          this.livelloSegnalazioni.addLayer(esistente.marker);
           esistente.firma = firma;
           continue;
         }
@@ -578,14 +657,16 @@ export class Mappa {
           interactive: false,
           ...stileAlone(attiva, gravita),
         }).addTo(this.livelloAloni);
-        const nuovo = marker(posizione, {
+        const opzioni: OpzioniMarkerSegnalazione = {
           icon: iconaMarker(icona, attiva, gravita, recente),
           title: nome,
           alt: nome,
           keyboard: true,
           riseOnHover: true,
           zIndexOffset: attiva ? 1000 : 0,
-        })
+          gravita,
+        };
+        const nuovo = marker(posizione, opzioni)
           // Si apre la versione attuale della segnalazione, non quella di quando è nato il marker.
           .on('click', () => {
             const attuale = this.segnalazioni().find((s) => s.id === id);

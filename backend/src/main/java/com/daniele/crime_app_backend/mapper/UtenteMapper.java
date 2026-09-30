@@ -18,7 +18,10 @@ public class UtenteMapper {
                 utente.isAttivo(),
                 utente.getRuolo(),
                 utente.getDataRegistrazione(),
-                utente.getDataAggiornamento()
+                utente.getDataAggiornamento(),
+                utente.getSegnalazioniFatte(),
+                utente.getSegnalazioniConfermate(),
+                utente.getSegnalazioniRimosse()
         );
     }
 }

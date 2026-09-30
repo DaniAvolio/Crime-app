@@ -37,7 +37,6 @@ export interface FiltriGestioneSegnalazioni {
   [campo: string]: string;
   id: string;
   categoriaId: string;
-  descrizione: string;
   anonima: string;
   stato: string;
   creataDal: string;

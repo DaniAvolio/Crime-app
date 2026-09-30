@@ -22,6 +22,17 @@ public interface ConfermaSegnalazioneRepository extends JpaRepository<ConfermaSe
     /** Voti "non più in atto" espressi dopo un certo istante (l'ultima conferma positiva). */
     long countBySegnalazioneIdAndAncoraInAttoFalseAndDataVotoAfter(Long segnalazioneId, LocalDateTime istante);
 
+    /**
+     * Qualcuno diverso dall'utente indicato (l'autore) ha già dato un "sì" che ha prolungato
+     * (dataUltimoSi valorizzata): la segnalazione conta già come confermata.
+     */
+    boolean existsBySegnalazioneIdAndUtenteIdNotAndDataUltimoSiIsNotNull(Long segnalazioneId, Long utenteId);
+
+    /** Anonimizzazione dello storico: i voti delle segnalazioni vecchie non servono più. */
+    @Modifying
+    @Query("delete from ConfermaSegnalazione x where x.segnalazione.id in :segnalazioniId")
+    void eliminaPerSegnalazioni(@Param("segnalazioniId") Collection<Long> segnalazioniId);
+
     /** Usata dall'eliminazione definitiva di una Segnalazione (la FK non ha ON DELETE CASCADE). */
     @Modifying
     @Query("delete from ConfermaSegnalazione x where x.segnalazione.id = :segnalazioneId")

@@ -150,7 +150,9 @@
       "nonAttiva": "This report is no longer active, so it isn't on the map.",
       "nonTrovata": "We couldn't find this report."
     },
-    "crediti": "Map credits"
+    "crediti": "Map credits",
+    "cluster": "{{ numero }} reports: zoom in to see them",
+    "clusterConGravi": "{{ numero }} reports, {{ gravi }} high severity: zoom in to see them"
   },
   "condivisi": {
     "dialogo": {
@@ -412,6 +414,10 @@
         "dati": {
           "d": "What do other users see?",
           "r": "Category, description, position and time of the report and, only for registered users and if not anonymous, the first name and initial of the surname. Emails and passwords are never shown."
+        },
+        "storico": {
+          "d": "How long is my data kept?",
+          "r": "While the report is active and for 12 months after it closes. It is then anonymised: author, description and votes are removed and the position is rounded to about 100 m. Only category, area and dates are kept, for statistics, and the report no longer appears in your profile."
         },
         "moderazione": {
           "d": "Who checks the reports?",

@@ -190,6 +190,86 @@ html.dark {
   }
 }
 
+/* Cluster di segnalazioni (sotto zoom 15, vedi creaGruppoCluster in mappa.ts): cerchio con il
+   numero e bordo scuro come i marker. Misto: grigio scuro neutro con un badge rosso per le gravi;
+   di una sola gravità: il suo colore. Lo stile predefinito del plugin non viene importato. */
+.cluster-segnalazioni {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 2px solid rgb(18 22 29 / 0.9);
+  border-radius: 9999px;
+  background-color: var(--color-gravita-1);
+  color: #ffffff;
+  font:
+    700 14px/1 'IBM Plex Sans',
+    system-ui,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  box-shadow:
+    0 0 0 3px rgb(255 255 255 / 0.85),
+    0 2px 0 3px rgb(0 0 0 / 0.25);
+  cursor: pointer;
+  transition: transform 120ms ease-out;
+
+  &:hover {
+    transform: scale(1.08);
+  }
+}
+
+.cluster-segnalazioni--misto {
+  background-color: #2b3240;
+}
+
+.cluster-segnalazioni--g2 {
+  background-color: var(--color-gravita-2);
+}
+
+.cluster-segnalazioni--g3 {
+  background-color: var(--color-gravita-3);
+}
+
+/* Quante gravi ci sono nel cluster misto: pallino rosso in alto a destra. */
+.cluster-segnalazioni-gravi {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border: 2px solid #ffffff;
+  border-radius: 9999px;
+  background-color: var(--color-gravita-3);
+  color: #ffffff;
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* Animazione del plugin quando i cluster si aprono o si chiudono (le sue classi, senza il CSS). */
+.leaflet-cluster-anim .leaflet-marker-icon,
+.leaflet-cluster-anim .leaflet-marker-shadow {
+  transition:
+    transform 0.3s ease-out,
+    opacity 0.3s ease-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cluster-segnalazioni {
+    transition: none;
+  }
+
+  .leaflet-cluster-anim .leaflet-marker-icon,
+  .leaflet-cluster-anim .leaflet-marker-shadow {
+    transition: none;
+  }
+}
+
 /* Altezza della navbar in basso nella pagina mappa: pannelli, lista e controlli in basso si
    appoggiano sopra di essa. Da 1024px la navbar è una pillola flottante e non riserva spazio. */
 :root {

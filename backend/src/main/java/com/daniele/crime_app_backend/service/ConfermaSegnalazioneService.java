@@ -9,11 +9,13 @@ import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 import com.daniele.crime_app_backend.exception.ConflittoException;
 import com.daniele.crime_app_backend.mapper.SegnalazioneMapper;
 import com.daniele.crime_app_backend.repository.ConfermaSegnalazioneRepository;
+import com.daniele.crime_app_backend.repository.UtenteRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -24,17 +26,20 @@ public class ConfermaSegnalazioneService {
     private final SegnalazioneService segnalazioneService;
     private final SegnalazioneMapper segnalazioneMapper;
     private final UtenteCorrenteService utenteCorrenteService;
+    private final UtenteRepository utenteRepository;
     private final int sogliaNonInAtto;
 
     public ConfermaSegnalazioneService(ConfermaSegnalazioneRepository confermaSegnalazioneRepository,
                                         SegnalazioneService segnalazioneService,
                                         SegnalazioneMapper segnalazioneMapper,
                                         UtenteCorrenteService utenteCorrenteService,
+                                        UtenteRepository utenteRepository,
                                         @Value("${crimeapp.segnalazioni.soglia-non-in-atto:3}") int sogliaNonInAtto) {
         this.confermaSegnalazioneRepository = confermaSegnalazioneRepository;
         this.segnalazioneService = segnalazioneService;
         this.segnalazioneMapper = segnalazioneMapper;
         this.utenteCorrenteService = utenteCorrenteService;
+        this.utenteRepository = utenteRepository;
         this.sogliaNonInAtto = sogliaNonInAtto;
     }
 
@@ -75,6 +80,13 @@ public class ConfermaSegnalazioneService {
                 .build());
         LocalDateTime adesso = LocalDateTime.now();
         boolean prolunga = ancoraInAtto && puoProlungare(conferma, segnalazione, adesso);
+        Long autoreId = segnalazione.getAutore() != null ? segnalazione.getAutore().getId() : null;
+        boolean votaAutore = Objects.equals(autoreId, utente.getId());
+        // Primo "sì" di un altro utente: la segnalazione diventa "confermata" per l'autore. Si
+        // controlla prima di salvare il voto, così il "sì" appena dato non conta come precedente.
+        boolean primaConfermaAltrui = prolunga && autoreId != null && !votaAutore
+                && !confermaSegnalazioneRepository
+                        .existsBySegnalazioneIdAndUtenteIdNotAndDataUltimoSiIsNotNull(segnalazioneId, autoreId);
         conferma.setAncoraInAtto(ancoraInAtto);
         conferma.setDataVoto(adesso);
         if (prolunga) {
@@ -87,7 +99,10 @@ public class ConfermaSegnalazioneService {
             if (prolunga) {
                 segnalazioneService.prolungaScadenza(segnalazione);
             }
-        } else if (segnalazione.getAutore().getId().equals(utente.getId())) {
+            if (primaConfermaAltrui) {
+                utenteRepository.incrementaSegnalazioniConfermate(autoreId);
+            }
+        } else if (votaAutore) {
             segnalazioneService.concludiDaAutore(segnalazione);
         } else {
             long numeroNonInAtto = confermaSegnalazioneRepository

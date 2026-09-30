@@ -21,4 +21,9 @@ public interface SegnalazioneAbusoRepository extends JpaRepository<SegnalazioneA
     @Modifying
     @Query("delete from SegnalazioneAbuso x where x.segnalazione.id = :segnalazioneId")
     void eliminaPerSegnalazione(@Param("segnalazioneId") Long segnalazioneId);
+
+    /** Anonimizzazione dello storico: chi ha segnalato l'abuso e il motivo non servono più. */
+    @Modifying
+    @Query("delete from SegnalazioneAbuso x where x.segnalazione.id in :segnalazioniId")
+    void eliminaPerSegnalazioni(@Param("segnalazioniId") java.util.Collection<Long> segnalazioniId);
 }

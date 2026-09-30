@@ -5,11 +5,13 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
-/** Filtri della tabella segnalazioni in gestione (query string); ogni campo null è ignorato. */
+/**
+ * Filtri della tabella segnalazioni in gestione (query string); ogni campo null è ignorato.
+ * La descrizione (testo libero) non è filtrabile: una ricerca "contiene" non userebbe indici.
+ */
 public record FiltriSegnalazioni(
         Long id,
         Long categoriaId,
-        String descrizione,
         Boolean anonima,
         StatoSegnalazione stato,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate creataDal,

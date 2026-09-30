@@ -52,6 +52,13 @@ crimeapp:
     scadenza-job-rate-ms: 300000
     # Numero di voti "non più in atto" (successivi all'ultimo "ancora in atto") che portano una Segnalazione in SCADUTA.
     soglia-non-in-atto: 3
+    anonimizzazione:
+      # Mesi dopo la chiusura (SCADUTA o RIMOSSA) oltre i quali una segnalazione viene anonimizzata.
+      mesi: 12
+      # Quando gira il job (cron Spring: secondi minuti ore giorno mese giorno-settimana), di notte.
+      cron: "0 30 3 * * *"
+      # Segnalazioni per transazione: blocchi piccoli non tengono lock a lungo.
+      dimensione-blocco: 1000
   auth:
     # Chiave HMAC (HS256) per firmare i JWT: almeno 32 byte. In produzione va
     # fornita tramite la variabile d'ambiente CRIMEAPP_JWT_SECRET.

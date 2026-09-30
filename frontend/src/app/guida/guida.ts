@@ -22,7 +22,7 @@ const SEZIONI = [
   { chiave: 'durata', domande: ['scadenza', 'voto', 'cambiareVoto'] },
   { chiave: 'categorie', domande: ['quali'] },
   { chiave: 'account', domande: ['registrazione', 'profilo', 'fiducia'] },
-  { chiave: 'privacy', domande: ['dati', 'moderazione'] },
+  { chiave: 'privacy', domande: ['dati', 'storico', 'moderazione'] },
 ] as const;
 
 /** La domanda che elenca le categorie: la sua risposta include l'elenco letto dal database. */

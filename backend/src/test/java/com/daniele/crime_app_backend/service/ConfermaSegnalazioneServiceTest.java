@@ -8,6 +8,7 @@ import com.daniele.crime_app_backend.entity.Utente;
 import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 import com.daniele.crime_app_backend.mapper.SegnalazioneMapper;
 import com.daniele.crime_app_backend.repository.ConfermaSegnalazioneRepository;
+import com.daniele.crime_app_backend.repository.UtenteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +38,8 @@ class ConfermaSegnalazioneServiceTest {
     private SegnalazioneMapper segnalazioneMapper;
     @Mock
     private UtenteCorrenteService utenteCorrenteService;
+    @Mock
+    private UtenteRepository utenteRepository;
 
     private final Utente autore = Utente.builder().id(1L).build();
     private final Utente passante = Utente.builder().id(2L).build();
@@ -57,7 +60,7 @@ class ConfermaSegnalazioneServiceTest {
 
     private ConfermaSegnalazioneService service() {
         return new ConfermaSegnalazioneService(confermaRepository, segnalazioneService, segnalazioneMapper,
-                utenteCorrenteService, SOGLIA);
+                utenteCorrenteService, utenteRepository, SOGLIA);
     }
 
     @Test
@@ -136,5 +139,30 @@ class ConfermaSegnalazioneServiceTest {
 
         verify(segnalazioneService).prolungaScadenza(segnalazione);
         verify(segnalazioneService, never()).concludiDaAutore(any());
+        // Confermare la propria segnalazione non la rende "confermata" per il contatore.
+        verify(utenteRepository, never()).incrementaSegnalazioniConfermate(any());
+    }
+
+    @Test
+    void ilPrimoSiDiUnAltroUtenteContaComeConferma() {
+        when(utenteCorrenteService.utenteCorrente()).thenReturn(passante);
+        when(confermaRepository.existsBySegnalazioneIdAndUtenteIdNotAndDataUltimoSiIsNotNull(10L, 1L))
+                .thenReturn(false);
+
+        service().vota(10L, new ConfermaSegnalazioneRequest(true));
+
+        verify(utenteRepository).incrementaSegnalazioniConfermate(1L);
+    }
+
+    @Test
+    void unaSegnalazioneGiaConfermataNonContaDueVolte() {
+        when(utenteCorrenteService.utenteCorrente()).thenReturn(passante);
+        when(confermaRepository.existsBySegnalazioneIdAndUtenteIdNotAndDataUltimoSiIsNotNull(10L, 1L))
+                .thenReturn(true);
+
+        service().vota(10L, new ConfermaSegnalazioneRequest(true));
+
+        verify(segnalazioneService).prolungaScadenza(segnalazione);
+        verify(utenteRepository, never()).incrementaSegnalazioniConfermate(any());
     }
 }

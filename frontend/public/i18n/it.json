@@ -150,7 +150,9 @@
       "nonAttiva": "Questa segnalazione non è più attiva, quindi non è sulla mappa.",
       "nonTrovata": "Non abbiamo trovato questa segnalazione."
     },
-    "crediti": "Crediti della mappa"
+    "crediti": "Crediti della mappa",
+    "cluster": "{{ numero }} segnalazioni: avvicina per vederle",
+    "clusterConGravi": "{{ numero }} segnalazioni, di cui {{ gravi }} gravi: avvicina per vederle"
   },
   "condivisi": {
     "dialogo": {
@@ -412,6 +414,10 @@
         "dati": {
           "d": "Quali dati vedono gli altri utenti?",
           "r": "Categoria, descrizione, posizione e ora della segnalazione e, ai soli utenti registrati e se non anonima, nome e iniziale del cognome. Email e password non sono mai mostrate."
+        },
+        "storico": {
+          "d": "Per quanto tempo restano i miei dati?",
+          "r": "Finché la segnalazione è attiva e per 12 mesi dopo la sua chiusura. Poi viene anonimizzata: si tolgono autore, descrizione e voti e la posizione viene arrotondata a circa 100 m. Restano solo categoria, zona e date, per le statistiche, e la segnalazione non compare più nel tuo profilo."
         },
         "moderazione": {
           "d": "Chi controlla le segnalazioni?",

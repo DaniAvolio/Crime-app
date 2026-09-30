@@ -2,7 +2,6 @@ package com.daniele.crime_app_backend.entity;
 
 import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,6 +22,9 @@ import java.util.List;
  * vedi ConfermaSegnalazione) | ATTIVA -> SOSPESA (soglia abusi raggiunta,
  * automatico) | ATTIVA -> RIMOSSA (admin o autore) | SOSPESA -> ATTIVA|RIMOSSA
  * (solo admin).
+ * <p>
+ * Storico: 12 mesi dopo la chiusura (SCADUTA o RIMOSSA) la segnalazione viene anonimizzata
+ * (autore null, descrizione vuota, posizione arrotondata), vedi SegnalazioneAnonimizzazioneJob.
  */
 @Entity
 @Table(name = "segnalazione", indexes = {
@@ -42,12 +44,12 @@ public class Segnalazione {
     private Long id;
 
     /**
-     * Autore reale della segnalazione. Non è mai null: l'anonimato è gestito
+     * Autore reale della segnalazione. Null solo dopo l'anonimizzazione dello storico
+     * (dataAnonimizzazione valorizzata): finché la segnalazione è recente l'anonimato è gestito
      * solo a livello di visualizzazione tramite il campo "anonima".
      */
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "autore_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "autore_id")
     private Utente autore;
 
     @NotNull
@@ -55,7 +57,8 @@ public class Segnalazione {
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
-    @NotBlank
+    /** Obbligatoria alla creazione (SegnalazioneRequest); vuota dopo l'anonimizzazione. */
+    @NotNull
     @Column(nullable = false, length = 2000)
     private String descrizione;
 
@@ -91,6 +94,10 @@ public class Segnalazione {
     /** Ultima conferma "ancora in atto": i voti "non più in atto" contano solo se successivi. */
     @Column(name = "data_ultima_conferma")
     private LocalDateTime dataUltimaConferma;
+
+    /** Quando è stata anonimizzata (storico oltre i 12 mesi); null finché non lo è. */
+    @Column(name = "data_anonimizzazione")
+    private LocalDateTime dataAnonimizzazione;
 
     @OneToMany(mappedBy = "segnalazione", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

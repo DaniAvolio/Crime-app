@@ -112,7 +112,7 @@
     </div>
 
     <div class="overflow-x-auto">
-      <table class="w-full min-w-[56rem] border-collapse text-sm">
+      <table class="w-full min-w-[68rem] border-collapse text-sm">
         <thead>
           <tr
             class="border-b border-gray-200 text-left text-gray-500 dark:border-line dark:text-muted"
@@ -124,6 +124,23 @@
             <th appOrdinabile="punteggioFiducia" [tabella]="tabella">Fiducia</th>
             <th appOrdinabile="attivo" [tabella]="tabella">Stato</th>
             <th appOrdinabile="ruolo" [tabella]="tabella">Ruolo</th>
+            <th appOrdinabile="segnalazioniFatte" [tabella]="tabella" title="Segnalazioni create">
+              Segnalazioni
+            </th>
+            <th
+              appOrdinabile="segnalazioniConfermate"
+              [tabella]="tabella"
+              title="Confermate da almeno un altro utente"
+            >
+              Confermate
+            </th>
+            <th
+              appOrdinabile="segnalazioniRimosse"
+              [tabella]="tabella"
+              title="Rimosse da un amministratore"
+            >
+              Rimosse
+            </th>
             <th class="py-2"></th>
           </tr>
           <tr class="border-b border-gray-200 align-top dark:border-line">
@@ -218,6 +235,10 @@
                 </option>
               </select>
             </td>
+            <!-- Contatori: solo ordinabili. -->
+            <td></td>
+            <td></td>
+            <td></td>
             <td></td>
           </tr>
         </thead>
@@ -273,6 +294,19 @@
                   </span>
                 }
               </td>
+              <td class="py-2 tabular-nums">{{ utente.segnalazioniFatte }}</td>
+              <td class="py-2 tabular-nums">{{ utente.segnalazioniConfermate }}</td>
+              <!-- In rosso se un admin gli ha già rimosso delle segnalazioni. -->
+              <td
+                class="py-2 tabular-nums"
+                [class]="
+                  utente.segnalazioniRimosse > 0
+                    ? 'font-semibold text-red-600 dark:text-red-400'
+                    : ''
+                "
+              >
+                {{ utente.segnalazioniRimosse }}
+              </td>
               <td class="py-2 text-right whitespace-nowrap">
                 <button
                   (click)="modifica(utente)"
@@ -320,7 +354,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="8" class="py-6 text-center text-gray-500 dark:text-muted">
+              <td colspan="11" class="py-6 text-center text-gray-500 dark:text-muted">
                 {{
                   tabella.caricando()
                     ? 'Caricamento...'

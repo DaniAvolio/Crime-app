@@ -26,6 +26,7 @@ import com.daniele.crime_app_backend.repository.EventoModerazioneRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneAbusoRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneRepository;
 import com.daniele.crime_app_backend.repository.SpecificheGestione;
+import com.daniele.crime_app_backend.repository.UtenteRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -36,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -51,6 +53,7 @@ public class SegnalazioneService {
     private final SegnalazioneMapper segnalazioneMapper;
     private final CategoriaService categoriaService;
     private final UtenteCorrenteService utenteCorrenteService;
+    private final UtenteRepository utenteRepository;
 
     public SegnalazioneService(SegnalazioneRepository segnalazioneRepository,
                                 EventoModerazioneRepository eventoModerazioneRepository,
@@ -58,7 +61,8 @@ public class SegnalazioneService {
                                 SegnalazioneAbusoRepository segnalazioneAbusoRepository,
                                 SegnalazioneMapper segnalazioneMapper,
                                 CategoriaService categoriaService,
-                                UtenteCorrenteService utenteCorrenteService) {
+                                UtenteCorrenteService utenteCorrenteService,
+                                UtenteRepository utenteRepository) {
         this.segnalazioneRepository = segnalazioneRepository;
         this.eventoModerazioneRepository = eventoModerazioneRepository;
         this.confermaSegnalazioneRepository = confermaSegnalazioneRepository;
@@ -66,6 +70,7 @@ public class SegnalazioneService {
         this.segnalazioneMapper = segnalazioneMapper;
         this.categoriaService = categoriaService;
         this.utenteCorrenteService = utenteCorrenteService;
+        this.utenteRepository = utenteRepository;
     }
 
     /**
@@ -83,7 +88,7 @@ public class SegnalazioneService {
             boolean includiAnonime = utenteCorrenteService.isAdmin()
                     || utenteCorrenteService.idCorrenteOpzionale().map(autoreFiltro::equals).orElse(false);
             risultati = risultati.stream()
-                    .filter(s -> s.getAutore().getId().equals(autoreFiltro))
+                    .filter(s -> s.getAutore() != null && autoreFiltro.equals(s.getAutore().getId()))
                     .filter(s -> includiAnonime || !s.isAnonima())
                     .toList();
         }
@@ -214,7 +219,9 @@ public class SegnalazioneService {
                 .stato(StatoSegnalazione.ATTIVA)
                 .dataScadenza(LocalDateTime.now().plusHours(categoria.getDurataValiditaOre()))
                 .build();
-        return segnalazioneMapper.toDto(segnalazioneRepository.save(segnalazione));
+        Segnalazione salvata = segnalazioneRepository.save(segnalazione);
+        utenteRepository.incrementaSegnalazioniFatte(autore.getId());
+        return segnalazioneMapper.toDto(salvata);
     }
 
     /**
@@ -227,7 +234,8 @@ public class SegnalazioneService {
         Segnalazione segnalazione = recuperaOLancia(id);
         Utente attore = utenteCorrenteService.utenteCorrente();
         boolean isAdmin = attore.getRuolo() == RuoloUtente.ADMIN;
-        boolean isAutore = segnalazione.getAutore().getId().equals(attore.getId());
+        boolean isAutore = segnalazione.getAutore() != null
+                && Objects.equals(segnalazione.getAutore().getId(), attore.getId());
 
         if (!isAdmin && !isAutore) {
             throw new AccessoNegatoException("Solo l'autore o un amministratore può rimuovere questa segnalazione");
@@ -243,6 +251,10 @@ public class SegnalazioneService {
                 isAdmin ? TipoAttoreModerazione.ADMIN : TipoAttoreModerazione.AUTORE,
                 isAdmin ? attore : null, request.motivazione());
         segnalazione.setDataRimozione(LocalDateTime.now());
+        // Conta come "rimossa" per l'autore solo se la toglie un admin (non se la ritira lui).
+        if (isAdmin && !isAutore && segnalazione.getAutore() != null) {
+            utenteRepository.incrementaSegnalazioniRimosse(segnalazione.getAutore().getId());
+        }
         return segnalazioneMapper.toDto(segnalazione);
     }
 

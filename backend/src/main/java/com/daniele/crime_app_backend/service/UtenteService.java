@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -49,16 +51,14 @@ public class UtenteService {
                 .toList();
     }
 
-    /** Colonne ordinabili della tabella in gestione: nome esposto al client -> proprietà JPA. */
-    private static final Map<String, String> ORDINABILI_GESTIONE = Map.of(
-            "nome", "nome",
-            "cognome", "cognome",
-            "email", "email",
-            "identitaVerificata", "identitaVerificata",
-            "punteggioFiducia", "punteggioFiducia",
-            "attivo", "attivo",
-            "ruolo", "ruolo",
-            "dataRegistrazione", "dataRegistrazione");
+    /**
+     * Colonne ordinabili della tabella in gestione. Il nome esposto al client coincide con la
+     * proprietà JPA (le altre tabelle hanno una mappa nome -> proprietà).
+     */
+    private static final Map<String, String> ORDINABILI_GESTIONE = Stream.of(
+                    "nome", "cognome", "email", "identitaVerificata", "punteggioFiducia", "attivo", "ruolo",
+                    "dataRegistrazione", "segnalazioniFatte", "segnalazioniConfermate", "segnalazioniRimosse")
+            .collect(Collectors.toUnmodifiableMap(campo -> campo, campo -> campo));
 
     /** Tabella di gestione: filtri per colonna, ordinamento e paginazione lato database. */
     public PaginaDto<UtenteDto> trovaPerGestione(FiltriUtenti filtri, int pagina, int dimensione, String ordina) {

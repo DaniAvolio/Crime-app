@@ -16,4 +16,12 @@ public interface EventoModerazioneRepository extends JpaRepository<EventoModeraz
     @Modifying
     @Query("delete from EventoModerazione x where x.segnalazione.id = :segnalazioneId")
     void eliminaPerSegnalazione(@Param("segnalazioneId") Long segnalazioneId);
+
+    /**
+     * Anonimizzazione dello storico: le motivazioni (testo libero) si tolgono, gli eventi restano
+     * come registro delle transizioni.
+     */
+    @Modifying
+    @Query("update EventoModerazione x set x.motivazione = null where x.segnalazione.id in :segnalazioniId")
+    void cancellaMotivazioni(@Param("segnalazioniId") java.util.Collection<Long> segnalazioniId);
 }

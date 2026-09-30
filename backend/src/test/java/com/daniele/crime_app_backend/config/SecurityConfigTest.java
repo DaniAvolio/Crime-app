@@ -172,12 +172,12 @@ class SecurityConfigTest {
     @Test
     void filtriDellaGestioneLettiDallaQueryString() throws Exception {
         mockMvc.perform(get("/api/segnalazioni/gestione").with(ruolo("ADMIN"))
-                        .param("categoriaId", "3").param("descrizione", "fumo").param("anonima", "true")
+                        .param("categoriaId", "3").param("anonima", "true")
                         .param("stato", "ATTIVA").param("creataDal", "2026-09-01").param("creataAl", "2026-09-30")
                         .param("pagina", "2").param("dimensione", "10").param("ordina", "categoria,desc"))
                 .andExpect(status().isOk());
         verify(segnalazioneService).trovaPerGestione(
-                new FiltriSegnalazioni(null, 3L, "fumo", true, StatoSegnalazione.ATTIVA,
+                new FiltriSegnalazioni(null, 3L, true, StatoSegnalazione.ATTIVA,
                         LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30), null, null),
                 2, 10, "categoria,desc");
         mockMvc.perform(get("/api/utenti/gestione").with(ruolo("ADMIN"))

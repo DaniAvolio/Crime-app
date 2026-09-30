@@ -152,16 +152,8 @@
                 }
               </select>
             </td>
-            <td class="py-2 pr-2">
-              <input
-                type="search"
-                class="filtro-tabella"
-                placeholder="Contiene…"
-                aria-label="Filtra per descrizione"
-                [value]="tabella.filtri().descrizione"
-                (input)="tabella.filtra('descrizione', $any($event.target).value)"
-              />
-            </td>
+            <!-- Descrizione: testo libero, non filtrabile (la ricerca non userebbe indici). -->
+            <td></td>
             <td class="py-2 pr-2">
               <select
                 class="filtro-tabella"

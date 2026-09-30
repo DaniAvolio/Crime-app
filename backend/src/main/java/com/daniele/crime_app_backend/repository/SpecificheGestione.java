@@ -35,7 +35,6 @@ public final class SpecificheGestione {
             if (filtri.categoriaId() != null) {
                 condizioni.add(cb.equal(root.get("categoria").get("id"), filtri.categoriaId()));
             }
-            aggiungiContiene(condizioni, cb, root.get("descrizione"), filtri.descrizione());
             if (filtri.anonima() != null) {
                 condizioni.add(cb.equal(root.get("anonima"), filtri.anonima()));
             }

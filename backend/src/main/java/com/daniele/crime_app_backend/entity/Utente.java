@@ -14,8 +14,8 @@ import java.util.List;
 
 /**
  * Utente registrato. La registrazione richiede identità verificata; l'anonimato
- * riguarda solo la visualizzazione delle segnalazioni (il campo autore non è
- * mai null, vedi Segnalazione).
+ * riguarda solo la visualizzazione delle segnalazioni (l'autore resta sempre salvato, finché
+ * lo storico non viene anonimizzato, vedi Segnalazione).
  */
 @Entity
 @Table(name = "utente", indexes = {
@@ -71,6 +71,27 @@ public class Utente {
     @Column(nullable = false, length = 20)
     @Builder.Default
     private RuoloUtente ruolo = RuoloUtente.UTENTE;
+
+    /*
+     * Contatori di attività: sopravvivono all'anonimizzazione dello storico, che toglie l'autore
+     * dalle segnalazioni vecchie. Si aggiornano solo con update atomici (UtenteRepository.incrementa*),
+     * mai dall'entità, così due eventi contemporanei non si sovrascrivono.
+     */
+
+    /** Segnalazioni create. */
+    @Column(name = "segnalazioni_fatte", nullable = false, updatable = false)
+    @Builder.Default
+    private int segnalazioniFatte = 0;
+
+    /** Segnalazioni che hanno ricevuto almeno un "è ancora in atto" da un altro utente. */
+    @Column(name = "segnalazioni_confermate", nullable = false, updatable = false)
+    @Builder.Default
+    private int segnalazioniConfermate = 0;
+
+    /** Segnalazioni rimosse da un amministratore. */
+    @Column(name = "segnalazioni_rimosse", nullable = false, updatable = false)
+    @Builder.Default
+    private int segnalazioniRimosse = 0;
 
     @CreationTimestamp
     @Column(name = "data_registrazione", nullable = false, updatable = false)

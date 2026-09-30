@@ -63,6 +63,18 @@ class SegnalazioneMapperTest {
         assertThat(mapper().toDto(segnalazione(true)).autoreNome()).isEqualTo("Mario R.");
     }
 
+    @Test
+    void unaSegnalazioneAnonimizzataNonHaAutoreNeanchePerGliAdmin() {
+        autenticatoCome(99L, true);
+        Segnalazione anonimizzata = segnalazione(false);
+        anonimizzata.setAutore(null);
+
+        SegnalazioneDto dto = mapper().toDto(anonimizzata);
+
+        assertThat(dto.autoreId()).isNull();
+        assertThat(dto.autoreNome()).isNull();
+    }
+
     private void autenticatoCome(long id, boolean admin) {
         lenient().when(utenteCorrenteService.idCorrenteOpzionale()).thenReturn(Optional.of(id));
         lenient().when(utenteCorrenteService.isAdmin()).thenReturn(admin);

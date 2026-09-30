@@ -54,7 +54,6 @@ export class Segnalazioni implements OnInit {
     {
       id: '',
       categoriaId: '',
-      descrizione: '',
       anonima: '',
       stato: '',
       creataDal: '',

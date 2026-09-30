@@ -6,10 +6,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface SegnalazioneRepository extends JpaRepository<Segnalazione, Long>,
@@ -76,6 +78,33 @@ public interface SegnalazioneRepository extends JpaRepository<Segnalazione, Long
                                                         Pageable pagina);
 
     /** Proiezione di {@link #contaAttiveNelRaggioPerCategoria}. */
+    /**
+     * Concluse da anonimizzare: chiuse (data di rimozione o, se manca, di scadenza) prima della
+     * soglia e non ancora anonimizzate. Usa l'indice parziale idx_segnalazione_da_anonimizzare.
+     */
+    @Query(value = """
+            SELECT id FROM segnalazione
+            WHERE data_anonimizzazione IS NULL AND stato IN ('SCADUTA', 'RIMOSSA')
+              AND COALESCE(data_rimozione, data_scadenza) < :soglia
+            LIMIT :limite
+            """, nativeQuery = true)
+    List<Long> trovaIdDaAnonimizzare(@Param("soglia") LocalDateTime soglia, @Param("limite") int limite);
+
+    /**
+     * Toglie autore e descrizione e arrotonda la posizione a una griglia di 0,001° (circa 100 m):
+     * restano categoria, gravità, date e zona per le statistiche.
+     */
+    @Modifying
+    @Query(value = """
+            UPDATE segnalazione SET
+                autore_id = NULL,
+                descrizione = '',
+                posizione = ST_SnapToGrid(posizione::geometry, 0.001)::geography,
+                data_anonimizzazione = :adesso
+            WHERE id IN (:ids)
+            """, nativeQuery = true)
+    int anonimizza(@Param("ids") Collection<Long> ids, @Param("adesso") LocalDateTime adesso);
+
     interface ConteggioCategoria {
         Long getCategoriaId();
 

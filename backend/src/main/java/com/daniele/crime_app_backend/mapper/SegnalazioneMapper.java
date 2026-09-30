@@ -28,7 +28,8 @@ public class SegnalazioneMapper {
 
     /** Con il voto dell'utente corrente ("è ancora in atto?"), per mappa e dettaglio. */
     public SegnalazioneDto toDto(Segnalazione segnalazione, Boolean mioVoto) {
-        boolean autoreVisibile = autoreVisibile(segnalazione);
+        // Dopo l'anonimizzazione dello storico l'autore non c'è più.
+        boolean autoreVisibile = segnalazione.getAutore() != null && autoreVisibile(segnalazione);
         // Il nome si mostra solo a chi ha fatto l'accesso: la mappa è consultabile anche da anonimi.
         boolean nomeVisibile = autoreVisibile && utenteCorrenteService.idCorrenteOpzionale().isPresent();
         return new SegnalazioneDto(

@@ -15,5 +15,8 @@ public record UtenteDto(
         boolean attivo,
         RuoloUtente ruolo,
         LocalDateTime dataRegistrazione,
-        LocalDateTime dataAggiornamento
+        LocalDateTime dataAggiornamento,
+        int segnalazioniFatte,
+        int segnalazioniConfermate,
+        int segnalazioniRimosse
 ) {}
