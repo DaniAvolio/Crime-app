@@ -4,7 +4,8 @@
     "gestione": "Gestione",
     "accedi": "Accedi",
     "esci": "Esci",
-    "profilo": "Profilo"
+    "profilo": "Profilo",
+    "faq": "FAQ"
   },
   "home": {
     "hero": {
@@ -34,7 +35,8 @@
       }
     },
     "footer": {
-      "tagline": "Crime — segnalazioni di sicurezza pubblica gestite dalla community."
+      "tagline": "Crime — segnalazioni di sicurezza pubblica gestite dalla community.",
+      "faq": "Domande frequenti"
     }
   },
   "gravita": {
@@ -271,6 +273,136 @@
       "scuro": "Sempre scura",
       "scuroAiuto": "Meno luminosa, adatta alla sera",
       "nota": "La scelta vale per questo dispositivo."
+    }
+  },
+  "faq": {
+    "titolo": "Domande frequenti",
+    "sottotitolo": "Come funziona Crime, come si usa e cosa puoi segnalare. Tocca una domanda per leggere la risposta.",
+    "cerca": "Cerca nelle FAQ…",
+    "nessunRisultato": "Nessuna domanda corrisponde alla ricerca. Prova con un’altra parola.",
+    "categorieNonDisponibili": "Le categorie non sono disponibili al momento.",
+    "visibileFino": "Visibile fino a",
+    "durata": {
+      "ore": "{{ n }} ore",
+      "giorni": "{{ n }} giorni"
+    },
+    "gravita": {
+      "1": {
+        "titolo": "Gravità bassa",
+        "descrizione": "Degrado e quiete: rumori, rifiuti, luci spente, parcheggio abusivo."
+      },
+      "2": {
+        "titolo": "Gravità media",
+        "descrizione": "Contro il patrimonio e situazioni sospette: furti, vandalismo, spaccio, truffe."
+      },
+      "3": {
+        "titolo": "Gravità alta",
+        "descrizione": "Contro la persona: violenze, minacce, rapine, incendi."
+      }
+    },
+    "chiusura": "Non hai trovato la risposta? Apri la mappa e prova: ogni schermata è pensata per essere chiara, e una segnalazione sbagliata si può sempre rimuovere dal profilo.",
+    "sezioni": {
+      "cosa": {
+        "titolo": "Cos’è Crime",
+        "aCosaServe": {
+          "d": "A cosa serve Crime?",
+          "r": "Crime è una mappa condivisa di segnalazioni di sicurezza pubblica. Chi vive o attraversa una zona può segnalare ciò che osserva (un furto, rumori molesti, un lampione spento) e gli altri vedono cosa sta succedendo intorno a loro. Ogni segnalazione scade da sola quando non è più utile."
+        },
+        "emergenze": {
+          "d": "Posso usarlo in caso di emergenza?",
+          "r": "No. Crime non sostituisce i soccorsi e nessuno controlla le segnalazioni in tempo reale. In caso di pericolo o di un evento in corso chiama subito il 112. Sulla mappa trovi il pulsante «Soccorsi», che chiede una conferma prima di avviare la chiamata."
+        }
+      },
+      "mappa": {
+        "titolo": "Usare la mappa",
+        "simboli": {
+          "d": "Cosa significano marker, colori e forme?",
+          "r": "Ogni segnalazione è un marker con l’icona della sua categoria. Il colore dice la gravità: rosso scarlatto alta, arancio media, grigio ardesia (e un po’ più piccolo) bassa. Una segnalazione di gravità alta creata da meno di un’ora pulsa con un anello rosso. Toccando un marker si apre il dettaglio; con i pulsanti in alto puoi mostrare una sola gravità."
+        },
+        "alone": {
+          "d": "Perché attorno a un marker c’è un alone?",
+          "r": "L’evento è stato segnalato in quel punto, ma nel frattempo può essersi spostato nei dintorni: l’alone sfumato, circa 100 metri, indica che la posizione è approssimata. Compare quando la mappa è abbastanza vicina."
+        },
+        "listaRaggio": {
+          "d": "Come funziona la lista?",
+          "r": "Con il pulsante «Lista» in basso vedi le segnalazioni attive intorno a te, dalla più vicina alla più lontana. Puoi scegliere il raggio (500 m, 1, 2, 5 o 10 km) e filtrare per gravità e per categoria."
+        },
+        "posizione": {
+          "d": "Perché mi chiede la posizione?",
+          "r": "Il pallino blu sulla mappa è la tua posizione, e la lista parte da lì. Il browser ti chiede il permesso la prima volta: se lo neghi puoi comunque usare la mappa, che parte da un’area predefinita. Il pulsante in basso a destra ti riporta sulla tua posizione."
+        },
+        "tema": {
+          "d": "Posso cambiare tema e lingua?",
+          "r": "Sì. Dalle impostazioni (l’ingranaggio in alto) scegli tema chiaro o scuro e la lingua. Dal tuo profilo puoi scegliere il tema della sola mappa: come l’app, sempre chiara o sempre scura."
+        }
+      },
+      "segnalare": {
+        "titolo": "Fare una segnalazione",
+        "come": {
+          "d": "Come si fa una segnalazione?",
+          "r": "Tocca «Segnala» in basso e sposta il pin sul punto esatto dell’evento, poi conferma. Scegli la categoria (puoi cercarla per nome), scrivi una descrizione chiara di cosa hai visto e pubblica. Il pin parte dalla tua posizione, ma puoi trascinarlo dove serve."
+        },
+        "account": {
+          "d": "Serve un account?",
+          "r": "Per guardare la mappa e la lista non serve nulla. Per pubblicare una segnalazione o rispondere a «È ancora in atto?» serve un account gratuito: se non hai fatto l’accesso ti portiamo alla pagina di login e poi torni sulla mappa."
+        },
+        "anonima": {
+          "d": "Posso segnalare in forma anonima?",
+          "r": "Sì: spuntando «Pubblica in forma anonima» il tuo nome non viene mostrato agli altri utenti. Nelle segnalazioni non anonime gli utenti registrati vedono il tuo nome e l’iniziale del cognome (per esempio «Mario R.»); l’email non viene mai mostrata. La segnalazione resta comunque collegata al tuo account e chi amministra il servizio può vederlo, per poter moderare."
+        },
+        "rimuovere": {
+          "d": "Posso modificare o togliere una segnalazione?",
+          "r": "Le tue segnalazioni sono nel profilo, nelle schede «Attive» e «Concluse». Da lì puoi aprirle sulla mappa o rimuoverle. Una segnalazione pubblicata non si modifica: se hai sbagliato, rimuovila e creane una nuova."
+        }
+      },
+      "durata": {
+        "titolo": "Durata e «È ancora in atto?»",
+        "scadenza": {
+          "d": "Per quanto resta visibile una segnalazione?",
+          "r": "Ogni categoria ha una durata di validità, da 4 ore a 3 giorni: gli eventi in corso durano poco, il degrado di più (l’elenco sotto la indica per ogni categoria). Passato quel tempo la segnalazione diventa «conclusa» e sparisce dalla mappa; resta nel profilo di chi l’ha fatta."
+        },
+        "voto": {
+          "d": "Cosa succede se rispondo Sì o No a «È ancora in atto?»",
+          "r": "Un Sì prolunga la scadenza (una volta per durata della categoria, non a ripetizione) e azzera i No precedenti. Quando tre utenti diversi rispondono No la segnalazione si chiude. Se sei l’autore, il tuo No la chiude subito: ti chiediamo conferma perché non si può annullare, e solo un amministratore può riattivarla."
+        },
+        "cambiareVoto": {
+          "d": "Posso cambiare la mia risposta?",
+          "r": "Sì, quando vuoi. Nel dettaglio vedi cosa hai già risposto («Hai risposto: Sì») e il pulsante scelto è evidenziato. Dopo la risposta il pannello si chiude e un breve messaggio conferma cosa è successo."
+        }
+      },
+      "categorie": {
+        "titolo": "Categorie",
+        "quali": {
+          "d": "Quali categorie posso segnalare?",
+          "r": "Queste sono le categorie disponibili adesso, raggruppate per gravità. L’elenco è quello vero dell’applicazione: se ne aggiungiamo o togliamo, qui si aggiorna. Accanto a ciascuna vedi per quanto resta visibile una segnalazione."
+        }
+      },
+      "account": {
+        "titolo": "Account e profilo",
+        "registrazione": {
+          "d": "Come mi registro?",
+          "r": "Dalla pagina di accesso scegli «Registrati» e inserisci nome, cognome, email e una password. Dopo l’accesso, se apri la home ti portiamo direttamente alla mappa."
+        },
+        "profilo": {
+          "d": "Cosa c’è nel mio profilo?",
+          "r": "Dal profilo (l’icona persona in alto) vedi e modifichi nome e cognome, cambi la password, gestisci le tue segnalazioni e scegli il tema della mappa. Da lì puoi anche uscire."
+        },
+        "fiducia": {
+          "d": "Cosa sono «identità verificata» e punteggio di fiducia?",
+          "r": "Nel profilo vedi se la tua identità è stata verificata. Il punteggio di fiducia è un dato interno del servizio: oggi non limita quello che puoi fare nell’app."
+        }
+      },
+      "privacy": {
+        "titolo": "Privacy e moderazione",
+        "dati": {
+          "d": "Quali dati vedono gli altri utenti?",
+          "r": "Di una segnalazione si vedono categoria, descrizione, posizione e ora, e, solo agli utenti registrati e se non è anonima, il nome breve dell’autore. Non mostriamo mai email o password. La tua posizione serve per mostrarti ciò che c’è intorno a te."
+        },
+        "moderazione": {
+          "d": "Chi controlla le segnalazioni?",
+          "r": "Le segnalazioni sono moderate da chi amministra il servizio, che può sospendere, rimuovere o riattivare una segnalazione e tiene traccia di chi ha fatto cosa. Le segnalazioni false o fuori luogo possono essere rimosse e gli account che ne abusano disattivati."
+        }
+      }
     }
   }
 }

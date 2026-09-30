@@ -105,9 +105,17 @@
   <footer
     class="border-t border-gray-200 px-6 py-6 text-sm text-gray-500 dark:border-line dark:text-muted sm:px-10"
   >
-    <p class="flex items-center gap-2">
-      <img src="assets/img/crime-logo-128.png" alt="" width="24" height="24" class="h-6 w-6" />
-      {{ t('home.footer.tagline') }}
-    </p>
+    <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+      <p class="flex items-center gap-2">
+        <img src="assets/img/crime-logo-128.png" alt="" width="24" height="24" class="h-6 w-6" />
+        {{ t('home.footer.tagline') }}
+      </p>
+      <a
+        routerLink="/faq"
+        class="font-medium text-gray-900 underline decoration-gray-300 underline-offset-2 hover:decoration-gray-900 dark:text-paper dark:decoration-line dark:hover:decoration-paper"
+      >
+        {{ t('home.footer.faq') }}
+      </a>
+    </div>
   </footer>
 </main>

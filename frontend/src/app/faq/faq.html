@@ -1,0 +1,141 @@
+<main
+  *transloco="let t"
+  class="min-h-full bg-neutral-50 text-neutral-900 dark:bg-ink dark:text-paper"
+>
+  <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+    <header>
+      <h1 class="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+        {{ t('faq.titolo') }}
+      </h1>
+      <p class="mt-3 max-w-xl text-base leading-relaxed text-neutral-600 dark:text-muted">
+        {{ t('faq.sottotitolo') }}
+      </p>
+
+      <div class="relative mt-6">
+        <svg
+          lucideIcon="search"
+          class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-muted"
+          aria-hidden="true"
+        ></svg>
+        <input
+          #campoRicerca
+          type="search"
+          autocomplete="off"
+          class="block h-11 w-full rounded-md border border-neutral-300 bg-white pr-3 pl-9 text-[15px] placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:placeholder:text-muted"
+          [placeholder]="t('faq.cerca')"
+          [attr.aria-label]="t('faq.cerca')"
+          [value]="ricerca()"
+          (input)="cerca(campoRicerca.value)"
+        />
+      </div>
+    </header>
+
+    <div class="mt-8 flex flex-col gap-8">
+      @for (sezione of sezioni(); track sezione.chiave) {
+        <section [attr.aria-labelledby]="'faq-' + sezione.chiave">
+          <h2
+            [id]="'faq-' + sezione.chiave"
+            class="font-display text-lg font-semibold text-neutral-900 dark:text-paper"
+          >
+            {{ t('faq.sezioni.' + sezione.chiave + '.titolo') }}
+          </h2>
+
+          <div
+            class="mt-3 divide-y divide-neutral-200 overflow-hidden rounded-xl border border-neutral-200 bg-white dark:divide-line dark:border-line dark:bg-panel"
+          >
+            @for (domanda of sezione.domande; track domanda) {
+              <details class="group" [open]="ricerca().trim() !== ''">
+                <summary
+                  class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-left font-medium marker:content-none hover:bg-neutral-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600 sm:px-5 dark:hover:bg-ink [&::-webkit-details-marker]:hidden"
+                >
+                  <span>{{ t('faq.sezioni.' + sezione.chiave + '.' + domanda + '.d') }}</span>
+                  <svg
+                    viewBox="0 0 24 24"
+                    class="h-5 w-5 shrink-0 text-neutral-400 transition-transform group-open:rotate-180 dark:text-muted"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </summary>
+
+                <div class="px-4 pb-5 sm:px-5">
+                  <p
+                    class="text-[15px] leading-relaxed whitespace-pre-line text-neutral-700 dark:text-neutral-300"
+                  >
+                    {{ t('faq.sezioni.' + sezione.chiave + '.' + domanda + '.r') }}
+                  </p>
+
+                  @if (domanda === categoriaDomanda) {
+                    <!-- Elenco letto dal database: resta allineato a ciò che gestisce l'admin. -->
+                    @if (gruppiCategorie().length === 0) {
+                      <p class="mt-4 text-sm text-neutral-500 dark:text-muted">
+                        {{ t('faq.categorieNonDisponibili') }}
+                      </p>
+                    }
+                    @for (gruppo of gruppiCategorie(); track gruppo.gravita) {
+                      <div class="mt-5">
+                        <h3 class="flex items-center gap-2 text-sm font-semibold">
+                          <span
+                            class="h-2.5 w-2.5 rounded-full"
+                            [ngClass]="classePallinoGravita(gruppo.gravita)"
+                            aria-hidden="true"
+                          ></span>
+                          {{ t('faq.gravita.' + gruppo.gravita + '.titolo') }}
+                        </h3>
+                        <p class="mt-0.5 text-sm text-neutral-500 dark:text-muted">
+                          {{ t('faq.gravita.' + gruppo.gravita + '.descrizione') }}
+                        </p>
+                        <ul class="mt-2 grid gap-2 sm:grid-cols-2">
+                          @for (categoria of gruppo.categorie; track categoria.id) {
+                            <li
+                              class="flex items-start gap-3 rounded-lg border border-neutral-200 px-3 py-2.5 dark:border-line"
+                            >
+                              <svg
+                                [lucideIcon]="categoria.icona"
+                                class="mt-0.5 h-4 w-4 shrink-0 text-neutral-500 dark:text-muted"
+                                aria-hidden="true"
+                              ></svg>
+                              <div class="min-w-0">
+                                <p class="text-sm font-medium">{{ categoria.nome }}</p>
+                                @if (categoria.descrizione) {
+                                  <p class="text-xs leading-snug text-neutral-500 dark:text-muted">
+                                    {{ categoria.descrizione }}
+                                  </p>
+                                }
+                                <p class="mt-1 text-xs text-neutral-400 dark:text-muted">
+                                  {{ t('faq.visibileFino') }}
+                                  {{
+                                    t('faq.durata.' + categoria.durata.chiave, {
+                                      n: categoria.durata.n,
+                                    })
+                                  }}
+                                </p>
+                              </div>
+                            </li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                  }
+                </div>
+              </details>
+            }
+          </div>
+        </section>
+      } @empty {
+        <p
+          class="rounded-xl border border-neutral-200 bg-white px-5 py-8 text-center text-neutral-500 dark:border-line dark:bg-panel dark:text-muted"
+        >
+          {{ t('faq.nessunRisultato') }}
+        </p>
+      }
+    </div>
+
+    <p class="mt-10 text-sm text-neutral-500 dark:text-muted">{{ t('faq.chiusura') }}</p>
+  </div>
+</main>

@@ -18,6 +18,13 @@
     >
       {{ t('nav.mappa') }}
     </a>
+    <a
+      routerLink="/faq"
+      routerLinkActive="text-gray-900 dark:text-paper"
+      class="transition-colors hover:text-gray-900 dark:hover:text-paper"
+    >
+      {{ t('nav.faq') }}
+    </a>
     @if (auth.isAdmin()) {
       <a
         routerLink="/gestione"

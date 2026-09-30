@@ -10,6 +10,8 @@ export const routes: Routes = [
   // MapLibre GL è pesante e serve solo aprendo la mappa.
   // Pubblica: la consultazione non richiede login, solo pubblicare e votare (vedi Mappa).
   { path: 'mappa', loadComponent: () => import('./mappa/mappa').then((m) => m.Mappa) },
+  // Pubblica: la leggono anche gli ospiti.
+  { path: 'faq', loadComponent: () => import('./faq/faq').then((m) => m.Faq) },
   {
     path: 'login',
     loadComponent: () => import('./auth/login').then((m) => m.Login),
