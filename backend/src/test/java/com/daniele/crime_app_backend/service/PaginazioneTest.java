@@ -40,6 +40,13 @@ class PaginazioneTest {
     }
 
     @Test
+    void senzaOrdinamentoValidaComunquePaginaEDimensione() {
+        assertThat(Paginazione.senzaOrdinamento(1, 20).getSort().isUnsorted()).isTrue();
+        assertThatThrownBy(() -> Paginazione.senzaOrdinamento(0, Paginazione.DIMENSIONE_MASSIMA + 1))
+                .isInstanceOf(RichiestaNonValidaException.class);
+    }
+
+    @Test
     void paginaEDimensioneFuoriLimiteSonoRichiesteNonValide() {
         assertThatThrownBy(() -> Paginazione.crea(-1, 10, null, ORDINABILI, PREDEFINITO))
                 .isInstanceOf(RichiestaNonValidaException.class);

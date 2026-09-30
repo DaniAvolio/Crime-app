@@ -21,15 +21,25 @@ public final class Paginazione {
 
     public static Pageable crea(int pagina, int dimensione, String ordina, Map<String, String> campiOrdinabili,
                                 Sort predefinito) {
+        valida(pagina, dimensione);
+        Sort ordinamento = ordina == null || ordina.isBlank() ? predefinito : interpreta(ordina, campiOrdinabili);
+        // Id come ultimo criterio: a parità di valore l'ordine resta stabile tra una pagina e l'altra.
+        return PageRequest.of(pagina, dimensione, ordinamento.and(Sort.by("id")));
+    }
+
+    /** Pagina e dimensione validate come in {@link #crea}, senza ordinamento (lo fa la query). */
+    public static Pageable senzaOrdinamento(int pagina, int dimensione) {
+        valida(pagina, dimensione);
+        return PageRequest.of(pagina, dimensione);
+    }
+
+    private static void valida(int pagina, int dimensione) {
         if (pagina < 0) {
             throw new RichiestaNonValidaException("Pagina non valida: " + pagina);
         }
         if (dimensione < 1 || dimensione > DIMENSIONE_MASSIMA) {
             throw new RichiestaNonValidaException("Dimensione pagina fuori dall'intervallo 1-" + DIMENSIONE_MASSIMA);
         }
-        Sort ordinamento = ordina == null || ordina.isBlank() ? predefinito : interpreta(ordina, campiOrdinabili);
-        // Id come ultimo criterio: a parità di valore l'ordine resta stabile tra una pagina e l'altra.
-        return PageRequest.of(pagina, dimensione, ordinamento.and(Sort.by("id")));
     }
 
     private static Sort interpreta(String ordina, Map<String, String> campiOrdinabili) {

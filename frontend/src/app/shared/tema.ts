@@ -39,6 +39,11 @@ export class TemaService {
     effect(() => this.applicaTema(this.tema()));
   }
 
+  /** Scelta esplicita dal profilo. */
+  impostaTema(tema: Tema): void {
+    this.tema.set(tema);
+  }
+
   alterna(): void {
     this.tema.update((tema) => (tema === 'scuro' ? 'chiaro' : 'scuro'));
   }

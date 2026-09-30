@@ -1,16 +1,20 @@
 <header
   *transloco="let t"
-  class="sticky top-0 z-50 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 text-gray-900 dark:border-line dark:bg-ink dark:text-paper sm:px-10"
+  class="sticky top-0 z-50 flex items-center justify-between border-b border-gray-200 bg-white px-3 py-3 text-gray-900 dark:border-line dark:bg-ink dark:text-paper min-[360px]:px-4 sm:px-10 sm:py-4"
 >
   <a
     routerLink="/"
-    class="flex items-center gap-2 font-display text-lg font-semibold tracking-tight"
+    class="flex shrink-0 items-center gap-2 font-display text-lg font-semibold tracking-tight"
+    aria-label="Crime"
   >
     <img src="assets/img/crime-logo-128.png" alt="" width="32" height="32" class="h-8 w-8" />
-    Crime
+    <!-- Su telefono resta solo il logo: il nome non ci sta accanto alle voci. -->
+    <span class="max-sm:hidden">Crime</span>
   </a>
 
-  <nav class="flex items-center gap-6 text-sm text-gray-500 dark:text-muted">
+  <nav
+    class="flex min-w-0 items-center gap-3 text-sm whitespace-nowrap text-gray-500 min-[400px]:gap-5 sm:gap-6 dark:text-muted"
+  >
     <a
       routerLink="/mappa"
       routerLinkActive="text-gray-900 dark:text-paper"
@@ -19,11 +23,13 @@
       {{ t('nav.mappa') }}
     </a>
     <a
-      routerLink="/faq"
+      routerLink="/come-funziona"
       routerLinkActive="text-gray-900 dark:text-paper"
       class="transition-colors hover:text-gray-900 dark:hover:text-paper"
+      [attr.aria-label]="t('nav.guida')"
     >
-      {{ t('nav.faq') }}
+      <span class="sm:hidden">{{ t('nav.guidaBreve') }}</span>
+      <span class="max-sm:hidden">{{ t('nav.guida') }}</span>
     </a>
     @if (auth.isAdmin()) {
       <a
@@ -36,7 +42,7 @@
     }
   </nav>
 
-  <div class="relative flex items-center gap-3">
+  <div class="relative flex shrink-0 items-center gap-1 sm:gap-3">
     @if (!auth.autenticato()) {
       <a
         routerLink="/login"
@@ -45,7 +51,8 @@
         {{ t('nav.accedi') }}
       </a>
     } @else {
-      <!-- Profilo: icona standard, fuori dal pannello impostazioni. -->
+      <!-- Profilo: icona standard. Su telefono sostituisce l'ingranaggio: lingua e temi stanno
+           nelle Preferenze del profilo. -->
       <a
         routerLink="/profilo"
         routerLinkActive="text-gray-900 dark:text-paper"
@@ -61,6 +68,7 @@
       (click)="toggleImpostazioni()"
       [attr.aria-expanded]="pannelloAperto()"
       aria-label="Impostazioni"
+      [ngClass]="{ 'max-sm:hidden': auth.autenticato() }"
       class="flex h-8 w-8 items-center justify-center rounded-sm text-gray-500 transition-colors hover:bg-black/5 hover:text-gray-900 dark:text-muted dark:hover:bg-white/10 dark:hover:text-paper"
     >
       <svg lucideIcon="settings" class="h-4 w-4"></svg>

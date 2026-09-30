@@ -12,7 +12,7 @@ import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-cat
 import { LinguaService } from '../shared/lingua';
 
 /**
- * Sezioni e domande delle FAQ: i testi stanno in i18n (`faq.sezioni.<sezione>.<domanda>.d|r`),
+ * Sezioni e domande della guida: i testi stanno in i18n (`guida.sezioni.<sezione>.<domanda>.d|r`),
  * qui c'è solo l'ordine. Aggiungere una domanda = una chiave qui + il testo nei due JSON.
  */
 const SEZIONI = [
@@ -28,7 +28,7 @@ const SEZIONI = [
 /** La domanda che elenca le categorie: la sua risposta include l'elenco letto dal database. */
 const DOMANDA_CATEGORIE = 'quali';
 
-interface CategoriaFaq {
+interface CategoriaGuida {
   id: number;
   nome: string;
   descrizione: string | null;
@@ -38,7 +38,7 @@ interface CategoriaFaq {
 
 interface GruppoCategorie {
   gravita: Gravita;
-  categorie: CategoriaFaq[];
+  categorie: CategoriaGuida[];
 }
 
 /** Senza maiuscole né accenti, per cercare "quiete" anche scrivendo "Quiète". */
@@ -47,16 +47,16 @@ function normalizza(testo: string): string {
 }
 
 /**
- * FAQ pubblica (/faq): come funziona l'app, come si usa, categorie segnalabili. Accordion con
+ * Pagina pubblica «Come funziona» (/come-funziona): istruzioni d'uso, categorie segnalabili. Accordion con
  * <details> nativi (tastiera e lettori di schermo gratis) e una ricerca che filtra le domande.
  */
 @Component({
-  selector: 'app-faq',
+  selector: 'app-guida',
   standalone: true,
   imports: [NgClass, TranslocoDirective, LucideDynamicIcon],
-  templateUrl: './faq.html',
+  templateUrl: './guida.html',
 })
-export class Faq implements OnInit {
+export class Guida implements OnInit {
   private readonly store = inject(CategorieStore);
   private readonly transloco = inject(TranslocoService);
   private readonly lingua = inject(LinguaService);
@@ -113,7 +113,7 @@ export class Faq implements OnInit {
         if (!cerca) {
           return true;
         }
-        const base = `faq.sezioni.${sezione.chiave}.${domanda}`;
+        const base = `guida.sezioni.${sezione.chiave}.${domanda}`;
         const testo = [
           this.transloco.translate(`${base}.d`),
           this.transloco.translate(`${base}.r`),

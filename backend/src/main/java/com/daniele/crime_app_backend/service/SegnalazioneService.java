@@ -1,6 +1,9 @@
 package com.daniele.crime_app_backend.service;
 
+import com.daniele.crime_app_backend.dto.ConteggiMieSegnalazioniDto;
+import com.daniele.crime_app_backend.dto.ConteggioCategoriaDto;
 import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
+import com.daniele.crime_app_backend.dto.GruppoSegnalazioniMie;
 import com.daniele.crime_app_backend.dto.PaginaDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneRequest;
@@ -15,6 +18,7 @@ import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 import com.daniele.crime_app_backend.entity.enums.TipoAttoreModerazione;
 import com.daniele.crime_app_backend.exception.AccessoNegatoException;
 import com.daniele.crime_app_backend.exception.ConflittoException;
+import com.daniele.crime_app_backend.exception.RichiestaNonValidaException;
 import com.daniele.crime_app_backend.exception.RisorsaNonTrovataException;
 import com.daniele.crime_app_backend.mapper.SegnalazioneMapper;
 import com.daniele.crime_app_backend.repository.ConfermaSegnalazioneRepository;
@@ -25,6 +29,7 @@ import com.daniele.crime_app_backend.repository.SpecificheGestione;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,6 +109,29 @@ public class SegnalazioneService {
                 segnalazioneMapper::toDto);
     }
 
+    /**
+     * Profilo: le segnalazioni dell'utente corrente, una scheda alla volta e a pagine, dalla più
+     * recente. Include le proprie anonime (l'autore le vede sempre).
+     */
+    public PaginaDto<SegnalazioneDto> trovaMie(GruppoSegnalazioniMie gruppo, int pagina, int dimensione) {
+        Long autoreId = utenteCorrenteService.idCorrente();
+        Pageable richiesta = Paginazione.crea(pagina, dimensione, null, Map.of(),
+                Sort.by(Sort.Order.desc("dataCreazione")));
+        Specification<Segnalazione> filtro = (root, query, cb) -> cb.and(
+                cb.equal(root.get("autore").get("id"), autoreId),
+                gruppo == GruppoSegnalazioniMie.ATTIVE
+                        ? cb.equal(root.get("stato"), StatoSegnalazione.ATTIVA)
+                        : cb.notEqual(root.get("stato"), StatoSegnalazione.ATTIVA));
+        return PaginaDto.da(segnalazioneRepository.findAll(filtro, richiesta), segnalazioneMapper::toDto);
+    }
+
+    /** Contatori delle schede del profilo, senza caricare le segnalazioni. */
+    public ConteggiMieSegnalazioniDto conteggiMie() {
+        Long autoreId = utenteCorrenteService.idCorrente();
+        long attive = segnalazioneRepository.countByAutoreIdAndStato(autoreId, StatoSegnalazione.ATTIVA);
+        return new ConteggiMieSegnalazioniDto(attive, segnalazioneRepository.countByAutoreId(autoreId) - attive);
+    }
+
     public SegnalazioneDto trovaPerId(Long id) {
         Segnalazione segnalazione = recuperaOLancia(id);
         return segnalazioneMapper.toDto(segnalazione, votiUtenteCorrente(List.of(segnalazione)).get(id));
@@ -133,6 +161,38 @@ public class SegnalazioneService {
         return vicine.stream()
                 .map(s -> segnalazioneMapper.toDto(s, voti.get(s.getId())))
                 .toList();
+    }
+
+    /** Raggio massimo della vista lista (i raggi selezionabili arrivano a 10 km). */
+    static final double RAGGIO_MASSIMO_LISTA_METRI = 20_000;
+
+    /**
+     * Vista lista: una pagina di segnalazioni ATTIVA nel raggio, dalla più vicina, con filtri
+     * opzionali per gravità e categoria e il voto dell'utente corrente come per la mappa.
+     */
+    public PaginaDto<SegnalazioneDto> trovaVicinePerDistanza(double lat, double lng, double raggioMetri,
+                                                             Integer gravita, Long categoriaId,
+                                                             int pagina, int dimensione) {
+        validaRaggioLista(raggioMetri);
+        var risultato = segnalazioneRepository.trovaAttiveNelRaggioPerDistanza(lat, lng, raggioMetri, gravita,
+                categoriaId, Paginazione.senzaOrdinamento(pagina, dimensione));
+        Map<Long, Boolean> voti = votiUtenteCorrente(risultato.getContent());
+        return PaginaDto.da(risultato, s -> segnalazioneMapper.toDto(s, voti.get(s.getId())));
+    }
+
+    /** Vista lista: quante segnalazioni ATTIVA ci sono nel raggio per ogni categoria. */
+    public List<ConteggioCategoriaDto> conteggiVicinePerCategoria(double lat, double lng, double raggioMetri,
+                                                                  Integer gravita) {
+        validaRaggioLista(raggioMetri);
+        return segnalazioneRepository.contaAttiveNelRaggioPerCategoria(lat, lng, raggioMetri, gravita).stream()
+                .map(c -> new ConteggioCategoriaDto(c.getCategoriaId(), c.getNumero()))
+                .toList();
+    }
+
+    private static void validaRaggioLista(double raggioMetri) {
+        if (raggioMetri <= 0 || raggioMetri > RAGGIO_MASSIMO_LISTA_METRI) {
+            throw new RichiestaNonValidaException("Raggio fuori dall'intervallo consentito: " + raggioMetri);
+        }
     }
 
     /**

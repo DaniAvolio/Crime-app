@@ -65,8 +65,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/segnalazioni/gestione", "/api/categorie/gestione",
                                 "/api/segnalazioni/*/abusi", "/api/segnalazioni/*/eventi-moderazione").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/segnalazioni/mie", "/api/segnalazioni/mie/conteggi")
+                        .authenticated()
                         .requestMatchers(HttpMethod.GET,
-                                "/api/segnalazioni", "/api/segnalazioni/*", "/api/categorie/**").permitAll()
+                                "/api/segnalazioni", "/api/segnalazioni/*", "/api/segnalazioni/vicine/*",
+                                "/api/categorie/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/segnalazioni/*/riattiva").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/segnalazioni/*").hasRole("ADMIN")
                         .requestMatchers("/api/categorie/**").hasRole("ADMIN")

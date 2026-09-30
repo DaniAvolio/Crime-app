@@ -6,6 +6,7 @@ import com.daniele.crime_app_backend.controller.SegnalazioneController;
 import com.daniele.crime_app_backend.controller.UtenteController;
 import com.daniele.crime_app_backend.dto.FiltriCategorie;
 import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
+import com.daniele.crime_app_backend.dto.GruppoSegnalazioniMie;
 import com.daniele.crime_app_backend.dto.FiltriUtenti;
 import com.daniele.crime_app_backend.entity.Utente;
 import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
@@ -143,6 +144,29 @@ class SecurityConfigTest {
         mockMvc.perform(get("/api/categorie/gestione").with(ruolo("ADMIN"))).andExpect(status().isOk());
         mockMvc.perform(get("/api/utenti/gestione").with(ruolo("UTENTE"))).andExpect(status().isForbidden());
         mockMvc.perform(get("/api/utenti/gestione").with(ruolo("ADMIN"))).andExpect(status().isOk());
+    }
+
+    @Test
+    void listaVicinaEPubblica() throws Exception {
+        mockMvc.perform(get("/api/segnalazioni/vicine/lista").param("lat", "45").param("lng", "9")
+                        .param("raggioMetri", "2000").param("gravita", "3").param("pagina", "2"))
+                .andExpect(status().isOk());
+        verify(segnalazioneService).trovaVicinePerDistanza(45, 9, 2000, 3, null, 2, 20);
+        mockMvc.perform(get("/api/segnalazioni/vicine/conteggi").param("lat", "45").param("lng", "9")
+                        .param("raggioMetri", "2000"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void mieSegnalazioniRichiedonoLogin() throws Exception {
+        // "/api/segnalazioni/*" è pubblico in GET: "/mie" non deve ricadere in quella regola.
+        mockMvc.perform(get("/api/segnalazioni/mie").param("gruppo", "ATTIVE")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/segnalazioni/mie/conteggi")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/segnalazioni/mie").with(ruolo("UTENTE")).param("gruppo", "CONCLUSE")
+                        .param("pagina", "1").param("dimensione", "10"))
+                .andExpect(status().isOk());
+        verify(segnalazioneService).trovaMie(GruppoSegnalazioniMie.CONCLUSE, 1, 10);
+        mockMvc.perform(get("/api/segnalazioni/mie/conteggi").with(ruolo("UTENTE"))).andExpect(status().isOk());
     }
 
     @Test

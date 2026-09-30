@@ -5,7 +5,8 @@
     "accedi": "Sign in",
     "esci": "Sign out",
     "profilo": "Profile",
-    "faq": "FAQ"
+    "guida": "How it works",
+    "guidaBreve": "Guide"
   },
   "home": {
     "hero": {
@@ -36,7 +37,7 @@
     },
     "footer": {
       "tagline": "Crime — public safety reports maintained by the community.",
-      "faq": "FAQ"
+      "guida": "How it works"
     }
   },
   "gravita": {
@@ -139,9 +140,11 @@
       "errore": "We can't load nearby reports right now. Try again shortly.",
       "raggio": "Maximum distance",
       "categoria": "Filter by category",
-      "tutte": "All",
       "vuotaCategoria": "No {{ categoria }} reports within {{ raggio }}.",
-      "allarga": "Search within {{ raggio }}"
+      "allarga": "Search within {{ raggio }}",
+      "caricaAltre": "Show more",
+      "riprova": "Try again",
+      "tutteCategorie": "All categories ({{ numero }})"
     },
     "link": {
       "nonAttiva": "This report is no longer active, so it isn't on the map.",
@@ -255,7 +258,8 @@
         "conferma": "Remove",
         "fatto": "Report removed.",
         "errore": "We couldn't remove the report."
-      }
+      },
+      "caricaAltre": "Show more"
     },
     "stati": {
       "ATTIVA": "Active",
@@ -263,23 +267,35 @@
       "SOSPESA": "Suspended",
       "RIMOSSA": "Removed"
     },
-    "mappa": {
-      "titolo": "Map theme",
-      "descrizione": "You can keep the map light while the app is dark, or the other way round.",
-      "auto": "Match the app",
-      "autoAiuto": "Follows the light or dark theme you chose",
-      "chiaro": "Always light",
-      "chiaroAiuto": "Easier to read in daylight and outdoors",
-      "scuro": "Always dark",
-      "scuroAiuto": "Dimmer, suited to the evening",
-      "nota": "This setting applies to this device."
+    "preferenze": {
+      "titolo": "Preferences",
+      "descrizione": "Language and appearance of the app.",
+      "nota": "Preferences apply to this device.",
+      "lingua": {
+        "titolo": "Language"
+      },
+      "tema": {
+        "titolo": "App theme",
+        "chiaro": "Light",
+        "scuro": "Dark"
+      },
+      "mappa": {
+        "titolo": "Map theme",
+        "descrizione": "You can keep the map light while the app is dark, or the other way round.",
+        "auto": "Match the app",
+        "autoAiuto": "Follows the light or dark theme you chose",
+        "chiaro": "Always light",
+        "chiaroAiuto": "Easier to read in daylight and outdoors",
+        "scuro": "Always dark",
+        "scuroAiuto": "Dimmer, suited to the evening"
+      }
     }
   },
-  "faq": {
-    "titolo": "Frequently asked questions",
-    "sottotitolo": "How Crime works, how to use it and what you can report. Tap a question to read the answer.",
-    "cerca": "Search the FAQ…",
-    "nessunRisultato": "No question matches your search. Try another word.",
+  "guida": {
+    "titolo": "How it works",
+    "sottotitolo": "Instructions for using Crime, plus information on categories, duration and moderation.",
+    "cerca": "Search the guide…",
+    "nessunRisultato": "No results for your search.",
     "categorieNonDisponibili": "Categories are not available right now.",
     "visibileFino": "Visible for",
     "durata": {
@@ -289,7 +305,7 @@
     "gravita": {
       "1": {
         "titolo": "Low severity",
-        "descrizione": "Nuisance and quiet: noise, litter, broken lights, illegal parking."
+        "descrizione": "Nuisance and quiet: noise, litter, lighting, illegal parking."
       },
       "2": {
         "titolo": "Medium severity",
@@ -300,107 +316,106 @@
         "descrizione": "Against people: violence, threats, robberies, fires."
       }
     },
-    "chiusura": "Didn’t find your answer? Open the map and try it: every screen is meant to be clear, and a wrong report can always be removed from your profile.",
     "sezioni": {
       "cosa": {
-        "titolo": "What is Crime",
+        "titolo": "The service",
         "aCosaServe": {
-          "d": "What is Crime for?",
-          "r": "Crime is a shared map of public-safety reports. People who live in or pass through an area can report what they see (a theft, loud noise, a broken street light) and others can see what is happening around them. Every report expires on its own when it is no longer useful."
+          "d": "What is Crime?",
+          "r": "A shared map of public-safety reports. Anyone can browse what has been reported around them; registered users can add reports. Every report expires automatically."
         },
         "emergenze": {
-          "d": "Can I use it in an emergency?",
-          "r": "No. Crime does not replace emergency services and nobody monitors reports in real time. If you are in danger or something is happening right now, call 112 immediately. On the map you will find the “Emergency” button, which asks for confirmation before starting the call."
+          "d": "Is it for emergencies?",
+          "r": "No. Crime does not replace emergency services and reports are not monitored in real time. If you are in danger, call 112: the “Emergency” button on the map starts the call after a confirmation."
         }
       },
       "mappa": {
         "titolo": "Using the map",
         "simboli": {
-          "d": "What do markers, colours and shapes mean?",
-          "r": "Each report is a marker with its category icon. The colour shows severity: scarlet red is high, orange is medium, slate grey (and slightly smaller) is low. A high-severity report created less than an hour ago pulses with a red ring. Tap a marker to open its details; the buttons at the top show a single severity."
+          "d": "How do I read the markers?",
+          "r": "Each marker shows the category icon. Colour indicates severity: red is high, orange is medium, grey (smaller) is low. A pulsing ring marks a high-severity report created less than an hour ago. Tap a marker to open its details."
         },
         "alone": {
-          "d": "Why is there a halo around a marker?",
-          "r": "The event was reported at that spot, but it may have moved nearby since: the soft halo, about 100 metres wide, means the position is approximate. It appears when the map is zoomed in enough."
+          "d": "What is the halo around markers?",
+          "r": "It means the position is approximate (about 100 metres): the event may have moved after it was reported. It appears when zoomed in."
         },
         "listaRaggio": {
           "d": "How does the list work?",
-          "r": "The “List” button at the bottom shows active reports around you, from nearest to farthest. You can choose the radius (500 m, 1, 2, 5 or 10 km) and filter by severity and category."
+          "r": "“List” shows active reports around you, nearest first. You can choose the radius (500 m to 10 km) and filter by severity and category."
         },
         "posizione": {
-          "d": "Why does it ask for my location?",
-          "r": "The blue dot on the map is your location, and the list starts from there. Your browser asks for permission the first time: if you refuse you can still use the map, which starts from a default area. The button at the bottom right takes you back to your location."
+          "d": "Why is my location requested?",
+          "r": "To centre the map and sort the list by distance. If you refuse, the map is still usable, starting from a default area."
         },
         "tema": {
-          "d": "Can I change theme and language?",
-          "r": "Yes. From the settings (the gear at the top) you choose the light or dark theme and the language. From your profile you can choose the map theme on its own: same as the app, always light or always dark."
+          "d": "How do I change theme and language?",
+          "r": "In your profile’s Preferences you choose language, app theme and map theme (which can stay light or dark regardless of the app). On a computer, language and theme are also in the gear at the top."
         }
       },
       "segnalare": {
         "titolo": "Making a report",
         "come": {
           "d": "How do I make a report?",
-          "r": "Tap “Report” at the bottom and move the pin to the exact spot of the event, then confirm. Choose the category (you can search it by name), write a clear description of what you saw and publish. The pin starts at your location, but you can drag it wherever you need."
+          "r": "Tap “Report”, place the pin on the exact spot and confirm. Then choose the category, describe what you saw and publish."
         },
         "account": {
           "d": "Do I need an account?",
-          "r": "You need nothing to look at the map and the list. To publish a report or answer “Is it still happening?” you need a free account: if you are not signed in we take you to the login page and then back to the map."
+          "r": "Not to browse the map and list. To publish and to answer “Is it still happening?” you need a free account."
         },
         "anonima": {
           "d": "Can I report anonymously?",
-          "r": "Yes: by ticking “Publish anonymously” your name is not shown to other users. On non-anonymous reports, registered users see your name and the initial of your surname (for example “Mario R.”); your email is never shown. The report stays linked to your account and the people running the service can see it, so they can moderate."
+          "r": "Yes. With “Publish anonymously” your name is not shown to other users, but the report stays linked to your account for moderation. On other reports, registered users see the first name and the initial of the surname (e.g. “Mario R.”), never the email."
         },
         "rimuovere": {
           "d": "Can I edit or remove a report?",
-          "r": "Your reports are in your profile, in the “Active” and “Concluded” tabs. From there you can open them on the map or remove them. A published report cannot be edited: if you made a mistake, remove it and create a new one."
+          "r": "You can remove it from your profile. It cannot be edited: if you made a mistake, remove it and create a new one."
         }
       },
       "durata": {
-        "titolo": "Duration and “Is it still happening?”",
+        "titolo": "Duration and confirmations",
         "scadenza": {
           "d": "How long does a report stay visible?",
-          "r": "Each category has a validity period, from 4 hours to 3 days: ongoing events last a short time, nuisance problems longer (the list below shows it for every category). After that the report becomes “concluded” and disappears from the map; it stays in the profile of the person who made it."
+          "r": "It depends on the category, from 4 hours to 3 days (shown in the category list). Then it becomes “concluded” and disappears from the map; it stays in the author’s profile."
         },
         "voto": {
-          "d": "What happens if I answer Yes or No to “Is it still happening?”",
-          "r": "A Yes extends the expiry (once per category duration, not repeatedly) and resets earlier No answers. When three different users answer No, the report closes. If you are the author, your No closes it immediately: we ask for confirmation because it cannot be undone, and only an administrator can reopen it."
+          "d": "What do Yes and No do in “Is it still happening?”",
+          "r": "A Yes extends the expiry (once per category duration) and resets earlier No answers. Three No answers from different users close the report. The author’s No closes it immediately, after confirmation; only an administrator can reopen it."
         },
         "cambiareVoto": {
           "d": "Can I change my answer?",
-          "r": "Yes, whenever you like. In the details you see what you already answered (“You answered: Yes”) and the button you chose is highlighted. After you answer the panel closes and a short message confirms what happened."
+          "r": "Yes. In the details you can see the answer you already gave, highlighted."
         }
       },
       "categorie": {
         "titolo": "Categories",
         "quali": {
           "d": "Which categories can I report?",
-          "r": "These are the categories available right now, grouped by severity. The list is the real one from the application: if we add or remove some, it updates here. Next to each one you can see how long a report stays visible."
+          "r": "The active categories, grouped by severity. The list is updated in real time and shows how long each report stays visible."
         }
       },
       "account": {
         "titolo": "Account and profile",
         "registrazione": {
           "d": "How do I sign up?",
-          "r": "From the login page choose “Sign up” and enter your first name, last name, email and a password. Once signed in, opening the home page takes you straight to the map."
+          "r": "From “Sign in” choose “Sign up” and enter first name, last name, email and password."
         },
         "profilo": {
-          "d": "What is in my profile?",
-          "r": "In your profile (the person icon at the top) you can see and edit your first and last name, change your password, manage your reports and choose the map theme. You can also sign out from there."
+          "d": "What can I do in my profile?",
+          "r": "Edit your name, change your password, manage your reports and set your preferences (language and themes)."
         },
         "fiducia": {
-          "d": "What are “verified identity” and trust score?",
-          "r": "In your profile you can see whether your identity has been verified. The trust score is an internal value of the service: today it does not limit what you can do in the app."
+          "d": "What are verified identity and trust score?",
+          "r": "Verified identity is shown in your profile. The trust score is an internal value and does not limit use of the app."
         }
       },
       "privacy": {
         "titolo": "Privacy and moderation",
         "dati": {
           "d": "What do other users see?",
-          "r": "For a report they see category, description, position and time and, only if they are registered and the report is not anonymous, the author’s short name. We never show emails or passwords. Your location is used to show you what is around you."
+          "r": "Category, description, position and time of the report and, only for registered users and if not anonymous, the first name and initial of the surname. Emails and passwords are never shown."
         },
         "moderazione": {
           "d": "Who checks the reports?",
-          "r": "Reports are moderated by the people running the service, who can suspend, remove or reactivate a report and keep track of who did what. False or off-topic reports can be removed and accounts that abuse the service disabled."
+          "r": "Administrators, who can suspend, remove or reactivate reports and disable accounts that abuse the service. Every action is recorded."
         }
       }
     }

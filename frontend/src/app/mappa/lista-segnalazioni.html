@@ -2,6 +2,7 @@
   *transloco="let t"
   class="absolute inset-x-0 bottom-[var(--altezza-navbar-mappa)] top-0 z-[1050] overflow-y-auto bg-white text-neutral-900 dark:bg-ink dark:text-paper"
   aria-labelledby="titolo-lista-segnalazioni"
+  (scroll)="alScroll($event)"
 >
   <div class="mx-auto max-w-2xl px-4 pb-6 pt-5 sm:px-6 lg:pb-28">
     <h2 id="titolo-lista-segnalazioni" class="font-display text-xl font-semibold">
@@ -70,34 +71,42 @@
         }
       </div>
 
-      @if (categorie().length > 1) {
-        <div
-          role="group"
-          [attr.aria-label]="t('mappa.lista.categoria')"
-          class="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden"
-        >
-          <button
-            type="button"
-            class="chip-filtro"
-            [attr.aria-pressed]="categoriaFiltro() === null"
-            (click)="scegliCategoria(null)"
+      <!-- Categorie: menu a tendina (nativo, con il selettore del telefono) invece di una fila di
+           chip, che con molte categorie diventava lunga da scorrere. -->
+      @if (categorie().length > 1 || categoriaFiltro() !== null) {
+        <label class="relative block">
+          <span class="sr-only">{{ t('mappa.lista.categoria') }}</span>
+          <select
+            class="block h-10 w-full appearance-none rounded-lg border border-neutral-300 bg-white pr-10 pl-3 text-sm font-medium text-neutral-800 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:text-paper"
+            [ngClass]="{ 'border-allerta! dark:border-allerta!': categoriaFiltro() !== null }"
+            (change)="scegliCategoria($any($event.target).value)"
           >
-            {{ t('mappa.lista.tutte') }}
-            <span class="tabular-nums opacity-70">{{ totale() }}</span>
-          </button>
-          @for (categoria of categorie(); track categoria.id) {
-            <button
-              type="button"
-              class="chip-filtro"
-              [attr.aria-pressed]="categoriaFiltro() === categoria.id"
-              (click)="scegliCategoria(categoria.id)"
-            >
-              <svg [lucideIcon]="icona(categoria.id)" class="h-4 w-4" aria-hidden="true"></svg>
-              {{ categoria.nome }}
-              <span class="tabular-nums opacity-70">{{ categoria.numero }}</span>
-            </button>
-          }
-        </div>
+            <option value="" [selected]="categoriaFiltro() === null">
+              {{ t('mappa.lista.tutteCategorie', { numero: totale() }) }}
+            </option>
+            @for (gruppo of gruppiCategorie(); track gruppo.gravita) {
+              <optgroup [label]="t(chiaveGravita(gruppo.gravita))">
+                @for (categoria of gruppo.categorie; track categoria.id) {
+                  <option [value]="categoria.id" [selected]="categoriaFiltro() === categoria.id">
+                    {{ categoria.nome }} ({{ categoria.numero }})
+                  </option>
+                }
+              </optgroup>
+            }
+          </select>
+          <svg
+            viewBox="0 0 24 24"
+            class="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-neutral-500 dark:text-muted"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </label>
       }
     </div>
 
@@ -162,6 +171,28 @@
           </li>
         }
       </ul>
+      @if (ciSonoAltre()) {
+        <!-- Le successive arrivano da sole scorrendo; il pulsante serve dopo un errore e a chi
+             non scorre (es. tastiera). -->
+        <div class="py-4 text-center">
+          <button
+            type="button"
+            class="h-10 rounded-md border border-neutral-300 px-4 text-sm font-medium hover:bg-neutral-100 disabled:opacity-60 dark:border-line dark:hover:bg-panel"
+            [disabled]="caricamentoAltre()"
+            (click)="caricaAltre()"
+          >
+            {{
+              t(
+                erroreAltre()
+                  ? 'mappa.lista.riprova'
+                  : caricamentoAltre()
+                    ? 'mappa.lista.caricamento'
+                    : 'mappa.lista.caricaAltre'
+              )
+            }}
+          </button>
+        </div>
+      }
     }
   </div>
 </section>

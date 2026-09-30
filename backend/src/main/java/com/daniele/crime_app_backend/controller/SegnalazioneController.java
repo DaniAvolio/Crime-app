@@ -1,6 +1,9 @@
 package com.daniele.crime_app_backend.controller;
 
+import com.daniele.crime_app_backend.dto.ConteggiMieSegnalazioniDto;
+import com.daniele.crime_app_backend.dto.ConteggioCategoriaDto;
 import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
+import com.daniele.crime_app_backend.dto.GruppoSegnalazioniMie;
 import com.daniele.crime_app_backend.dto.PaginaDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneRequest;
@@ -41,11 +44,46 @@ public class SegnalazioneController {
         return segnalazioneService.trovaPerGestione(filtri, pagina, dimensione, ordina);
     }
 
+    /** Profilo: le mie segnalazioni di una scheda, a pagine (richiede login, vedi SecurityConfig). */
+    @GetMapping("/mie")
+    public PaginaDto<SegnalazioneDto> mie(@RequestParam GruppoSegnalazioniMie gruppo,
+                                          @RequestParam(defaultValue = "0") int pagina,
+                                          @RequestParam(defaultValue = "20") int dimensione) {
+        return segnalazioneService.trovaMie(gruppo, pagina, dimensione);
+    }
+
+    @GetMapping("/mie/conteggi")
+    public ConteggiMieSegnalazioniDto conteggiMie() {
+        return segnalazioneService.conteggiMie();
+    }
+
     @GetMapping("/vicine")
     public List<SegnalazioneDto> trovaVicine(@RequestParam double lat,
                                               @RequestParam double lng,
                                               @RequestParam double raggioMetri) {
         return segnalazioneService.trovaVicine(lat, lng, raggioMetri);
+    }
+
+    /** Vista lista (pubblica): pagine dalla più vicina, filtri opzionali per gravità e categoria. */
+    @GetMapping("/vicine/lista")
+    public PaginaDto<SegnalazioneDto> vicinePerDistanza(@RequestParam double lat,
+                                                        @RequestParam double lng,
+                                                        @RequestParam double raggioMetri,
+                                                        @RequestParam(required = false) Integer gravita,
+                                                        @RequestParam(required = false) Long categoriaId,
+                                                        @RequestParam(defaultValue = "0") int pagina,
+                                                        @RequestParam(defaultValue = "20") int dimensione) {
+        return segnalazioneService.trovaVicinePerDistanza(lat, lng, raggioMetri, gravita, categoriaId,
+                pagina, dimensione);
+    }
+
+    /** Vista lista (pubblica): segnalazioni nel raggio per categoria, per i chip dei filtri. */
+    @GetMapping("/vicine/conteggi")
+    public List<ConteggioCategoriaDto> conteggiVicine(@RequestParam double lat,
+                                                      @RequestParam double lng,
+                                                      @RequestParam double raggioMetri,
+                                                      @RequestParam(required = false) Integer gravita) {
+        return segnalazioneService.conteggiVicinePerCategoria(lat, lng, raggioMetri, gravita);
     }
 
     @GetMapping("/{id}")

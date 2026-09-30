@@ -5,10 +5,10 @@
   <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
     <header>
       <h1 class="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-        {{ t('faq.titolo') }}
+        {{ t('guida.titolo') }}
       </h1>
       <p class="mt-3 max-w-xl text-base leading-relaxed text-neutral-600 dark:text-muted">
-        {{ t('faq.sottotitolo') }}
+        {{ t('guida.sottotitolo') }}
       </p>
 
       <div class="relative mt-6">
@@ -22,8 +22,8 @@
           type="search"
           autocomplete="off"
           class="block h-11 w-full rounded-md border border-neutral-300 bg-white pr-3 pl-9 text-[15px] placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:placeholder:text-muted"
-          [placeholder]="t('faq.cerca')"
-          [attr.aria-label]="t('faq.cerca')"
+          [placeholder]="t('guida.cerca')"
+          [attr.aria-label]="t('guida.cerca')"
           [value]="ricerca()"
           (input)="cerca(campoRicerca.value)"
         />
@@ -32,12 +32,12 @@
 
     <div class="mt-8 flex flex-col gap-8">
       @for (sezione of sezioni(); track sezione.chiave) {
-        <section [attr.aria-labelledby]="'faq-' + sezione.chiave">
+        <section [attr.aria-labelledby]="'guida-' + sezione.chiave">
           <h2
-            [id]="'faq-' + sezione.chiave"
+            [id]="'guida-' + sezione.chiave"
             class="font-display text-lg font-semibold text-neutral-900 dark:text-paper"
           >
-            {{ t('faq.sezioni.' + sezione.chiave + '.titolo') }}
+            {{ t('guida.sezioni.' + sezione.chiave + '.titolo') }}
           </h2>
 
           <div
@@ -48,7 +48,7 @@
                 <summary
                   class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-left font-medium marker:content-none hover:bg-neutral-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600 sm:px-5 dark:hover:bg-ink [&::-webkit-details-marker]:hidden"
                 >
-                  <span>{{ t('faq.sezioni.' + sezione.chiave + '.' + domanda + '.d') }}</span>
+                  <span>{{ t('guida.sezioni.' + sezione.chiave + '.' + domanda + '.d') }}</span>
                   <svg
                     viewBox="0 0 24 24"
                     class="h-5 w-5 shrink-0 text-neutral-400 transition-transform group-open:rotate-180 dark:text-muted"
@@ -67,14 +67,14 @@
                   <p
                     class="text-[15px] leading-relaxed whitespace-pre-line text-neutral-700 dark:text-neutral-300"
                   >
-                    {{ t('faq.sezioni.' + sezione.chiave + '.' + domanda + '.r') }}
+                    {{ t('guida.sezioni.' + sezione.chiave + '.' + domanda + '.r') }}
                   </p>
 
                   @if (domanda === categoriaDomanda) {
                     <!-- Elenco letto dal database: resta allineato a ciò che gestisce l'admin. -->
                     @if (gruppiCategorie().length === 0) {
                       <p class="mt-4 text-sm text-neutral-500 dark:text-muted">
-                        {{ t('faq.categorieNonDisponibili') }}
+                        {{ t('guida.categorieNonDisponibili') }}
                       </p>
                     }
                     @for (gruppo of gruppiCategorie(); track gruppo.gravita) {
@@ -85,10 +85,10 @@
                             [ngClass]="classePallinoGravita(gruppo.gravita)"
                             aria-hidden="true"
                           ></span>
-                          {{ t('faq.gravita.' + gruppo.gravita + '.titolo') }}
+                          {{ t('guida.gravita.' + gruppo.gravita + '.titolo') }}
                         </h3>
                         <p class="mt-0.5 text-sm text-neutral-500 dark:text-muted">
-                          {{ t('faq.gravita.' + gruppo.gravita + '.descrizione') }}
+                          {{ t('guida.gravita.' + gruppo.gravita + '.descrizione') }}
                         </p>
                         <ul class="mt-2 grid gap-2 sm:grid-cols-2">
                           @for (categoria of gruppo.categorie; track categoria.id) {
@@ -108,9 +108,9 @@
                                   </p>
                                 }
                                 <p class="mt-1 text-xs text-neutral-400 dark:text-muted">
-                                  {{ t('faq.visibileFino') }}
+                                  {{ t('guida.visibileFino') }}
                                   {{
-                                    t('faq.durata.' + categoria.durata.chiave, {
+                                    t('guida.durata.' + categoria.durata.chiave, {
                                       n: categoria.durata.n,
                                     })
                                   }}
@@ -131,11 +131,9 @@
         <p
           class="rounded-xl border border-neutral-200 bg-white px-5 py-8 text-center text-neutral-500 dark:border-line dark:bg-panel dark:text-muted"
         >
-          {{ t('faq.nessunRisultato') }}
+          {{ t('guida.nessunRisultato') }}
         </p>
       }
     </div>
-
-    <p class="mt-10 text-sm text-neutral-500 dark:text-muted">{{ t('faq.chiusura') }}</p>
   </div>
 </main>

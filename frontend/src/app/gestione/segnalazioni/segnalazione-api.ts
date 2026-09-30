@@ -46,6 +46,25 @@ export interface FiltriGestioneSegnalazioni {
   scadeAl: string;
 }
 
+/** Filtri della vista lista: null = nessun filtro. */
+export interface FiltriVicine {
+  gravita: number | null;
+  categoriaId: number | null;
+}
+
+export interface ConteggioCategoria {
+  categoriaId: number;
+  numero: number;
+}
+
+/** Schede di "Le mie segnalazioni": ATTIVE = stato ATTIVA, CONCLUSE = tutte le altre. */
+export type GruppoMie = 'ATTIVE' | 'CONCLUSE';
+
+export interface ConteggiMie {
+  attive: number;
+  concluse: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SegnalazioneApi {
   private readonly http = inject(HttpClient);
@@ -70,6 +89,58 @@ export class SegnalazioneApi {
     return this.http.get<Pagina<Segnalazione>>(`${this.baseUrl}/gestione`, {
       params: parametriPagina(richiesta),
     });
+  }
+
+  /** Vista lista: una pagina di segnalazioni attive nel raggio, dalla più vicina (ordinate dal DB). */
+  vicinePerDistanza(
+    lat: number,
+    lng: number,
+    raggioMetri: number,
+    filtri: FiltriVicine,
+    pagina: number,
+    dimensione: number,
+  ): Observable<Pagina<Segnalazione>> {
+    let params = new HttpParams()
+      .set('lat', lat)
+      .set('lng', lng)
+      .set('raggioMetri', raggioMetri)
+      .set('pagina', pagina)
+      .set('dimensione', dimensione);
+    if (filtri.gravita !== null) {
+      params = params.set('gravita', filtri.gravita);
+    }
+    if (filtri.categoriaId !== null) {
+      params = params.set('categoriaId', filtri.categoriaId);
+    }
+    return this.http.get<Pagina<Segnalazione>>(`${this.baseUrl}/vicine/lista`, { params });
+  }
+
+  /** Vista lista: quante segnalazioni attive per categoria nel raggio (chip dei filtri). */
+  conteggiVicine(
+    lat: number,
+    lng: number,
+    raggioMetri: number,
+    gravita: number | null,
+  ): Observable<ConteggioCategoria[]> {
+    let params = new HttpParams().set('lat', lat).set('lng', lng).set('raggioMetri', raggioMetri);
+    if (gravita !== null) {
+      params = params.set('gravita', gravita);
+    }
+    return this.http.get<ConteggioCategoria[]>(`${this.baseUrl}/vicine/conteggi`, { params });
+  }
+
+  /** Profilo: le mie segnalazioni di una scheda, a pagine e dalla più recente. */
+  mie(gruppo: GruppoMie, pagina: number, dimensione: number): Observable<Pagina<Segnalazione>> {
+    const params = new HttpParams()
+      .set('gruppo', gruppo)
+      .set('pagina', pagina)
+      .set('dimensione', dimensione);
+    return this.http.get<Pagina<Segnalazione>>(`${this.baseUrl}/mie`, { params });
+  }
+
+  /** Quante ne ho nelle due schede del profilo, senza caricarle. */
+  conteggiMie(): Observable<ConteggiMie> {
+    return this.http.get<ConteggiMie>(`${this.baseUrl}/mie/conteggi`);
   }
 
   /** Segnalazioni ATTIVA entro `raggioMetri` dal punto indicato (query PostGIS lato backend). */
