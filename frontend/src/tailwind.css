@@ -77,6 +77,42 @@
     @apply flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-neutral-300 px-3.5 text-sm font-medium whitespace-nowrap text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 aria-pressed:border-allerta aria-pressed:bg-allerta aria-pressed:text-white dark:border-line dark:text-paper dark:hover:bg-panel dark:aria-pressed:border-allerta dark:aria-pressed:bg-allerta;
   }
 
+  /*
+   * Tabelle di gestione: la tabella scorre dentro un riquadro alto al massimo quanto lo schermo,
+   * così la barra di scorrimento orizzontale è sempre visibile (altrimenti finisce sotto l'ultima
+   * riga, fuori vista). Intestazione e riga filtri restano ferme in alto; la colonna azioni
+   * (l'ultima) resta ferma a destra. Le righe a tutta larghezza (colspan) non sono bloccate.
+   * Senza overscroll-contain: arrivati in fondo, la rotella continua a scorrere la pagina.
+   */
+  .contenitore-tabella {
+    @apply max-h-[calc(100dvh-8rem)] overflow-auto;
+  }
+
+  .contenitore-tabella thead {
+    @apply sticky top-0 z-20 bg-white dark:bg-ink;
+  }
+
+  /* Con border-collapse il bordo inferiore dell'intestazione scorrerebbe via: lo disegna un'ombra. */
+  .contenitore-tabella thead tr:last-child > * {
+    box-shadow: inset 0 -1px 0 var(--color-gray-200);
+  }
+
+  .dark .contenitore-tabella thead tr:last-child > * {
+    box-shadow: inset 0 -1px 0 var(--color-line);
+  }
+
+  /* Solo da sm in su: sul telefono la colonna azioni coprirebbe quasi tutta la larghezza. */
+  .contenitore-tabella :is(th, td):last-child:not([colspan]) {
+    @apply sm:sticky sm:right-0 sm:z-10 sm:bg-white sm:pl-3 sm:dark:bg-ink;
+    @media (min-width: 40rem) {
+      box-shadow: -8px 0 8px -8px rgb(0 0 0 / 0.18);
+    }
+  }
+
+  .contenitore-tabella thead :is(th, td):last-child {
+    @apply sm:z-30;
+  }
+
   /* Tabelle di gestione (shared/tabella): campi della riga filtri e pulsanti di paginazione. */
   .filtro-tabella {
     @apply block w-full min-w-0 rounded border border-gray-300 bg-white px-2 py-1 text-xs font-normal text-gray-900 placeholder:text-gray-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-panel dark:text-paper dark:placeholder:text-muted;

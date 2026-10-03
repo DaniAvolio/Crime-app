@@ -17,5 +17,6 @@ public record FiltriSegnalazioni(
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate creataDal,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate creataAl,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate scadeDal,
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate scadeAl
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate scadeAl,
+        FiltroRevisione revisione
 ) {}

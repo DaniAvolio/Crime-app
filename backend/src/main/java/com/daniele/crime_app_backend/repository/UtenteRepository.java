@@ -33,4 +33,10 @@ public interface UtenteRepository extends JpaRepository<Utente, Long>, JpaSpecif
     @Modifying
     @Query("update Utente u set u.segnalazioniRimosse = u.segnalazioniRimosse + 1 where u.id = :id")
     void incrementaSegnalazioniRimosse(@Param("id") Long id);
+
+    /** Somma delta alla fiducia restando tra 0 e 100. */
+    @Modifying
+    @Query(value = "UPDATE utente SET punteggio_fiducia = LEAST(100, GREATEST(0, punteggio_fiducia + :delta))"
+            + " WHERE id IN (:ids)", nativeQuery = true)
+    void modificaFiducia(@Param("ids") java.util.Collection<Long> ids, @Param("delta") int delta);
 }

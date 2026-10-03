@@ -276,6 +276,30 @@
           }
         </p>
       </div>
+
+      @if (puoSegnalareProblema()) {
+        @if (abusoAperto()) {
+          <app-segnala-abuso
+            [segnalazioneId]="segnalazione.id"
+            (inviato)="abusoInviato(segnalazione.id)"
+            (annulla)="abusoAperto.set(false)"
+          />
+        } @else if (segnalazione.mioAbuso) {
+          <p class="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-muted">
+            <svg lucideIcon="flag" class="h-3.5 w-3.5" aria-hidden="true"></svg>
+            {{ t('mappa.abuso.giaSegnalato') }}
+          </p>
+        } @else {
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded text-xs text-neutral-500 underline-offset-2 hover:text-neutral-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:text-muted dark:hover:text-paper"
+            (click)="apriSegnalaAbuso()"
+          >
+            <svg lucideIcon="flag" class="h-3.5 w-3.5" aria-hidden="true"></svg>
+            {{ t('mappa.abuso.apri') }}
+          </button>
+        }
+      }
     </section>
   }
 

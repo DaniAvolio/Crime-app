@@ -43,6 +43,14 @@ public final class SpecificheGestione {
             }
             aggiungiIntervalloGiorni(condizioni, cb, root.get("dataCreazione"), filtri.creataDal(), filtri.creataAl());
             aggiungiIntervalloGiorni(condizioni, cb, root.get("dataScadenza"), filtri.scadeDal(), filtri.scadeAl());
+            if (filtri.revisione() != null) {
+                condizioni.add(switch (filtri.revisione()) {
+                    case DA_RIVEDERE -> cb.isTrue(root.get("daRivedere"));
+                    case CON_ABUSI -> cb.greaterThan(root.get("numeroAbusi"), 0);
+                    case AUTOMATICA -> cb.and(cb.isTrue(root.get("daRivedere")),
+                            cb.isNotNull(root.get("revisioneAutomatica")));
+                });
+            }
             return cb.and(condizioni.toArray(Predicate[]::new));
         };
     }

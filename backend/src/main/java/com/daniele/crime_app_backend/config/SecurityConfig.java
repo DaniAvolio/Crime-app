@@ -63,14 +63,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/registrazione").permitAll()
                         // Prima delle regole GET pubbliche: "/api/segnalazioni/*" non deve aprirle.
                         .requestMatchers(HttpMethod.GET,
-                                "/api/segnalazioni/gestione", "/api/categorie/gestione",
+                                "/api/segnalazioni/gestione", "/api/segnalazioni/gestione/da-rivedere",
+                                "/api/categorie/gestione",
                                 "/api/segnalazioni/*/abusi", "/api/segnalazioni/*/eventi-moderazione").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/segnalazioni/mie", "/api/segnalazioni/mie/conteggi")
                         .authenticated()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/segnalazioni", "/api/segnalazioni/*", "/api/segnalazioni/vicine/*",
                                 "/api/categorie/**").permitAll()
-                        .requestMatchers(HttpMethod.PATCH, "/api/segnalazioni/*/riattiva").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/segnalazioni/*/riattiva",
+                                "/api/segnalazioni/*/abusi/esito").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/segnalazioni/*").hasRole("ADMIN")
                         .requestMatchers("/api/categorie/**").hasRole("ADMIN")
                         .requestMatchers("/api/utenti/me/**").authenticated()

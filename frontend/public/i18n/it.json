@@ -106,7 +106,7 @@
       "erroreCategoria": "Scegli una categoria.",
       "descrizione": "Descrizione",
       "descrizionePlaceholder": "Cosa hai visto, e dove esattamente?",
-      "erroreDescrizione": "Scrivi una breve descrizione.",
+      "erroreDescrizione": "Scrivi una descrizione di almeno 10 caratteri.",
       "anonima": "Pubblica in forma anonima",
       "anonimaAiuto": "Il tuo nome non sarà mostrato agli altri utenti.",
       "pubblica": "Pubblica segnalazione",
@@ -129,7 +129,17 @@
       },
       "cercaCategoria": "Cerca categoria…",
       "categoriaNessunRisultato": "Nessuna categoria trovata.",
-      "cambiaCategoria": "Cambia"
+      "cambiaCategoria": "Cambia",
+      "descrizioneAiuto": "Descrivi cosa succede, non chi è: niente nomi, targhe, telefoni o origini.",
+      "violazioni": {
+        "TROPPO_CORTA": "Descrivi meglio cosa succede: servono almeno 10 caratteri.",
+        "DATI_PERSONALI": "Togli i dati personali: «{{ frammento }}». Non pubblicare telefoni, email o targhe.",
+        "LINK": "Togli il link «{{ frammento }}»: non si possono pubblicare indirizzi web.",
+        "LINGUAGGIO_OFFENSIVO": "Togli il linguaggio offensivo: «{{ frammento }}».",
+        "DISCRIMINAZIONE": "Descrivi cosa fanno le persone, non la loro origine o religione: togli «{{ frammento }}».",
+        "MAIUSCOLE": "Evita di scrivere tutto in maiuscolo.",
+        "RIPETIZIONI": "Evita caratteri o parole ripetuti."
+      }
     },
     "lista": {
       "titolo": "Segnalazioni in zona",
@@ -152,7 +162,33 @@
     },
     "crediti": "Crediti della mappa",
     "cluster": "{{ numero }} segnalazioni: avvicina per vederle",
-    "clusterConGravi": "{{ numero }} segnalazioni, di cui {{ gravi }} gravi: avvicina per vederle"
+    "clusterConGravi": "{{ numero }} segnalazioni, di cui {{ gravi }} gravi: avvicina per vederle",
+    "abuso": {
+      "apri": "Segnala un problema",
+      "titolo": "Segnala un problema con questa segnalazione",
+      "domanda": "Qual è il problema?",
+      "motivi": {
+        "FALSA": "È falsa o non è più vera",
+        "OFFENSIVA": "È offensiva o discriminatoria",
+        "DATI_PERSONALI": "Contiene dati personali",
+        "SPAM": "È spam o pubblicità",
+        "CATEGORIA_ERRATA": "La categoria è sbagliata",
+        "ALTRO": "Altro"
+      },
+      "erroreMotivo": "Scegli un motivo.",
+      "nota": "Dettagli",
+      "facoltativa": "(facoltativo)",
+      "notaPlaceholder": "Aggiungi ciò che può aiutare chi controlla.",
+      "annulla": "Annulla",
+      "invia": "Invia",
+      "invio": "Invio…",
+      "inviato": "Grazie: un amministratore controllerà la segnalazione.",
+      "giaSegnalato": "Hai segnalato un problema: un amministratore la controllerà.",
+      "errori": {
+        "generico": "Non riusciamo a inviare la segnalazione. Riprova.",
+        "nonDisponibile": "Non è possibile: hai già segnalato un problema oppure la segnalazione non è più attiva."
+      }
+    }
   },
   "condivisi": {
     "dialogo": {
@@ -367,6 +403,14 @@
           "d": "Posso segnalare in forma anonima?",
           "r": "Sì. Con «Pubblica in forma anonima» il tuo nome non è mostrato agli altri utenti; resta però associato al tuo account per la moderazione. Nelle altre segnalazioni gli utenti registrati vedono nome e iniziale del cognome (es. «Mario R.»), mai l’email."
         },
+        "scrivere": {
+          "d": "Cosa posso scrivere nella descrizione?",
+          "r": "Descrivi cosa succede e dove, non chi è coinvolto. Prima della pubblicazione vengono bloccati dati personali (telefoni, email, targhe), link, insulti e riferimenti a origine o religione delle persone: ti indichiamo cosa correggere. Un testo tutto in maiuscolo o con ripetizioni viene pubblicato ma controllato da un amministratore."
+        },
+        "problema": {
+          "d": "Cosa faccio se una segnalazione è falsa o offensiva?",
+          "r": "Nel dettaglio della segnalazione tocca «Segnala un problema» e scegli il motivo. Puoi farlo una volta per segnalazione, non sulle tue. Un amministratore la controlla e decide se rimuoverla."
+        },
         "rimuovere": {
           "d": "Posso modificare o rimuovere una segnalazione?",
           "r": "Puoi rimuoverla dal profilo. Non è modificabile: in caso di errore, rimuovila e creane una nuova."
@@ -421,7 +465,7 @@
         },
         "moderazione": {
           "d": "Chi controlla le segnalazioni?",
-          "r": "Gli amministratori, che possono sospendere, rimuovere o riattivare le segnalazioni e disattivare gli account che ne abusano. Ogni intervento viene registrato."
+          "r": "Gli amministratori, che rivedono le segnalazioni con problemi segnalati e possono rimuoverle o riattivarle. Quando le segnalazioni di problemi raggiungono una soglia, la segnalazione viene sospesa in attesa di controllo; chi segnala problemi poi rivelatisi infondati conta meno nelle volte successive, e chi pubblica contenuti rimossi perde affidabilità. Ogni intervento viene registrato."
         }
       }
     }

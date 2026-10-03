@@ -71,7 +71,7 @@ public class ConfermaSegnalazioneService {
                 confermaSegnalazioneRepository.findBySegnalazioneIdAndUtenteId(segnalazioneId, utente.getId());
         if (esistente.isPresent() && esistente.get().isAncoraInAtto() == ancoraInAtto
                 && (ancoraInAtto || esistente.get().getDataVoto().isAfter(inizioConteggio))) {
-            return segnalazioneMapper.toDto(segnalazione, ancoraInAtto);
+            return segnalazioneMapper.toDto(segnalazione, ancoraInAtto, null);
         }
 
         ConfermaSegnalazione conferma = esistente.orElseGet(() -> ConfermaSegnalazione.builder()
@@ -113,7 +113,7 @@ public class ConfermaSegnalazioneService {
             }
         }
 
-        return segnalazioneMapper.toDto(segnalazione, ancoraInAtto);
+        return segnalazioneMapper.toDto(segnalazione, ancoraInAtto, null);
     }
 
     /** Primo "sì" dell'utente, o il precedente risale a più di una durata della categoria fa. */

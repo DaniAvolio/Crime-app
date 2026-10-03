@@ -45,8 +45,9 @@ logging:
 
 crimeapp:
   moderazione:
-    # Numero di segnalazioni di abuso oltre il quale una Segnalazione viene sospesa automaticamente.
-    soglia-abusi: 5
+    # Somma dei pesi degli abusi in attesa a cui una Segnalazione viene sospesa automaticamente.
+    # Ogni abuso pesa la fiducia del segnalante / 100 (minimo 0.25): 4 utenti con fiducia piena.
+    soglia-peso-abusi: 4.0
   segnalazioni:
     # Intervallo (ms) del job che porta in SCADUTA le segnalazioni ATTIVA con data di scadenza passata.
     scadenza-job-rate-ms: 300000

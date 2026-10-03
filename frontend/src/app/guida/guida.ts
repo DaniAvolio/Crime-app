@@ -18,7 +18,10 @@ import { LinguaService } from '../shared/lingua';
 const SEZIONI = [
   { chiave: 'cosa', domande: ['aCosaServe', 'emergenze'] },
   { chiave: 'mappa', domande: ['simboli', 'alone', 'listaRaggio', 'posizione', 'tema'] },
-  { chiave: 'segnalare', domande: ['come', 'account', 'anonima', 'rimuovere'] },
+  {
+    chiave: 'segnalare',
+    domande: ['come', 'account', 'anonima', 'scrivere', 'problema', 'rimuovere'],
+  },
   { chiave: 'durata', domande: ['scadenza', 'voto', 'cambiareVoto'] },
   { chiave: 'categorie', domande: ['quali'] },
   { chiave: 'account', domande: ['registrazione', 'profilo', 'fiducia'] },

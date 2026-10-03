@@ -58,6 +58,7 @@ import { NavbarMappa, VistaMappa } from './navbar-mappa';
 import { NuovaSegnalazione } from './nuova-segnalazione';
 import { SceltaPosizione } from './scelta-posizione';
 import { Soccorsi } from './soccorsi';
+import { SegnalaAbuso } from './segnala-abuso';
 
 // Le icone di default di Leaflet puntano a percorsi relativi al CSS che il
 // bundler di Angular non risolve: le ripuntiamo verso gli asset statici
@@ -434,6 +435,7 @@ function aggiungiLuoghiUtili(sfondo: MaplibreGL, scuro: () => boolean): void {
     SceltaPosizione,
     ListaSegnalazioni,
     NomeCategoriaPipe,
+    SegnalaAbuso,
   ],
   templateUrl: './mappa.html',
   host: { '(document:keydown.escape)': 'gestisciEscape()' },
@@ -465,6 +467,9 @@ export class Mappa {
   protected readonly invioConferma = signal(false);
   /** Errore del voto, mostrato nel pannello (che resta aperto per riprovare). */
   protected readonly esitoConferma = signal<'errore' | null>(null);
+
+  /** Form "Segnala un problema" aperto nel dettaglio. */
+  protected readonly abusoAperto = signal(false);
 
   /** Solo mobile: il pannello di dettaglio si apre compatto e si espande su richiesta. */
   protected readonly pannelloEspanso = signal(false);
@@ -603,10 +608,12 @@ export class Mappa {
       }
     });
 
-    // Aprendo un'altra segnalazione, l'esito del voto precedente non la riguarda più.
+    // Aprendo un'altra segnalazione, l'esito del voto precedente e il form "Segnala un problema"
+    // non la riguardano più.
     effect(() => {
       this.idSelezionata();
       this.esitoConferma.set(null);
+      this.abusoAperto.set(false);
     });
 
     // Aggiorna i marker in modo incrementale: si creano solo i nuovi, si rimuovono quelli spariti
@@ -1074,6 +1081,37 @@ export class Mappa {
           }
         },
       });
+  }
+
+  /**
+   * "Segnala un problema": solo sulle segnalazioni attive e non proprie (il backend lo verifica
+   * comunque). Agli ospiti il link si mostra, e porta al login.
+   */
+  protected readonly puoSegnalareProblema = computed(() => {
+    const segnalazione = this.selezionata();
+    if (!segnalazione || segnalazione.stato !== StatoSegnalazione.ATTIVA) {
+      return false;
+    }
+    const io = this.auth.utente()?.id;
+    return io == null || segnalazione.autoreId !== io;
+  });
+
+  protected apriSegnalaAbuso(): void {
+    if (!this.verificaLogin()) {
+      return;
+    }
+    // Su mobile il pannello compatto si espande, così il form si vede per intero.
+    this.pannelloEspanso.set(true);
+    this.abusoAperto.set(true);
+  }
+
+  /** Inviato: la segnalazione resta aperta e mostra "hai segnalato un problema". */
+  protected abusoInviato(id: number): void {
+    const segna = (s: Segnalazione): Segnalazione => (s.id === id ? { ...s, mioAbuso: true } : s);
+    this.segnalazioni.update((elenco) => elenco.map(segna));
+    this.selezionata.update((s) => (s ? segna(s) : s));
+    this.abusoAperto.set(false);
+    this.toast.successo(this.transloco.translate('mappa.abuso.inviato'));
   }
 
   /**

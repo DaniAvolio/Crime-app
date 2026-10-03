@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Pagina } from '../../models/pagina.model';
 import { Segnalazione, StatoSegnalazione } from '../../models/segnalazione.model';
+import { EsitoAbuso, MotivoAbuso, SegnalazioneAbuso } from '../../models/segnalazione-abuso.model';
 import { RichiestaPagina, parametriPagina } from '../../shared/tabella/tabella';
 
 /** L'autore è l'utente autenticato: il backend lo ricava dal token. */
@@ -18,6 +19,18 @@ export interface SegnalazioneRequest {
 /** Payload delle transizioni di stato: l'attore è l'utente autenticato (autore o admin). */
 export interface SegnalazioneTransizioneRequest {
   motivazione: string;
+}
+
+/** "Segnala un problema": il segnalante è l'utente autenticato (dal token). */
+export interface SegnalazioneAbusoRequest {
+  motivo: MotivoAbuso;
+  nota: string | null;
+}
+
+/** Decisione dell'admin su una segnalazione "da rivedere". */
+export interface EsitoRevisioneRequest {
+  esito: EsitoAbuso;
+  motivazione: string | null;
 }
 
 /** Risposta a "è ancora in atto?": un voto per utente, modificabile. */
@@ -43,6 +56,8 @@ export interface FiltriGestioneSegnalazioni {
   creataAl: string;
   scadeDal: string;
   scadeAl: string;
+  /** DA_RIVEDERE, CON_ABUSI o AUTOMATICA (vedi FiltroRevisione nel backend). */
+  revisione: string;
 }
 
 /** Filtri della vista lista: null = nessun filtro. */
@@ -163,6 +178,29 @@ export class SegnalazioneApi {
   /** Restituisce la segnalazione aggiornata: nuova scadenza, oppure stato SCADUTA se chiusa dai voti. */
   conferma(id: number, payload: ConfermaSegnalazioneRequest): Observable<Segnalazione> {
     return this.http.post<Segnalazione>(`${this.baseUrl}/${id}/conferme`, payload);
+  }
+
+  /** "Segnala un problema": una volta per utente, solo su segnalazioni attive altrui. */
+  segnalaAbuso(id: number, payload: SegnalazioneAbusoRequest): Observable<SegnalazioneAbuso> {
+    return this.http.post<SegnalazioneAbuso>(`${this.baseUrl}/${id}/abusi`, payload);
+  }
+
+  /** Abusi di una segnalazione, dal più recente (solo admin). */
+  abusi(id: number): Observable<SegnalazioneAbuso[]> {
+    return this.http.get<SegnalazioneAbuso[]>(`${this.baseUrl}/${id}/abusi`);
+  }
+
+  /**
+   * Decisione dell'admin: FONDATO rimuove la segnalazione (se ancora attiva o sospesa),
+   * INFONDATO la lascia o la riattiva. Aggiorna la fiducia di segnalanti e autore.
+   */
+  decidiRevisione(id: number, payload: EsitoRevisioneRequest): Observable<Segnalazione> {
+    return this.http.patch<Segnalazione>(`${this.baseUrl}/${id}/abusi/esito`, payload);
+  }
+
+  /** Quante segnalazioni sono in coda "da rivedere" (solo admin). */
+  contaDaRivedere(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}/gestione/da-rivedere`);
   }
 
   riattiva(id: number, payload: SegnalazioneTransizioneRequest): Observable<Segnalazione> {

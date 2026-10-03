@@ -2,10 +2,12 @@ package com.daniele.crime_app_backend.config;
 
 import com.daniele.crime_app_backend.controller.AuthController;
 import com.daniele.crime_app_backend.controller.CategoriaController;
+import com.daniele.crime_app_backend.controller.SegnalazioneAbusoController;
 import com.daniele.crime_app_backend.controller.SegnalazioneController;
 import com.daniele.crime_app_backend.controller.UtenteController;
 import com.daniele.crime_app_backend.dto.FiltriCategorie;
 import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
+import com.daniele.crime_app_backend.dto.FiltroRevisione;
 import com.daniele.crime_app_backend.dto.GruppoSegnalazioniMie;
 import com.daniele.crime_app_backend.dto.FiltriUtenti;
 import com.daniele.crime_app_backend.entity.Utente;
@@ -14,7 +16,11 @@ import com.daniele.crime_app_backend.entity.enums.RuoloUtente;
 import com.daniele.crime_app_backend.repository.UtenteRepository;
 import com.daniele.crime_app_backend.service.AuthService;
 import com.daniele.crime_app_backend.service.CategoriaService;
+import com.daniele.crime_app_backend.exception.DescrizioneNonValidaException;
+import com.daniele.crime_app_backend.service.SegnalazioneAbusoService;
 import com.daniele.crime_app_backend.service.SegnalazioneService;
+import com.daniele.crime_app_backend.service.moderazione.TipoViolazione;
+import com.daniele.crime_app_backend.service.moderazione.Violazione;
 import com.daniele.crime_app_backend.service.UtenteCorrenteService;
 import com.daniele.crime_app_backend.service.UtenteService;
 import org.junit.jupiter.api.Test;
@@ -27,8 +33,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-import java.time.LocalDate;
+import com.daniele.crime_app_backend.dto.SegnalazioneAbusoDto;
+import com.daniele.crime_app_backend.entity.enums.MotivoAbuso;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -42,7 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Verifica le regole di accesso di SecurityConfig: i service sono mock, conta solo lo status HTTP. */
 @WebMvcTest(controllers = {SegnalazioneController.class, CategoriaController.class, AuthController.class,
-        UtenteController.class})
+        UtenteController.class, SegnalazioneAbusoController.class})
 @Import({SecurityConfig.class, ErroriSicurezzaHandler.class, JwtUtenteConverter.class})
 class SecurityConfigTest {
 
@@ -58,6 +70,8 @@ class SecurityConfigTest {
 
     @MockitoBean
     private SegnalazioneService segnalazioneService;
+    @MockitoBean
+    private SegnalazioneAbusoService segnalazioneAbusoService;
     @MockitoBean
     private CategoriaService categoriaService;
     @MockitoBean
@@ -101,6 +115,57 @@ class SecurityConfigTest {
                         throw new AssertionError("Accesso negato a un utente autenticato: " + stato);
                     }
                 });
+    }
+
+    @Test
+    void segnalareUnProblemaRichiedeSoloIlLogin() throws Exception {
+        String abuso = """
+                {"motivo": "OFFENSIVA", "nota": "insulti"}
+                """;
+        when(segnalazioneAbusoService.segnala(any(), any())).thenReturn(new SegnalazioneAbusoDto(
+                1L, 5L, 2L, 100, MotivoAbuso.OFFENSIVA, "insulti", BigDecimal.ONE, null, null));
+        mockMvc.perform(post("/api/segnalazioni/5/abusi").contentType(MediaType.APPLICATION_JSON).content(abuso))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/segnalazioni/5/abusi").with(ruolo("UTENTE"))
+                        .contentType(MediaType.APPLICATION_JSON).content(abuso))
+                .andExpect(status().isCreated());
+        // Motivo fuori dall'elenco: 400 (body illeggibile), non 500.
+        mockMvc.perform(post("/api/segnalazioni/5/abusi").with(ruolo("UTENTE"))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"motivo\": \"BOH\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void codaEDecisioniDiModerazioneRiservateAgliAdmin() throws Exception {
+        String esito = """
+                {"esito": "INFONDATO"}
+                """;
+        mockMvc.perform(get("/api/segnalazioni/gestione/da-rivedere").with(ruolo("UTENTE")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/segnalazioni/gestione/da-rivedere").with(ruolo("ADMIN")))
+                .andExpect(status().isOk());
+        mockMvc.perform(patch("/api/segnalazioni/5/abusi/esito").with(ruolo("UTENTE"))
+                        .contentType(MediaType.APPLICATION_JSON).content(esito))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(patch("/api/segnalazioni/5/abusi/esito").with(ruolo("ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON).content(esito))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/segnalazioni/5/abusi").with(ruolo("UTENTE"))).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void descrizioneBloccataRestituisce400ConLeViolazioni() throws Exception {
+        when(segnalazioneService.crea(any())).thenThrow(new DescrizioneNonValidaException(
+                List.of(new Violazione(TipoViolazione.DATI_PERSONALI, "333 1234567"))));
+        mockMvc.perform(post("/api/segnalazioni").with(ruolo("UTENTE"))
+                        .contentType(MediaType.APPLICATION_JSON).content(SEGNALAZIONE_VALIDA))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.violazioni[0].tipo").value("DATI_PERSONALI"))
+                .andExpect(jsonPath("$.violazioni[0].frammento").value("333 1234567"));
+        // Gli altri errori non hanno il campo.
+        mockMvc.perform(get("/api/utenti").with(ruolo("UTENTE")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.violazioni").doesNotExist());
     }
 
     @Test
@@ -173,12 +238,12 @@ class SecurityConfigTest {
     void filtriDellaGestioneLettiDallaQueryString() throws Exception {
         mockMvc.perform(get("/api/segnalazioni/gestione").with(ruolo("ADMIN"))
                         .param("categoriaId", "3").param("anonima", "true")
-                        .param("stato", "ATTIVA").param("creataDal", "2026-09-01").param("creataAl", "2026-09-30")
+                        .param("stato", "ATTIVA").param("revisione", "DA_RIVEDERE").param("creataDal", "2026-09-01").param("creataAl", "2026-09-30")
                         .param("pagina", "2").param("dimensione", "10").param("ordina", "categoria,desc"))
                 .andExpect(status().isOk());
         verify(segnalazioneService).trovaPerGestione(
                 new FiltriSegnalazioni(null, 3L, true, StatoSegnalazione.ATTIVA,
-                        LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30), null, null),
+                        LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30), null, null, FiltroRevisione.DA_RIVEDERE),
                 2, 10, "categoria,desc");
         mockMvc.perform(get("/api/utenti/gestione").with(ruolo("ADMIN"))
                         .param("email", "rossi").param("fiduciaMin", "20").param("ruolo", "ADMIN"))

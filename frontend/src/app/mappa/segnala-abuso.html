@@ -1,0 +1,82 @@
+<form
+  *transloco="let t"
+  [formGroup]="form"
+  (ngSubmit)="invia()"
+  class="mt-4 border-t border-neutral-200 pt-4 dark:border-line"
+  [attr.aria-label]="t('mappa.abuso.titolo')"
+>
+  <fieldset>
+    <legend class="text-sm font-medium">{{ t('mappa.abuso.domanda') }}</legend>
+    <div class="mt-2 grid gap-1.5">
+      @for (motivo of motivi; track motivo; let primo = $first) {
+        <!-- relative: l'input sr-only (assoluto) resta nella riga; senza, al focus il browser
+             fa scorrere la pagina per mostrarlo. -->
+        <label
+          class="relative flex cursor-pointer items-center gap-2.5 rounded-md border border-neutral-200 px-3 py-2 text-sm transition-colors hover:bg-neutral-50 has-[:checked]:border-allerta has-[:checked]:bg-allerta/10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-600 dark:border-line dark:hover:bg-ink"
+        >
+          @if (primo) {
+            <input
+              #primoMotivo
+              type="radio"
+              class="sr-only"
+              formControlName="motivo"
+              [value]="motivo"
+            />
+          } @else {
+            <input type="radio" class="sr-only" formControlName="motivo" [value]="motivo" />
+          }
+          <span
+            class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-neutral-400 dark:border-muted"
+            [class.border-allerta]="form.controls.motivo.value === motivo"
+            aria-hidden="true"
+          >
+            @if (form.controls.motivo.value === motivo) {
+              <span class="h-2 w-2 rounded-full bg-allerta"></span>
+            }
+          </span>
+          {{ t('mappa.abuso.motivi.' + motivo) }}
+        </label>
+      }
+    </div>
+    @if (form.controls.motivo.touched && form.controls.motivo.invalid) {
+      <p class="mt-1.5 text-sm text-allerta">{{ t('mappa.abuso.erroreMotivo') }}</p>
+    }
+  </fieldset>
+
+  <label for="nota-abuso" class="mt-3 block text-sm font-medium">
+    {{ t('mappa.abuso.nota') }}
+    <span class="font-normal text-neutral-500 dark:text-muted">{{
+      t('mappa.abuso.facoltativa')
+    }}</span>
+  </label>
+  <textarea
+    id="nota-abuso"
+    formControlName="nota"
+    rows="2"
+    [attr.maxlength]="lunghezzaMassimaNota"
+    [placeholder]="t('mappa.abuso.notaPlaceholder')"
+    class="mt-1.5 block w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-ink dark:placeholder:text-muted"
+  ></textarea>
+
+  @if (errore(); as errore) {
+    <p role="alert" class="mt-2 text-sm text-allerta">{{ t('mappa.abuso.errori.' + errore) }}</p>
+  }
+
+  <div class="mt-3 flex gap-2">
+    <button
+      type="button"
+      class="flex h-10 flex-1 items-center justify-center rounded-md border border-neutral-300 font-medium transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-line dark:hover:bg-ink"
+      (click)="annulla.emit()"
+    >
+      {{ t('mappa.abuso.annulla') }}
+    </button>
+    <button
+      type="submit"
+      class="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-md bg-allerta font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+      [disabled]="invio()"
+    >
+      <svg lucideIcon="flag" class="h-4 w-4" aria-hidden="true"></svg>
+      {{ t(invio() ? 'mappa.abuso.invio' : 'mappa.abuso.invia') }}
+    </button>
+  </div>
+</form>

@@ -168,14 +168,39 @@
       <label for="descrizione-segnalazione" class="text-sm font-medium">
         {{ t('mappa.nuova.descrizione') }}
       </label>
+      <p id="aiuto-descrizione" class="mt-0.5 text-sm text-neutral-500 dark:text-muted">
+        {{ t('mappa.nuova.descrizioneAiuto') }}
+      </p>
       <textarea
         id="descrizione-segnalazione"
         formControlName="descrizione"
         rows="4"
         [attr.maxlength]="lunghezzaMassima"
         [placeholder]="t('mappa.nuova.descrizionePlaceholder')"
+        aria-describedby="aiuto-descrizione violazioni-descrizione"
+        [attr.aria-invalid]="violazioni().length > 0 || null"
         class="mt-2 block w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-2 text-[15px] leading-relaxed placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-ink dark:placeholder:text-muted"
       ></textarea>
+      @if (violazioni().length > 0) {
+        <ul
+          id="violazioni-descrizione"
+          role="alert"
+          class="mt-2 grid gap-1 rounded-md bg-allerta/10 px-3 py-2 text-sm text-allerta"
+        >
+          @for (violazione of violazioni(); track $index) {
+            <li class="flex gap-2">
+              <svg
+                lucideIcon="triangle-alert"
+                class="mt-0.5 h-4 w-4 shrink-0"
+                aria-hidden="true"
+              ></svg>
+              <span>{{
+                t('mappa.nuova.violazioni.' + violazione.tipo, { frammento: violazione.frammento })
+              }}</span>
+            </li>
+          }
+        </ul>
+      }
       <div class="mt-1 flex items-start justify-between gap-3 text-sm">
         <p class="text-allerta">
           @if (form.controls.descrizione.touched && form.controls.descrizione.invalid) {

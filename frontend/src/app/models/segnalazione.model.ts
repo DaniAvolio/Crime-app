@@ -27,4 +27,15 @@ export interface Segnalazione {
   dataUltimaConferma?: string;
   /** Risposta dell'utente autenticato a "è ancora in atto?"; null se non ha votato o è ospite. */
   mioVoto?: boolean | null;
+  /** L'utente autenticato ha già segnalato un problema; null per gli ospiti e in gestione. */
+  mioAbuso?: boolean | null;
+  // Coda di moderazione: valorizzati solo per gli admin, null per tutti gli altri.
+  /** Abusi in attesa di decisione. */
+  numeroAbusi?: number | null;
+  /** Somma dei pesi degli abusi in attesa: alla soglia la segnalazione viene sospesa. */
+  pesoAbusi?: number | null;
+  /** In coda per l'admin: abusi in attesa o controlli automatici sulla descrizione. */
+  daRivedere?: boolean | null;
+  /** Controlli automatici scattati alla creazione, es. "MAIUSCOLE,RIPETIZIONI". */
+  revisioneAutomatica?: string | null;
 }

@@ -23,11 +23,16 @@ public class SegnalazioneMapper {
     }
 
     public SegnalazioneDto toDto(Segnalazione segnalazione) {
-        return toDto(segnalazione, null);
+        return toDto(segnalazione, null, null);
     }
 
-    /** Con il voto dell'utente corrente ("è ancora in atto?"), per mappa e dettaglio. */
-    public SegnalazioneDto toDto(Segnalazione segnalazione, Boolean mioVoto) {
+    /**
+     * Con il voto dell'utente corrente ("è ancora in atto?") e se ha già segnalato un problema,
+     * per mappa e dettaglio.
+     */
+    public SegnalazioneDto toDto(Segnalazione segnalazione, Boolean mioVoto, Boolean mioAbuso) {
+        // La coda di moderazione è un dato interno: solo gli admin la vedono.
+        boolean admin = utenteCorrenteService.isAdmin();
         // Dopo l'anonimizzazione dello storico l'autore non c'è più.
         boolean autoreVisibile = segnalazione.getAutore() != null && autoreVisibile(segnalazione);
         // Il nome si mostra solo a chi ha fatto l'accesso: la mappa è consultabile anche da anonimi.
@@ -48,7 +53,12 @@ public class SegnalazioneMapper {
                 segnalazione.getDataScadenza(),
                 segnalazione.getDataRimozione(),
                 segnalazione.getDataUltimaConferma(),
-                mioVoto
+                mioVoto,
+                mioAbuso,
+                admin ? segnalazione.getNumeroAbusi() : null,
+                admin ? segnalazione.getPesoAbusi() : null,
+                admin ? segnalazione.isDaRivedere() : null,
+                admin ? segnalazione.getRevisioneAutomatica() : null
         );
     }
 

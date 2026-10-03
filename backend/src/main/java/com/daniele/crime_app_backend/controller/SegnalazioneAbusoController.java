@@ -2,6 +2,8 @@ package com.daniele.crime_app_backend.controller;
 
 import com.daniele.crime_app_backend.dto.SegnalazioneAbusoDto;
 import com.daniele.crime_app_backend.dto.SegnalazioneAbusoRequest;
+import com.daniele.crime_app_backend.dto.EsitoRevisioneRequest;
+import com.daniele.crime_app_backend.dto.SegnalazioneDto;
 import com.daniele.crime_app_backend.service.SegnalazioneAbusoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +33,12 @@ public class SegnalazioneAbusoController {
         SegnalazioneAbusoDto creato = segnalazioneAbusoService.segnala(segnalazioneId, request);
         return ResponseEntity.created(URI.create("/api/segnalazioni/" + segnalazioneId + "/abusi/" + creato.id()))
                 .body(creato);
+    }
+
+    /** Decisione dell'admin sugli abusi in attesa (solo ADMIN, vedi SecurityConfig). */
+    @PatchMapping("/esito")
+    public SegnalazioneDto decidi(@PathVariable Long segnalazioneId,
+                                  @Valid @RequestBody EsitoRevisioneRequest request) {
+        return segnalazioneAbusoService.decidi(segnalazioneId, request);
     }
 }

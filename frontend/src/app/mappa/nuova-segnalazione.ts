@@ -5,14 +5,22 @@ import {
   Injector,
   afterNextRender,
   computed,
+  effect,
   inject,
   input,
   output,
   signal,
   viewChild,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { LatLng } from 'leaflet';
@@ -20,11 +28,20 @@ import { nomeCategoria } from '../categorie/categoria-i18n';
 import { SegnalazioneApi } from '../gestione/segnalazioni/segnalazione-api';
 import { Categoria } from '../models/categoria.model';
 import { Segnalazione } from '../models/segnalazione.model';
+import { Violazione } from '../models/segnalazione-abuso.model';
 import { classePallinoGravita } from '../shared/gravita';
 import { LinguaService } from '../shared/lingua';
 import { NOME_ICONA_FALLBACK, NOMI_ICONE_DISPONIBILI } from '../shared/icone-categoria';
 
 const LUNGHEZZA_MASSIMA_DESCRIZIONE = 2000;
+/** Stessa soglia del backend (ValidatoreDescrizione), sul testo senza spazi ai bordi. */
+const LUNGHEZZA_MINIMA_DESCRIZIONE = 10;
+
+function descrizioneAbbastanzaLunga(controllo: AbstractControl<string>): ValidationErrors | null {
+  return controllo.value.trim().length >= LUNGHEZZA_MINIMA_DESCRIZIONE
+    ? null
+    : { troppoCorta: true };
+}
 const SOGLIA_CHIUSURA_PX = 60;
 
 function normalizza(testo: string): string {
@@ -90,7 +107,10 @@ export class NuovaSegnalazione {
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     categoriaId: [0, Validators.min(1)],
-    descrizione: ['', [Validators.required, Validators.maxLength(LUNGHEZZA_MASSIMA_DESCRIZIONE)]],
+    descrizione: [
+      '',
+      [descrizioneAbbastanzaLunga, Validators.maxLength(LUNGHEZZA_MASSIMA_DESCRIZIONE)],
+    ],
     anonima: [false],
   });
 
@@ -105,6 +125,19 @@ export class NuovaSegnalazione {
     initialValue: '',
   });
   protected readonly caratteriUsati = computed(() => this.descrizione().length);
+
+  /**
+   * Controlli di moderazione non superati (risposta 400 del backend), mostrati sotto il campo
+   * con il frammento da correggere. Si azzerano appena l'utente modifica il testo.
+   */
+  protected readonly violazioni = signal<Violazione[]>([]);
+
+  constructor() {
+    effect(() => {
+      this.descrizione();
+      this.violazioni.set([]);
+    });
+  }
 
   /**
    * Chiusura "morbida" (tocco sulla mappa, Esc, X, maniglia): se non c'è nulla da perdere chiude
@@ -196,6 +229,7 @@ export class NuovaSegnalazione {
     const { lat, lng } = this.posizione();
     this.invio.set(true);
     this.errore.set(false);
+    this.violazioni.set([]);
     this.segnalazioneApi
       .crea({
         categoriaId,
@@ -209,8 +243,13 @@ export class NuovaSegnalazione {
           this.invio.set(false);
           this.pubblicata.emit(segnalazione);
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.invio.set(false);
+          const violazioni: Violazione[] | undefined = err.error?.violazioni;
+          if (err.status === 400 && violazioni?.length) {
+            this.violazioni.set(violazioni);
+            return;
+          }
           this.errore.set(true);
         },
       });

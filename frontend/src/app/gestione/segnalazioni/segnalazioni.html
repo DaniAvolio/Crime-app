@@ -1,8 +1,20 @@
 <main class="min-h-screen bg-white text-gray-900 dark:bg-ink dark:text-paper">
-  <div class="mx-auto max-w-6xl px-6 py-10">
-    <h1 class="mb-6 font-display text-2xl font-bold text-gray-900 dark:text-paper">
-      Gestione segnalazioni
-    </h1>
+  <div class="mx-auto max-w-7xl px-6 py-10">
+    <div class="mb-6 flex flex-wrap items-center gap-3">
+      <h1 class="font-display text-2xl font-bold text-gray-900 dark:text-paper">
+        Gestione segnalazioni
+      </h1>
+      @if (daRivedere(); as numero) {
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-beacon dark:hover:bg-amber-900/60"
+          title="Mostra solo la coda, dalla più segnalata"
+          (click)="mostraCoda()"
+        >
+          {{ numero }} da rivedere
+        </button>
+      }
+    </div>
 
     @if (errore()) {
       <div
@@ -108,8 +120,8 @@
       }
     </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full min-w-[56rem] border-collapse text-sm">
+    <div class="contenitore-tabella">
+      <table class="w-full min-w-[64rem] border-collapse text-sm">
         <thead>
           <tr
             class="border-b border-gray-200 text-left text-gray-500 dark:border-line dark:text-muted"
@@ -121,6 +133,13 @@
             <th appOrdinabile="stato" [tabella]="tabella">Stato</th>
             <th appOrdinabile="dataCreazione" [tabella]="tabella">Creata</th>
             <th appOrdinabile="dataScadenza" [tabella]="tabella">Scade</th>
+            <th
+              appOrdinabile="pesoAbusi"
+              [tabella]="tabella"
+              title="Abusi in attesa (peso: somma della fiducia dei segnalanti)"
+            >
+              Abusi
+            </th>
             <th class="py-2"></th>
           </tr>
           <tr class="border-b border-gray-200 align-top dark:border-line">
@@ -218,6 +237,23 @@
                 (change)="tabella.filtra('scadeAl', $any($event.target).value)"
               />
             </td>
+            <td class="min-w-32 py-2 pr-2">
+              <select
+                class="filtro-tabella"
+                aria-label="Filtra per revisione"
+                (change)="tabella.filtra('revisione', $any($event.target).value)"
+              >
+                <option value="" [selected]="tabella.filtri().revisione === ''">Tutte</option>
+                @for (revisione of revisioni; track revisione.valore) {
+                  <option
+                    [value]="revisione.valore"
+                    [selected]="tabella.filtri().revisione === revisione.valore"
+                  >
+                    {{ revisione.etichetta }}
+                  </option>
+                }
+              </select>
+            </td>
             <td></td>
           </tr>
         </thead>
@@ -266,8 +302,40 @@
               <td class="py-2 whitespace-nowrap">
                 {{ segnalazione.dataScadenza | slice: 0 : 10 }}
               </td>
+              <td class="py-2 whitespace-nowrap">
+                @if (segnalazione.numeroAbusi) {
+                  <span
+                    class="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                    [title]="'Peso ' + (segnalazione.pesoAbusi | number: '1.0-2')"
+                  >
+                    {{ segnalazione.numeroAbusi }} · {{ segnalazione.pesoAbusi | number: '1.0-2' }}
+                  </span>
+                }
+                @if (segnalazione.daRivedere && segnalazione.revisioneAutomatica) {
+                  <span
+                    class="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700 dark:bg-amber-900/40 dark:text-beacon"
+                    [title]="
+                      'Controlli automatici: ' + descriviControlli(segnalazione.revisioneAutomatica)
+                    "
+                  >
+                    Auto
+                  </span>
+                }
+              </td>
               <td class="py-2 text-right whitespace-nowrap">
-                @if (segnalazione.stato === StatoSegnalazione.ATTIVA) {
+                @if (segnalazione.daRivedere) {
+                  <button
+                    (click)="apriRevisione(segnalazione)"
+                    class="mr-3 font-semibold text-gray-900 underline decoration-gray-300 underline-offset-2 hover:decoration-gray-900 dark:text-paper dark:decoration-line dark:hover:decoration-paper"
+                    [attr.aria-expanded]="revisioneAperta() === segnalazione.id"
+                  >
+                    Rivedi
+                  </button>
+                }
+                @if (
+                  segnalazione.stato === StatoSegnalazione.ATTIVA ||
+                  segnalazione.stato === StatoSegnalazione.SOSPESA
+                ) {
                   <button
                     (click)="rimuovi(segnalazione)"
                     class="text-amber-600 hover:underline dark:text-beacon"
@@ -275,13 +343,10 @@
                     Rimuovi
                   </button>
                 }
-                @if (
-                  segnalazione.stato === StatoSegnalazione.SOSPESA ||
-                  segnalazione.stato === StatoSegnalazione.RIMOSSA
-                ) {
+                @if (segnalazione.stato === StatoSegnalazione.SOSPESA) {
                   <button
                     (click)="riattiva(segnalazione)"
-                    class="text-green-700 hover:underline dark:text-green-400"
+                    class="ml-3 text-green-700 hover:underline dark:text-green-400"
                   >
                     Riattiva
                   </button>
@@ -294,9 +359,73 @@
                 </button>
               </td>
             </tr>
+            @if (revisioneAperta() === segnalazione.id) {
+              <tr class="border-b border-gray-100 bg-gray-50 dark:border-line dark:bg-panel">
+                <td colspan="9" class="px-4 py-3">
+                  <p class="mb-2 whitespace-pre-line text-gray-800 dark:text-paper">
+                    {{ segnalazione.descrizione }}
+                  </p>
+                  @if (segnalazione.revisioneAutomatica) {
+                    <p class="mb-2 text-xs text-amber-700 dark:text-beacon">
+                      Controlli automatici:
+                      {{ descriviControlli(segnalazione.revisioneAutomatica) }}
+                    </p>
+                  }
+                  @if (abusiRevisione(); as abusi) {
+                    @if (abusi.length > 0) {
+                      <ul class="mb-3 grid gap-1.5">
+                        @for (abuso of abusi; track abuso.id) {
+                          <li class="text-sm" [class.opacity-60]="abuso.esito">
+                            <span class="font-medium">{{ motivi[abuso.motivo] }}</span>
+                            @if (abuso.nota) {
+                              <span class="text-gray-700 dark:text-muted">
+                                — «{{ abuso.nota }}»</span
+                              >
+                            }
+                            <span class="text-xs text-gray-500 dark:text-muted">
+                              · utente #{{ abuso.utenteId }}, fiducia
+                              {{ abuso.utenteFiducia }} (peso {{ abuso.peso | number: '1.0-2' }}) ·
+                              {{ abuso.dataSegnalazione.replace('T', ' ') | slice: 0 : 16 }}
+                              @if (abuso.esito) {
+                                · {{ abuso.esito === 'FONDATO' ? 'accolto' : 'respinto' }}
+                              }
+                            </span>
+                          </li>
+                        }
+                      </ul>
+                    }
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        class="rounded bg-allerta px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90"
+                        (click)="decidi(segnalazione, 'FONDATO')"
+                      >
+                        Accogli{{
+                          segnalazione.stato === StatoSegnalazione.ATTIVA ||
+                          segnalazione.stato === StatoSegnalazione.SOSPESA
+                            ? ' e rimuovi'
+                            : ''
+                        }}
+                      </button>
+                      <button
+                        type="button"
+                        class="rounded border border-gray-300 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white dark:border-line dark:text-paper dark:hover:bg-ink"
+                        (click)="decidi(segnalazione, 'INFONDATO')"
+                      >
+                        Respingi{{
+                          segnalazione.stato === StatoSegnalazione.SOSPESA ? ' e riattiva' : ''
+                        }}
+                      </button>
+                    </div>
+                  } @else {
+                    <p class="text-sm text-gray-500 dark:text-muted">Caricamento...</p>
+                  }
+                </td>
+              </tr>
+            }
           } @empty {
             <tr>
-              <td colspan="8" class="py-6 text-center text-gray-500 dark:text-muted">
+              <td colspan="9" class="py-6 text-center text-gray-500 dark:text-muted">
                 {{
                   tabella.caricando()
                     ? 'Caricamento...'

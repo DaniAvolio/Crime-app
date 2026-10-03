@@ -2,6 +2,7 @@ package com.daniele.crime_app_backend.service;
 
 import com.daniele.crime_app_backend.dto.ConteggiMieSegnalazioniDto;
 import com.daniele.crime_app_backend.dto.ConteggioCategoriaDto;
+import com.daniele.crime_app_backend.dto.EsitoRevisioneRequest;
 import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
 import com.daniele.crime_app_backend.dto.GruppoSegnalazioniMie;
 import com.daniele.crime_app_backend.dto.PaginaDto;
@@ -13,11 +14,13 @@ import com.daniele.crime_app_backend.entity.ConfermaSegnalazione;
 import com.daniele.crime_app_backend.entity.EventoModerazione;
 import com.daniele.crime_app_backend.entity.Segnalazione;
 import com.daniele.crime_app_backend.entity.Utente;
+import com.daniele.crime_app_backend.entity.enums.EsitoAbuso;
 import com.daniele.crime_app_backend.entity.enums.RuoloUtente;
 import com.daniele.crime_app_backend.entity.enums.StatoSegnalazione;
 import com.daniele.crime_app_backend.entity.enums.TipoAttoreModerazione;
 import com.daniele.crime_app_backend.exception.AccessoNegatoException;
 import com.daniele.crime_app_backend.exception.ConflittoException;
+import com.daniele.crime_app_backend.exception.DescrizioneNonValidaException;
 import com.daniele.crime_app_backend.exception.RichiestaNonValidaException;
 import com.daniele.crime_app_backend.exception.RisorsaNonTrovataException;
 import com.daniele.crime_app_backend.mapper.SegnalazioneMapper;
@@ -27,6 +30,8 @@ import com.daniele.crime_app_backend.repository.SegnalazioneAbusoRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneRepository;
 import com.daniele.crime_app_backend.repository.SpecificheGestione;
 import com.daniele.crime_app_backend.repository.UtenteRepository;
+import com.daniele.crime_app_backend.service.moderazione.TipoViolazione;
+import com.daniele.crime_app_backend.service.moderazione.ValidatoreDescrizione;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -39,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -54,6 +60,13 @@ public class SegnalazioneService {
     private final CategoriaService categoriaService;
     private final UtenteCorrenteService utenteCorrenteService;
     private final UtenteRepository utenteRepository;
+    private final ValidatoreDescrizione validatoreDescrizione;
+
+    /** Fiducia: chi segnala abusi poi accolti guadagna poco, chi li fa respingere perde molto. */
+    static final int FIDUCIA_ABUSO_FONDATO = 2;
+    static final int FIDUCIA_ABUSO_INFONDATO = -10;
+    /** Fiducia persa dall'autore quando un admin gli rimuove una segnalazione. */
+    static final int FIDUCIA_AUTORE_RIMOSSA = -10;
 
     public SegnalazioneService(SegnalazioneRepository segnalazioneRepository,
                                 EventoModerazioneRepository eventoModerazioneRepository,
@@ -62,7 +75,8 @@ public class SegnalazioneService {
                                 SegnalazioneMapper segnalazioneMapper,
                                 CategoriaService categoriaService,
                                 UtenteCorrenteService utenteCorrenteService,
-                                UtenteRepository utenteRepository) {
+                                UtenteRepository utenteRepository,
+                                ValidatoreDescrizione validatoreDescrizione) {
         this.segnalazioneRepository = segnalazioneRepository;
         this.eventoModerazioneRepository = eventoModerazioneRepository;
         this.confermaSegnalazioneRepository = confermaSegnalazioneRepository;
@@ -71,6 +85,7 @@ public class SegnalazioneService {
         this.categoriaService = categoriaService;
         this.utenteCorrenteService = utenteCorrenteService;
         this.utenteRepository = utenteRepository;
+        this.validatoreDescrizione = validatoreDescrizione;
     }
 
     /**
@@ -103,7 +118,9 @@ public class SegnalazioneService {
             "anonima", "anonima",
             "stato", "stato",
             "dataCreazione", "dataCreazione",
-            "dataScadenza", "dataScadenza");
+            "dataScadenza", "dataScadenza",
+            "numeroAbusi", "numeroAbusi",
+            "pesoAbusi", "pesoAbusi");
 
     /** Tabella di gestione (solo admin): filtri per colonna, ordinamento e paginazione lato database. */
     public PaginaDto<SegnalazioneDto> trovaPerGestione(FiltriSegnalazioni filtri, int pagina, int dimensione,
@@ -139,18 +156,35 @@ public class SegnalazioneService {
 
     public SegnalazioneDto trovaPerId(Long id) {
         Segnalazione segnalazione = recuperaOLancia(id);
-        return segnalazioneMapper.toDto(segnalazione, votiUtenteCorrente(List.of(segnalazione)).get(id));
+        return toDto(segnalazione, relazioniUtenteCorrente(List.of(segnalazione)));
     }
 
-    /** Risposte dell'utente autenticato alle segnalazioni date (vuoto per gli ospiti, senza query). */
-    private Map<Long, Boolean> votiUtenteCorrente(List<Segnalazione> segnalazioni) {
+    /**
+     * Cosa ha già fatto l'utente autenticato sulle segnalazioni date: voti ("è ancora in atto?")
+     * e problemi segnalati. Due query per tutta la vista; nessuna per gli ospiti.
+     */
+    private RelazioniUtente relazioniUtenteCorrente(List<Segnalazione> segnalazioni) {
         Optional<Long> utenteId = utenteCorrenteService.idCorrenteOpzionale();
         if (utenteId.isEmpty() || segnalazioni.isEmpty()) {
-            return Map.of();
+            return new RelazioniUtente(Map.of(), Set.of(), false);
         }
         List<Long> ids = segnalazioni.stream().map(Segnalazione::getId).toList();
-        return confermaSegnalazioneRepository.findByUtenteIdAndSegnalazioneIdIn(utenteId.get(), ids).stream()
+        Map<Long, Boolean> voti = confermaSegnalazioneRepository
+                .findByUtenteIdAndSegnalazioneIdIn(utenteId.get(), ids).stream()
                 .collect(Collectors.toMap(c -> c.getSegnalazione().getId(), ConfermaSegnalazione::isAncoraInAtto));
+        Set<Long> abusi = Set.copyOf(segnalazioneAbusoRepository.segnalazioniConAbusoDi(utenteId.get(), ids));
+        return new RelazioniUtente(voti, abusi, true);
+    }
+
+    private record RelazioniUtente(Map<Long, Boolean> voti, Set<Long> abusi, boolean autenticato) {
+        Boolean mioAbuso(Long id) {
+            return autenticato ? abusi.contains(id) : null;
+        }
+    }
+
+    /** DTO con voto e abuso dell'utente corrente. */
+    private SegnalazioneDto toDto(Segnalazione s, RelazioniUtente relazioni) {
+        return segnalazioneMapper.toDto(s, relazioni.voti().get(s.getId()), relazioni.mioAbuso(s.getId()));
     }
 
     /**
@@ -162,10 +196,8 @@ public class SegnalazioneService {
     /** Segnalazioni ATTIVA entro un raggio da un punto, per la vista mappa e le notifiche di prossimità. */
     public List<SegnalazioneDto> trovaVicine(double lat, double lng, double raggioMetri) {
         List<Segnalazione> vicine = segnalazioneRepository.trovaAttiveNelRaggio(lat, lng, raggioMetri, LIMITE_VICINE);
-        Map<Long, Boolean> voti = votiUtenteCorrente(vicine);
-        return vicine.stream()
-                .map(s -> segnalazioneMapper.toDto(s, voti.get(s.getId())))
-                .toList();
+        RelazioniUtente relazioni = relazioniUtenteCorrente(vicine);
+        return vicine.stream().map(s -> toDto(s, relazioni)).toList();
     }
 
     /** Raggio massimo della vista lista (i raggi selezionabili arrivano a 10 km). */
@@ -181,8 +213,8 @@ public class SegnalazioneService {
         validaRaggioLista(raggioMetri);
         var risultato = segnalazioneRepository.trovaAttiveNelRaggioPerDistanza(lat, lng, raggioMetri, gravita,
                 categoriaId, Paginazione.senzaOrdinamento(pagina, dimensione));
-        Map<Long, Boolean> voti = votiUtenteCorrente(risultato.getContent());
-        return PaginaDto.da(risultato, s -> segnalazioneMapper.toDto(s, voti.get(s.getId())));
+        RelazioniUtente relazioni = relazioniUtenteCorrente(risultato.getContent());
+        return PaginaDto.da(risultato, s -> toDto(s, relazioni));
     }
 
     /** Vista lista: quante segnalazioni ATTIVA ci sono nel raggio per ogni categoria. */
@@ -207,17 +239,25 @@ public class SegnalazioneService {
      */
     @Transactional
     public SegnalazioneDto crea(SegnalazioneRequest request) {
+        // Controlli bloccanti: 400 con le violazioni. Quelli soft mettono la segnalazione in coda.
+        ValidatoreDescrizione.Esito esito = validatoreDescrizione.valida(request.descrizione());
+        if (!esito.pubblicabile()) {
+            throw new DescrizioneNonValidaException(esito.bloccanti());
+        }
         Utente autore = utenteCorrenteService.utenteCorrente();
         Categoria categoria = categoriaService.recuperaOLancia(request.categoriaId());
 
         Segnalazione segnalazione = Segnalazione.builder()
                 .autore(autore)
                 .categoria(categoria)
-                .descrizione(request.descrizione())
+                .descrizione(request.descrizione().strip())
                 .posizione(segnalazioneMapper.creaPunto(request.lat(), request.lng()))
                 .anonima(request.anonima())
                 .stato(StatoSegnalazione.ATTIVA)
                 .dataScadenza(LocalDateTime.now().plusHours(categoria.getDurataValiditaOre()))
+                .daRivedere(!esito.soft().isEmpty())
+                .revisioneAutomatica(esito.soft().isEmpty() ? null : esito.soft().stream()
+                        .map(TipoViolazione::name).collect(Collectors.joining(",")))
                 .build();
         Segnalazione salvata = segnalazioneRepository.save(segnalazione);
         utenteRepository.incrementaSegnalazioniFatte(autore.getId());
@@ -247,15 +287,108 @@ public class SegnalazioneService {
             throw new AccessoNegatoException("Solo un amministratore può rimuovere una segnalazione sospesa");
         }
 
-        transiziona(segnalazione, StatoSegnalazione.RIMOSSA,
-                isAdmin ? TipoAttoreModerazione.ADMIN : TipoAttoreModerazione.AUTORE,
-                isAdmin ? attore : null, request.motivazione());
-        segnalazione.setDataRimozione(LocalDateTime.now());
-        // Conta come "rimossa" per l'autore solo se la toglie un admin (non se la ritira lui).
-        if (isAdmin && !isAutore && segnalazione.getAutore() != null) {
-            utenteRepository.incrementaSegnalazioniRimosse(segnalazione.getAutore().getId());
+        if (isAdmin) {
+            rimuoviDaAdmin(segnalazione, attore, !isAutore, request.motivazione());
+        } else {
+            transiziona(segnalazione, StatoSegnalazione.RIMOSSA, TipoAttoreModerazione.AUTORE, null,
+                    request.motivazione());
+            segnalazione.setDataRimozione(LocalDateTime.now());
+            // Ritirata dall'autore: non serve più rivederla, e gli abusi restano senza esito.
+            segnalazioneRepository.chiudiRevisione(segnalazione.getId());
+            azzeraRevisioneInMemoria(segnalazione);
         }
         return segnalazioneMapper.toDto(segnalazione);
+    }
+
+    /**
+     * Rimozione da parte di un admin: gli abusi in attesa sono FONDATI. Conta come "rimossa" per
+     * l'autore e gli costa fiducia, salvo che l'admin stia ritirando una propria segnalazione.
+     */
+    private void rimuoviDaAdmin(Segnalazione segnalazione, Utente admin, boolean penalizzaAutore,
+                                String motivazione) {
+        transiziona(segnalazione, StatoSegnalazione.RIMOSSA, TipoAttoreModerazione.ADMIN, admin, motivazione);
+        segnalazione.setDataRimozione(LocalDateTime.now());
+        chiudiRevisione(segnalazione, EsitoAbuso.FONDATO);
+        if (penalizzaAutore && segnalazione.getAutore() != null) {
+            utenteRepository.incrementaSegnalazioniRimosse(segnalazione.getAutore().getId());
+            utenteRepository.modificaFiducia(List.of(segnalazione.getAutore().getId()), FIDUCIA_AUTORE_RIMOSSA);
+        }
+    }
+
+    /**
+     * Decisione dell'admin su una segnalazione in coda "da rivedere" (solo ADMIN, vedi SecurityConfig).
+     * FONDATO: se è ancora ATTIVA o SOSPESA viene rimossa (come "Rimuovi"); se è già conclusa resta
+     * com'è ma l'autore perde comunque fiducia. INFONDATO: se era SOSPESA torna ATTIVA. In entrambi i
+     * casi gli abusi in attesa ricevono l'esito, la fiducia dei segnalanti cambia e la segnalazione
+     * esce dalla coda.
+     */
+    @Transactional
+    public SegnalazioneDto decidiRevisione(Long id, EsitoRevisioneRequest request) {
+        Segnalazione segnalazione = recuperaOLancia(id);
+        Utente admin = utenteCorrenteService.utenteCorrente();
+        if (admin.getRuolo() != RuoloUtente.ADMIN) {
+            throw new AccessoNegatoException("Solo un amministratore può decidere sulle segnalazioni di abuso");
+        }
+        if (!segnalazione.isDaRivedere()) {
+            throw new ConflittoException("La segnalazione " + id + " non è in attesa di revisione");
+        }
+        boolean propria = segnalazione.getAutore() != null
+                && Objects.equals(segnalazione.getAutore().getId(), admin.getId());
+        boolean inCorso = segnalazione.getStato() == StatoSegnalazione.ATTIVA
+                || segnalazione.getStato() == StatoSegnalazione.SOSPESA;
+
+        if (request.esito() == EsitoAbuso.FONDATO) {
+            if (inCorso) {
+                rimuoviDaAdmin(segnalazione, admin, !propria, motivazioneOppure(request,
+                        "Segnalazioni di abuso accolte"));
+            } else {
+                chiudiRevisione(segnalazione, EsitoAbuso.FONDATO);
+                if (!propria && segnalazione.getAutore() != null) {
+                    utenteRepository.modificaFiducia(List.of(segnalazione.getAutore().getId()),
+                            FIDUCIA_AUTORE_RIMOSSA);
+                }
+            }
+        } else {
+            if (segnalazione.getStato() == StatoSegnalazione.SOSPESA) {
+                transiziona(segnalazione, StatoSegnalazione.ATTIVA, TipoAttoreModerazione.ADMIN, admin,
+                        motivazioneOppure(request, "Segnalazioni di abuso respinte"));
+            }
+            chiudiRevisione(segnalazione, EsitoAbuso.INFONDATO);
+        }
+        log.info("Revisione segnalazione {}: abusi {}", id, request.esito());
+        return segnalazioneMapper.toDto(segnalazione);
+    }
+
+    private static String motivazioneOppure(EsitoRevisioneRequest request, String predefinita) {
+        return request.motivazione() == null || request.motivazione().isBlank()
+                ? predefinita : request.motivazione().strip();
+    }
+
+    /**
+     * Esito agli abusi in attesa, fiducia dei segnalanti aggiornata e segnalazione fuori dalla coda.
+     * Anche senza abusi (solo controlli automatici) la segnalazione esce dalla coda.
+     */
+    private void chiudiRevisione(Segnalazione segnalazione, EsitoAbuso esito) {
+        List<Long> segnalanti = segnalazioneAbusoRepository.segnalantiInAttesa(segnalazione.getId());
+        if (!segnalanti.isEmpty()) {
+            segnalazioneAbusoRepository.registraEsito(segnalazione.getId(), esito);
+            utenteRepository.modificaFiducia(segnalanti,
+                    esito == EsitoAbuso.FONDATO ? FIDUCIA_ABUSO_FONDATO : FIDUCIA_ABUSO_INFONDATO);
+        }
+        segnalazioneRepository.chiudiRevisione(segnalazione.getId());
+        azzeraRevisioneInMemoria(segnalazione);
+    }
+
+    /** Le colonne della coda non si scrivono dall'entità: si allinea la copia in memoria per il DTO. */
+    private static void azzeraRevisioneInMemoria(Segnalazione segnalazione) {
+        segnalazione.setNumeroAbusi(0);
+        segnalazione.setPesoAbusi(java.math.BigDecimal.ZERO);
+        segnalazione.setDaRivedere(false);
+    }
+
+    /** Quante segnalazioni sono in coda per l'admin (contatore in testa alla gestione). */
+    public long contaDaRivedere() {
+        return segnalazioneRepository.countByDaRivedereTrue();
     }
 
     /** SOSPESA -> ATTIVA, solo admin (verificato anche in SecurityConfig). */
@@ -272,6 +405,8 @@ public class SegnalazioneService {
         }
 
         transiziona(segnalazione, StatoSegnalazione.ATTIVA, TipoAttoreModerazione.ADMIN, attore, request.motivazione());
+        // Riattivarla vuol dire che gli abusi che l'hanno sospesa non erano fondati.
+        chiudiRevisione(segnalazione, EsitoAbuso.INFONDATO);
         return segnalazioneMapper.toDto(segnalazione);
     }
 

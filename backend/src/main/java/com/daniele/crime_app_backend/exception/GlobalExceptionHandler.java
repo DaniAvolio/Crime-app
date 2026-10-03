@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -46,6 +47,15 @@ public class GlobalExceptionHandler {
         return costruisci(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    /** Descrizione bloccata dalla moderazione: 400 con le violazioni, che il client mostra sotto il campo. */
+    @ExceptionHandler(DescrizioneNonValidaException.class)
+    public ResponseEntity<ErrorResponse> gestisciDescrizioneNonValida(DescrizioneNonValidaException ex) {
+        log.warn("{}", ex.getMessage());
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(new ErrorResponse(LocalDateTime.now(), status.value(),
+                status.getReasonPhrase(), "La descrizione contiene testo non pubblicabile.", ex.getViolazioni()));
+    }
+
     @ExceptionHandler(AccessoNegatoException.class)
     public ResponseEntity<ErrorResponse> gestisciAccessoNegato(AccessoNegatoException ex) {
         log.warn("Accesso negato: {}", ex.getMessage());
@@ -66,6 +76,13 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining("; "));
         log.warn("Validazione fallita: {}", messaggio);
         return costruisci(HttpStatus.BAD_REQUEST, messaggio);
+    }
+
+    /** Body JSON malformato o con valori fuori dagli enum (es. un motivo inesistente): errore del client. */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> gestisciBodyIlleggibile(HttpMessageNotReadableException ex) {
+        log.warn("Body della richiesta non leggibile: {}", ex.getMostSpecificCause().getMessage());
+        return costruisci(HttpStatus.BAD_REQUEST, "Richiesta non valida: il contenuto non è leggibile.");
     }
 
     /**

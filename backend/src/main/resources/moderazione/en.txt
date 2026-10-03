@@ -1,0 +1,46 @@
+# Moderation lists for report descriptions (see ValidatoreDescrizione).
+# One entry per line, whole-word match on lowercase text without accents.
+# Trailing "*" = also words starting like this; several words = phrase.
+
+[offensivo]
+fuck*
+motherfuck*
+shit
+shitty
+bullshit
+bitch*
+asshole*
+bastard*
+cunt*
+dickhead*
+retard*
+faggot*
+fag
+fags
+whore*
+slut*
+moron*
+scum
+
+[discriminazione]
+# Origin, ethnicity and religion used to describe people: describe what they do, not who they are.
+nigger*
+nigga*
+spic
+spics
+chink*
+gypsy
+gypsies
+immigrant*
+foreigner*
+illegals
+illegal alien*
+arab
+arabs
+muslim*
+islamic
+jew
+jews
+jewish
+african*
+mexican*

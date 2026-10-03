@@ -58,8 +58,12 @@ public class Utente {
     @Builder.Default
     private boolean identitaVerificata = false;
 
-    /** Punteggio di fiducia (soft trust scoring). */
-    @Column(name = "punteggio_fiducia", nullable = false)
+    /**
+     * Punteggio di fiducia 0–100: pesa gli abusi che l'utente segnala e cala se le sue
+     * segnalazioni vengono rimosse o i suoi abusi respinti. Cambia solo con l'update atomico
+     * UtenteRepository.modificaFiducia, mai dall'entità.
+     */
+    @Column(name = "punteggio_fiducia", nullable = false, updatable = false)
     @Builder.Default
     private Integer punteggioFiducia = 100;
 

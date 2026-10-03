@@ -106,7 +106,7 @@
       "erroreCategoria": "Choose a category.",
       "descrizione": "Description",
       "descrizionePlaceholder": "What did you see, and where exactly?",
-      "erroreDescrizione": "Write a short description.",
+      "erroreDescrizione": "Write a description of at least 10 characters.",
       "anonima": "Post anonymously",
       "anonimaAiuto": "Your name won't be shown to other people.",
       "pubblica": "Post report",
@@ -129,7 +129,17 @@
       },
       "cercaCategoria": "Search category…",
       "categoriaNessunRisultato": "No category found.",
-      "cambiaCategoria": "Change"
+      "cambiaCategoria": "Change",
+      "descrizioneAiuto": "Describe what is happening, not who people are: no names, plates, phone numbers or origins.",
+      "violazioni": {
+        "TROPPO_CORTA": "Describe what is happening in more detail: at least 10 characters.",
+        "DATI_PERSONALI": "Remove personal data: “{{ frammento }}”. Do not publish phone numbers, emails or plates.",
+        "LINK": "Remove the link “{{ frammento }}”: web addresses cannot be published.",
+        "LINGUAGGIO_OFFENSIVO": "Remove the offensive language: “{{ frammento }}”.",
+        "DISCRIMINAZIONE": "Describe what people do, not their origin or religion: remove “{{ frammento }}”.",
+        "MAIUSCOLE": "Avoid writing everything in capitals.",
+        "RIPETIZIONI": "Avoid repeated characters or words."
+      }
     },
     "lista": {
       "titolo": "Reports nearby",
@@ -152,7 +162,33 @@
     },
     "crediti": "Map credits",
     "cluster": "{{ numero }} reports: zoom in to see them",
-    "clusterConGravi": "{{ numero }} reports, {{ gravi }} high severity: zoom in to see them"
+    "clusterConGravi": "{{ numero }} reports, {{ gravi }} high severity: zoom in to see them",
+    "abuso": {
+      "apri": "Report a problem",
+      "titolo": "Report a problem with this report",
+      "domanda": "What is the problem?",
+      "motivi": {
+        "FALSA": "It is false or no longer true",
+        "OFFENSIVA": "It is offensive or discriminatory",
+        "DATI_PERSONALI": "It contains personal data",
+        "SPAM": "It is spam or advertising",
+        "CATEGORIA_ERRATA": "The category is wrong",
+        "ALTRO": "Other"
+      },
+      "erroreMotivo": "Choose a reason.",
+      "nota": "Details",
+      "facoltativa": "(optional)",
+      "notaPlaceholder": "Add anything that may help the reviewer.",
+      "annulla": "Cancel",
+      "invia": "Send",
+      "invio": "Sending…",
+      "inviato": "Thank you: an administrator will review the report.",
+      "giaSegnalato": "You reported a problem: an administrator will review it.",
+      "errori": {
+        "generico": "We could not send your report. Please try again.",
+        "nonDisponibile": "Not possible: you already reported a problem or the report is no longer active."
+      }
+    }
   },
   "condivisi": {
     "dialogo": {
@@ -367,6 +403,14 @@
           "d": "Can I report anonymously?",
           "r": "Yes. With “Publish anonymously” your name is not shown to other users, but the report stays linked to your account for moderation. On other reports, registered users see the first name and the initial of the surname (e.g. “Mario R.”), never the email."
         },
+        "scrivere": {
+          "d": "What can I write in the description?",
+          "r": "Describe what is happening and where, not who is involved. Personal data (phone numbers, emails, plates), links, insults and references to people’s origin or religion are blocked before publishing: we tell you what to fix. Text written all in capitals or with repetitions is published but checked by an administrator."
+        },
+        "problema": {
+          "d": "What if a report is false or offensive?",
+          "r": "In the report details tap “Report a problem” and choose the reason. You can do it once per report, not on your own. An administrator reviews it and decides whether to remove it."
+        },
         "rimuovere": {
           "d": "Can I edit or remove a report?",
           "r": "You can remove it from your profile. It cannot be edited: if you made a mistake, remove it and create a new one."
@@ -421,7 +465,7 @@
         },
         "moderazione": {
           "d": "Who checks the reports?",
-          "r": "Administrators, who can suspend, remove or reactivate reports and disable accounts that abuse the service. Every action is recorded."
+          "r": "Administrators, who review reports with reported problems and can remove or reactivate them. When problem reports reach a threshold, the report is suspended pending review; people whose problem reports turn out to be unfounded count less the next time, and those who publish removed content lose reliability. Every action is recorded."
         }
       }
     }

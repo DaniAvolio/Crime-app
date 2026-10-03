@@ -1,0 +1,91 @@
+# Liste di moderazione delle descrizioni (vedi ValidatoreDescrizione).
+# Una voce per riga, confronto a parola intera su testo minuscolo e senza accenti.
+# "*" finale = anche le parole che iniziano così; più parole = frase.
+# Prima di aggiungere un prefisso, verificare che non colpisca parole comuni
+# (es. "rom" va esatto, altrimenti bloccherebbe "romano").
+
+[offensivo]
+stronz*
+bastard*
+coglion*
+cazzo
+cazzi
+cazzat*
+vaffanculo
+fanculo
+affanculo
+merda
+merde
+merdos*
+puttan*
+troia
+troie
+zoccol*
+mignott*
+deficient*
+idiota
+idioti
+imbecill*
+cretin*
+mongoloid*
+handicappat*
+frocio
+froci
+ricchion*
+culattone
+culattoni
+feccia
+schifos*
+porco dio
+dio porco
+dio cane
+porca madonna
+madonna puttana
+
+[discriminazione]
+# Origine, etnia e religione usate per descrivere persone: si descrive cosa fanno, non chi sono.
+negro
+negra
+negri
+negre
+zingar*
+nomade
+nomadi
+rom
+sinti
+magrebin*
+maghrebin*
+nordafrican*
+african*
+extracomunitari*
+immigrat*
+clandestin*
+profug*
+marocchin*
+tunisin*
+algerin*
+egizian*
+libic*
+albanes*
+rumen*
+romen*
+nigerian*
+senegales*
+gambian*
+pakistan*
+bengales*
+sudamerican*
+peruvian*
+ecuadorian*
+arabo
+arabi
+araba
+arabe
+musulman*
+islamic*
+ebreo
+ebrei
+ebrea
+ebree
+terron*
+polenton*

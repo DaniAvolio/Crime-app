@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -78,6 +79,23 @@ public interface SegnalazioneRepository extends JpaRepository<Segnalazione, Long
                                                         Pageable pagina);
 
     /** Proiezione di {@link #contaAttiveNelRaggioPerCategoria}. */
+    /** Un abuso in più in attesa: aggiornamento atomico, sicuro con segnalanti contemporanei. */
+    @Modifying
+    @Query("update Segnalazione s set s.numeroAbusi = s.numeroAbusi + 1, s.pesoAbusi = s.pesoAbusi + :peso,"
+            + " s.daRivedere = true where s.id = :id")
+    void registraAbuso(@Param("id") Long id, @Param("peso") BigDecimal peso);
+
+    /** Peso attuale degli abusi in attesa, letto dal database (l'entità in memoria non lo segue). */
+    @Query("select s.pesoAbusi from Segnalazione s where s.id = :id")
+    BigDecimal pesoAbusi(@Param("id") Long id);
+
+    /** L'admin ha deciso (o la segnalazione è stata ritirata): esce dalla coda. */
+    @Modifying
+    @Query("update Segnalazione s set s.numeroAbusi = 0, s.pesoAbusi = 0, s.daRivedere = false where s.id = :id")
+    void chiudiRevisione(@Param("id") Long id);
+
+    long countByDaRivedereTrue();
+
     /**
      * Concluse da anonimizzare: chiuse (data di rimozione o, se manca, di scadenza) prima della
      * soglia e non ancora anonimizzate. Usa l'indice parziale idx_segnalazione_da_anonimizzare.

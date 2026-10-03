@@ -12,7 +12,11 @@ public class SegnalazioneAbusoMapper {
                 segnalazioneAbuso.getId(),
                 segnalazioneAbuso.getSegnalazione().getId(),
                 segnalazioneAbuso.getUtente().getId(),
+                segnalazioneAbuso.getUtente().getPunteggioFiducia(),
                 segnalazioneAbuso.getMotivo(),
+                segnalazioneAbuso.getNota(),
+                segnalazioneAbuso.getPeso(),
+                segnalazioneAbuso.getEsito(),
                 segnalazioneAbuso.getDataSegnalazione()
         );
     }

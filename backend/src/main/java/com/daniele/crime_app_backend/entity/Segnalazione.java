@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.locationtech.jts.geom.Point;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +95,31 @@ public class Segnalazione {
     /** Ultima conferma "ancora in atto": i voti "non più in atto" contano solo se successivi. */
     @Column(name = "data_ultima_conferma")
     private LocalDateTime dataUltimaConferma;
+
+    /*
+     * Coda di moderazione. Le colonne si aggiornano solo con update atomici in
+     * SegnalazioneRepository (registraAbuso, chiudiRevisione), mai dall'entità: per questo sono
+     * updatable = false, così salvare la segnalazione (es. un cambio di stato) non le sovrascrive.
+     */
+
+    /** Abusi in attesa di una decisione dell'admin. */
+    @Column(name = "numero_abusi", nullable = false, updatable = false)
+    @Builder.Default
+    private int numeroAbusi = 0;
+
+    /** Somma dei pesi degli abusi in attesa: alla soglia la segnalazione viene sospesa. */
+    @Column(name = "peso_abusi", nullable = false, updatable = false, precision = 6, scale = 2)
+    @Builder.Default
+    private BigDecimal pesoAbusi = BigDecimal.ZERO;
+
+    /** In coda per l'admin: abusi in attesa o controlli automatici sulla descrizione scattati. */
+    @Column(name = "da_rivedere", nullable = false, updatable = false)
+    @Builder.Default
+    private boolean daRivedere = false;
+
+    /** Codici dei controlli soft scattati alla creazione (es. "MAIUSCOLE,RIPETIZIONI"). */
+    @Column(name = "revisione_automatica", length = 100, updatable = false)
+    private String revisioneAutomatica;
 
     /** Quando è stata anonimizzata (storico oltre i 12 mesi); null finché non lo è. */
     @Column(name = "data_anonimizzazione")
