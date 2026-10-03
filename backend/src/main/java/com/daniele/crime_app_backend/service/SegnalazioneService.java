@@ -30,9 +30,12 @@ import com.daniele.crime_app_backend.repository.SegnalazioneAbusoRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneRepository;
 import com.daniele.crime_app_backend.repository.SpecificheGestione;
 import com.daniele.crime_app_backend.repository.UtenteRepository;
+import com.daniele.crime_app_backend.entity.enums.TipoNotifica;
 import com.daniele.crime_app_backend.service.moderazione.TipoViolazione;
+import com.daniele.crime_app_backend.service.notifiche.EventiNotifica;
 import com.daniele.crime_app_backend.service.moderazione.ValidatoreDescrizione;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -61,6 +64,7 @@ public class SegnalazioneService {
     private final UtenteCorrenteService utenteCorrenteService;
     private final UtenteRepository utenteRepository;
     private final ValidatoreDescrizione validatoreDescrizione;
+    private final ApplicationEventPublisher eventi;
 
     /** Fiducia: chi segnala abusi poi accolti guadagna poco, chi li fa respingere perde molto. */
     static final int FIDUCIA_ABUSO_FONDATO = 2;
@@ -76,7 +80,8 @@ public class SegnalazioneService {
                                 CategoriaService categoriaService,
                                 UtenteCorrenteService utenteCorrenteService,
                                 UtenteRepository utenteRepository,
-                                ValidatoreDescrizione validatoreDescrizione) {
+                                ValidatoreDescrizione validatoreDescrizione,
+                                ApplicationEventPublisher eventi) {
         this.segnalazioneRepository = segnalazioneRepository;
         this.eventoModerazioneRepository = eventoModerazioneRepository;
         this.confermaSegnalazioneRepository = confermaSegnalazioneRepository;
@@ -86,6 +91,7 @@ public class SegnalazioneService {
         this.utenteCorrenteService = utenteCorrenteService;
         this.utenteRepository = utenteRepository;
         this.validatoreDescrizione = validatoreDescrizione;
+        this.eventi = eventi;
     }
 
     /**
@@ -261,6 +267,8 @@ public class SegnalazioneService {
                 .build();
         Segnalazione salvata = segnalazioneRepository.save(segnalazione);
         utenteRepository.incrementaSegnalazioniFatte(autore.getId());
+        // Avvisi a chi ha una zona qui: dopo il commit, su un altro thread (SmistamentoNotifiche).
+        eventi.publishEvent(new EventiNotifica.SegnalazionePubblicata(salvata.getId()));
         return segnalazioneMapper.toDto(salvata);
     }
 
@@ -312,6 +320,7 @@ public class SegnalazioneService {
         if (penalizzaAutore && segnalazione.getAutore() != null) {
             utenteRepository.incrementaSegnalazioniRimosse(segnalazione.getAutore().getId());
             utenteRepository.modificaFiducia(List.of(segnalazione.getAutore().getId()), FIDUCIA_AUTORE_RIMOSSA);
+            eventi.publishEvent(new EventiNotifica.SegnalazioneAggiornata(segnalazione.getId(), TipoNotifica.RIMOSSA));
         }
     }
 
@@ -434,6 +443,7 @@ public class SegnalazioneService {
             return;
         }
         transiziona(segnalazione, StatoSegnalazione.SOSPESA, TipoAttoreModerazione.SISTEMA, null, motivazione);
+        eventi.publishEvent(new EventiNotifica.SegnalazioneAggiornata(id, TipoNotifica.SOSPESA));
     }
 
     /**
@@ -457,6 +467,7 @@ public class SegnalazioneService {
     void scadiPerConfermeNegative(Segnalazione segnalazione, String motivazione) {
         transiziona(segnalazione, StatoSegnalazione.SCADUTA, TipoAttoreModerazione.SISTEMA, null, motivazione);
         log.info("Segnalazione {} scaduta: {}", segnalazione.getId(), motivazione);
+        eventi.publishEvent(new EventiNotifica.SegnalazioneAggiornata(segnalazione.getId(), TipoNotifica.CHIUSA));
     }
 
     /**

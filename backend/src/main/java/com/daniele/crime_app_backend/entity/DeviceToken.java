@@ -9,7 +9,11 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-/** Token del dispositivo per l'invio di notifiche push (FCM/APNs/Web Push). */
+/**
+ * Sottoscrizione Web Push di un dispositivo (browser o app installata): token = endpoint del
+ * servizio push del browser, p256dh e auth = chiavi per cifrare il contenuto (RFC 8291).
+ * Una per dispositivo; quelle scadute (404/410 dal servizio push) vengono cancellate.
+ */
 @Entity
 @Table(name = "device_token", indexes = {
         @Index(name = "idx_device_token_utente", columnList = "utente_id")
@@ -34,8 +38,24 @@ public class DeviceToken {
     private Utente utente;
 
     @NotBlank
-    @Column(nullable = false, unique = true, length = 500)
+    @Column(nullable = false, unique = true, length = 1000)
     private String token;
+
+    /** Chiave pubblica ECDH P-256 del browser (base64url, punto non compresso). */
+    @NotBlank
+    @Column(nullable = false, length = 200)
+    private String p256dh;
+
+    /** Segreto di autenticazione del browser (base64url, 16 byte). */
+    @NotBlank
+    @Column(nullable = false, length = 100)
+    private String auth;
+
+    /** Lingua del dispositivo all'iscrizione: le push si scrivono in questa lingua. */
+    @NotBlank
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private String lingua = "it";
 
     @NotNull
     @Enumerated(EnumType.STRING)

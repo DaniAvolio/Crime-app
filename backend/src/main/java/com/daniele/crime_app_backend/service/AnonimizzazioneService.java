@@ -2,6 +2,7 @@ package com.daniele.crime_app_backend.service;
 
 import com.daniele.crime_app_backend.repository.ConfermaSegnalazioneRepository;
 import com.daniele.crime_app_backend.repository.EventoModerazioneRepository;
+import com.daniele.crime_app_backend.repository.NotificaRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneAbusoRepository;
 import com.daniele.crime_app_backend.repository.SegnalazioneRepository;
 import org.springframework.stereotype.Service;
@@ -23,15 +24,18 @@ public class AnonimizzazioneService {
     private final ConfermaSegnalazioneRepository confermaSegnalazioneRepository;
     private final SegnalazioneAbusoRepository segnalazioneAbusoRepository;
     private final EventoModerazioneRepository eventoModerazioneRepository;
+    private final NotificaRepository notificaRepository;
 
     public AnonimizzazioneService(SegnalazioneRepository segnalazioneRepository,
                                   ConfermaSegnalazioneRepository confermaSegnalazioneRepository,
                                   SegnalazioneAbusoRepository segnalazioneAbusoRepository,
-                                  EventoModerazioneRepository eventoModerazioneRepository) {
+                                  EventoModerazioneRepository eventoModerazioneRepository,
+                                  NotificaRepository notificaRepository) {
         this.segnalazioneRepository = segnalazioneRepository;
         this.confermaSegnalazioneRepository = confermaSegnalazioneRepository;
         this.segnalazioneAbusoRepository = segnalazioneAbusoRepository;
         this.eventoModerazioneRepository = eventoModerazioneRepository;
+        this.notificaRepository = notificaRepository;
     }
 
     /**
@@ -47,6 +51,7 @@ public class AnonimizzazioneService {
         confermaSegnalazioneRepository.eliminaPerSegnalazioni(ids);
         segnalazioneAbusoRepository.eliminaPerSegnalazioni(ids);
         eventoModerazioneRepository.cancellaMotivazioni(ids);
+        notificaRepository.eliminaPerSegnalazioni(ids);
         return segnalazioneRepository.anonimizza(ids, LocalDateTime.now());
     }
 }

@@ -61,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/registrazione").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/push/chiave-pubblica").permitAll()
                         // Prima delle regole GET pubbliche: "/api/segnalazioni/*" non deve aprirle.
                         .requestMatchers(HttpMethod.GET,
                                 "/api/statistiche/moderazione",

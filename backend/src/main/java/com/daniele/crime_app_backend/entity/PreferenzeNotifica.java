@@ -2,10 +2,17 @@ package com.daniele.crime_app_backend.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.*;
 
-/** Preferenze di notifica push dell'utente. Raggio configurabile dall'utente. */
+import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Preferenze delle notifiche di un utente. Senza riga valgono i default di questa classe (vedi
+ * PreferenzeNotificaService): avvisi attivi, solo gravità alta, tutte le categorie, nessun silenzio.
+ * Le zone in cui ricevere gli avvisi sono in ZonaNotifica.
+ */
 @Entity
 @Table(name = "preferenze_notifica")
 @Getter
@@ -13,7 +20,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = "utente")
+@ToString(exclude = {"utente", "categorie"})
 public class PreferenzeNotifica {
 
     @Id
@@ -25,20 +32,40 @@ public class PreferenzeNotifica {
     @JoinColumn(name = "utente_id", nullable = false, unique = true)
     private Utente utente;
 
-    /** Raggio di notifica in metri. */
-    @NotNull
-    @Positive
-    @Column(name = "raggio_notifica_metri", nullable = false)
-    @Builder.Default
-    private Integer raggioNotificaMetri = 1000;
-
+    /** Interruttore generale: spento, nessun avviso (né in app né push). */
     @Column(name = "notifiche_attive", nullable = false)
     @Builder.Default
     private boolean notificheAttive = true;
 
-    @Column(name = "notifiche_solo_categorie_preferite", nullable = false)
+    /** Gravità minima delle segnalazioni vicine da notificare (1–3). */
+    @Column(name = "gravita_minima", nullable = false)
     @Builder.Default
-    private boolean notificheSoloCategoriePreferite = false;
+    private int gravitaMinima = 3;
+
+    /** Categorie scelte; vuoto = tutte quelle con gravità sufficiente. */
+    @ManyToMany
+    @JoinTable(name = "preferenze_notifica_categoria",
+            joinColumns = @JoinColumn(name = "preferenze_id"),
+            inverseJoinColumns = @JoinColumn(name = "categoria_id"))
+    @Builder.Default
+    private Set<Categoria> categorie = new HashSet<>();
+
+    /** Ore di silenzio (ora italiana), anche a cavallo della mezzanotte; null = nessuna. */
+    @Column(name = "ore_silenzio_da")
+    private LocalTime oreSilenzioDa;
+
+    @Column(name = "ore_silenzio_a")
+    private LocalTime oreSilenzioA;
+
+    /** Durante il silenzio le segnalazioni di gravità alta arrivano comunque come push. */
+    @Column(name = "gravi_in_silenzio", nullable = false)
+    @Builder.Default
+    private boolean graviInSilenzio = true;
+
+    /** Avvisi sulle proprie segnalazioni (confermata, chiusa, rimossa, sospesa). */
+    @Column(name = "aggiornamenti_mie", nullable = false)
+    @Builder.Default
+    private boolean aggiornamentiMie = true;
 
     @Override
     public boolean equals(Object o) {

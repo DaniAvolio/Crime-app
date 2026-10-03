@@ -37,6 +37,11 @@ export const routes: Routes = [
     canActivate: [ospiteGuard],
   },
   {
+    path: 'notifiche',
+    canActivate: [autenticatoGuard, stiliMappaGuard],
+    loadComponent: () => import('./notifiche/notifiche').then((m) => m.Notifiche),
+  },
+  {
     path: 'profilo',
     loadComponent: () => import('./profilo/profilo').then((m) => m.Profilo),
     canActivate: [autenticatoGuard],

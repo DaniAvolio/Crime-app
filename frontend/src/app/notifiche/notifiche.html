@@ -1,0 +1,357 @@
+<main
+  *transloco="let t"
+  class="min-h-full bg-neutral-50 text-neutral-900 dark:bg-ink dark:text-paper"
+>
+  <div class="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+    <h1 class="font-display text-2xl font-bold sm:text-3xl">{{ t('notifiche.titolo') }}</h1>
+
+    <div class="mt-5 flex gap-1 border-b border-neutral-200 dark:border-line" role="tablist">
+      @for (s of ['avvisi', 'impostazioni']; track s) {
+        <button
+          type="button"
+          role="tab"
+          class="-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors"
+          [attr.aria-selected]="scheda() === s"
+          [ngClass]="
+            scheda() === s
+              ? 'border-allerta text-neutral-900 dark:text-paper'
+              : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:text-muted dark:hover:text-paper'
+          "
+          (click)="apriScheda($any(s))"
+        >
+          {{ t('notifiche.schede.' + s) }}
+        </button>
+      }
+    </div>
+
+    @if (scheda() === 'avvisi') {
+      <section class="mt-5" role="tabpanel">
+        @if (zoneCaricate() && zone().length === 0) {
+          <div
+            class="mb-4 flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm dark:border-blue-900 dark:bg-blue-950/40"
+          >
+            <svg
+              lucideIcon="map-pin"
+              class="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400"
+              aria-hidden="true"
+            ></svg>
+            <div>
+              <p class="font-medium">{{ t('notifiche.nessunaZona.titolo') }}</p>
+              <p class="mt-0.5 text-neutral-600 dark:text-muted">
+                {{ t('notifiche.nessunaZona.testo') }}
+              </p>
+              <button
+                type="button"
+                class="mt-2 font-semibold text-blue-700 underline-offset-2 hover:underline dark:text-blue-300"
+                (click)="apriScheda('impostazioni')"
+              >
+                {{ t('notifiche.nessunaZona.azione') }}
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (nonLette()) {
+          <div class="mb-2 flex justify-end">
+            <button
+              type="button"
+              class="text-sm font-medium text-allerta underline-offset-2 hover:underline"
+              (click)="segnaTutteLette()"
+            >
+              {{ t('notifiche.segnaTutte') }}
+            </button>
+          </div>
+        }
+
+        <ul class="grid gap-2">
+          @for (avviso of avvisi(); track avviso.id) {
+            <li>
+              <button
+                type="button"
+                class="flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors"
+                [ngClass]="
+                  avviso.letta
+                    ? 'border-neutral-200 bg-white hover:bg-neutral-50 dark:border-line dark:bg-panel dark:hover:bg-ink'
+                    : 'border-allerta/40 bg-allerta/5 hover:bg-allerta/10 dark:bg-allerta/10'
+                "
+                (click)="apri(avviso)"
+              >
+                <span
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white"
+                  [ngClass]="pallino(gravitaAvviso(avviso))"
+                  aria-hidden="true"
+                >
+                  <svg [lucideIcon]="iconaAvviso(avviso)" class="h-5 w-5"></svg>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-sm" [class.font-semibold]="!avviso.letta">{{
+                    testoAvviso(avviso)
+                  }}</span>
+                  <span class="mt-0.5 block text-xs text-neutral-500 dark:text-muted">
+                    {{ tempoFa(avviso.dataCreazione) }}
+                    @if (!apribile(avviso)) {
+                      · {{ t('notifiche.nonPiuAttiva') }}
+                    }
+                  </span>
+                </span>
+                @if (!avviso.letta) {
+                  <span
+                    class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-allerta"
+                    aria-hidden="true"
+                  ></span>
+                  <span class="sr-only">{{ t('notifiche.nonLetta') }}</span>
+                }
+              </button>
+            </li>
+          } @empty {
+            @if (!caricandoAvvisi()) {
+              <li
+                class="rounded-xl border border-dashed border-neutral-300 px-4 py-10 text-center dark:border-line"
+              >
+                <svg
+                  lucideIcon="bell"
+                  class="mx-auto h-6 w-6 text-neutral-400"
+                  aria-hidden="true"
+                ></svg>
+                <p class="mt-2 text-sm text-neutral-500 dark:text-muted">
+                  {{ t(erroreAvvisi() ? 'notifiche.errore' : 'notifiche.vuoto') }}
+                </p>
+              </li>
+            }
+          }
+        </ul>
+        @if (caricandoAvvisi()) {
+          <p class="mt-3 text-center text-sm text-neutral-500 dark:text-muted">
+            {{ t('notifiche.caricamento') }}
+          </p>
+        } @else if (altre()) {
+          <button
+            type="button"
+            class="mt-3 h-10 w-full rounded-md border border-neutral-300 text-sm font-medium hover:bg-white dark:border-line dark:hover:bg-panel"
+            (click)="caricaAltri()"
+          >
+            {{ t('notifiche.altri') }}
+          </button>
+        }
+      </section>
+    } @else {
+      <div class="mt-5 grid gap-4" role="tabpanel">
+        <!-- Questo dispositivo -->
+        <section
+          class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-line dark:bg-panel"
+        >
+          <h2 class="font-display text-lg font-semibold">
+            {{ t('notifiche.dispositivo.titolo') }}
+          </h2>
+          <p class="mt-1 text-sm text-neutral-600 dark:text-muted">
+            {{ t('notifiche.dispositivo.stato.' + push.stato()) }}
+          </p>
+          @switch (push.stato()) {
+            @case ('spento') {
+              <button
+                type="button"
+                class="mt-3 flex h-10 items-center gap-2 rounded-md bg-allerta px-4 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                [disabled]="push.occupato()"
+                (click)="attivaPush()"
+              >
+                <svg lucideIcon="bell" class="h-4 w-4" aria-hidden="true"></svg>
+                {{ t('notifiche.dispositivo.attiva') }}
+              </button>
+            }
+            @case ('attivo') {
+              <button
+                type="button"
+                class="mt-3 h-10 rounded-md border border-neutral-300 px-4 text-sm font-medium hover:bg-neutral-100 disabled:opacity-50 dark:border-line dark:hover:bg-ink"
+                [disabled]="push.occupato()"
+                (click)="disattivaPush()"
+              >
+                {{ t('notifiche.dispositivo.disattiva') }}
+              </button>
+            }
+          }
+          <p class="mt-3 text-xs text-neutral-500 dark:text-muted">
+            {{ t('notifiche.dispositivo.nota') }}
+          </p>
+        </section>
+
+        <!-- Zone -->
+        <section
+          class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-line dark:bg-panel"
+        >
+          <h2 class="font-display text-lg font-semibold">{{ t('notifiche.zone.titolo') }}</h2>
+          <p class="mt-1 mb-3 text-sm text-neutral-600 dark:text-muted">
+            {{ t('notifiche.zone.descrizione') }}
+          </p>
+          <app-editor-zone
+            [zone]="zone()"
+            [occupato]="salvandoZona()"
+            (salva)="salvaZona($event)"
+            (elimina)="eliminaZona($event)"
+          />
+        </section>
+
+        @if (preferenze(); as p) {
+          <!-- Cosa ricevere -->
+          <section
+            class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-line dark:bg-panel"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <h2 class="font-display text-lg font-semibold">{{ t('notifiche.cosa.titolo') }}</h2>
+              <p class="min-h-5 text-xs text-neutral-500 dark:text-muted" role="status">
+                @if (statoSalvataggio(); as s) {
+                  {{ t('notifiche.salvataggio.' + s) }}
+                }
+              </p>
+            </div>
+
+            <label class="mt-3 flex cursor-pointer items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                class="mt-0.5 h-4 w-4 accent-allerta"
+                [checked]="p.notificheAttive"
+                (change)="modifica({ notificheAttive: $any($event.target).checked })"
+              />
+              <span>
+                <span class="font-medium">{{ t('notifiche.cosa.attive') }}</span>
+                <span class="block text-neutral-500 dark:text-muted">{{
+                  t('notifiche.cosa.attiveAiuto')
+                }}</span>
+              </span>
+            </label>
+
+            <fieldset
+              class="mt-4"
+              [disabled]="!p.notificheAttive"
+              [class.opacity-50]="!p.notificheAttive"
+            >
+              <legend class="text-sm font-medium">{{ t('notifiche.cosa.gravita') }}</legend>
+              <div class="mt-2 grid gap-2 sm:grid-cols-3">
+                @for (g of livelliGravita; track g) {
+                  <label
+                    class="relative flex cursor-pointer items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2.5 text-sm has-[:checked]:border-allerta has-[:checked]:bg-allerta/10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-blue-600 dark:border-line"
+                  >
+                    <input
+                      type="radio"
+                      class="sr-only"
+                      name="gravita-minima"
+                      [checked]="p.gravitaMinima === g"
+                      (change)="modifica({ gravitaMinima: g })"
+                    />
+                    <span
+                      class="h-2.5 w-2.5 shrink-0 rounded-full"
+                      [ngClass]="pallino(g)"
+                      aria-hidden="true"
+                    ></span>
+                    {{ t('notifiche.cosa.livello.' + g) }}
+                  </label>
+                }
+              </div>
+
+              <p class="mt-4 text-sm font-medium">{{ t('notifiche.cosa.categorie') }}</p>
+              <p class="text-xs text-neutral-500 dark:text-muted">
+                {{
+                  t(
+                    tutteLeCategorie()
+                      ? 'notifiche.cosa.categorieTutte'
+                      : 'notifiche.cosa.categorieScelte'
+                  )
+                }}
+              </p>
+              @for (gruppo of gruppiCategorie(); track gruppo.gravita) {
+                <p
+                  class="mt-3 text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:text-muted"
+                >
+                  {{ t(chiaveGravita(gruppo.gravita)) }}
+                </p>
+                <div class="mt-1.5 flex flex-wrap gap-1.5">
+                  @for (c of gruppo.categorie; track c.id) {
+                    <button
+                      type="button"
+                      class="chip-filtro h-8 px-3"
+                      [attr.aria-pressed]="categoriaScelta(c.id)"
+                      (click)="alternaCategoria(c.id)"
+                    >
+                      {{ c.nome }}
+                    </button>
+                  }
+                </div>
+              }
+
+              <label class="mt-5 flex cursor-pointer items-start gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 h-4 w-4 accent-allerta"
+                  [checked]="p.aggiornamentiMie"
+                  (change)="modifica({ aggiornamentiMie: $any($event.target).checked })"
+                />
+                <span>
+                  <span class="font-medium">{{ t('notifiche.cosa.mie') }}</span>
+                  <span class="block text-neutral-500 dark:text-muted">{{
+                    t('notifiche.cosa.mieAiuto')
+                  }}</span>
+                </span>
+              </label>
+            </fieldset>
+          </section>
+
+          <!-- Ore di silenzio -->
+          <section
+            class="rounded-xl border border-neutral-200 bg-white p-5 dark:border-line dark:bg-panel"
+            [class.opacity-50]="!p.notificheAttive"
+          >
+            <h2 class="font-display text-lg font-semibold">{{ t('notifiche.silenzio.titolo') }}</h2>
+            <p class="mt-1 text-sm text-neutral-600 dark:text-muted">
+              {{ t('notifiche.silenzio.descrizione') }}
+            </p>
+            <fieldset [disabled]="!p.notificheAttive">
+              <label class="mt-3 flex cursor-pointer items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  class="h-4 w-4 accent-allerta"
+                  [checked]="p.oreSilenzioDa !== null"
+                  (change)="alternaSilenzio($any($event.target).checked)"
+                />
+                <span class="font-medium">{{ t('notifiche.silenzio.attiva') }}</span>
+              </label>
+              @if (p.oreSilenzioDa !== null) {
+                <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                  <label for="silenzio-da">{{ t('notifiche.silenzio.da') }}</label>
+                  <input
+                    id="silenzio-da"
+                    type="time"
+                    class="h-9 rounded-md border border-neutral-300 bg-white px-2 dark:border-line dark:bg-ink"
+                    [value]="ora(p.oreSilenzioDa)"
+                    (change)="oraSilenzio('oreSilenzioDa', $any($event.target).value)"
+                  />
+                  <label for="silenzio-a">{{ t('notifiche.silenzio.a') }}</label>
+                  <input
+                    id="silenzio-a"
+                    type="time"
+                    class="h-9 rounded-md border border-neutral-300 bg-white px-2 dark:border-line dark:bg-ink"
+                    [value]="ora(p.oreSilenzioA)"
+                    (change)="oraSilenzio('oreSilenzioA', $any($event.target).value)"
+                  />
+                </div>
+                <label class="mt-3 flex cursor-pointer items-start gap-3 text-sm">
+                  <input
+                    type="checkbox"
+                    class="mt-0.5 h-4 w-4 accent-allerta"
+                    [checked]="p.graviInSilenzio"
+                    (change)="modifica({ graviInSilenzio: $any($event.target).checked })"
+                  />
+                  <span>
+                    <span class="font-medium">{{ t('notifiche.silenzio.gravi') }}</span>
+                    <span class="block text-neutral-500 dark:text-muted">{{
+                      t('notifiche.silenzio.graviAiuto')
+                    }}</span>
+                  </span>
+                </label>
+              }
+            </fieldset>
+          </section>
+          <p class="text-xs text-neutral-500 dark:text-muted">{{ t('notifiche.limite') }}</p>
+        }
+      </div>
+    }
+  </div>
+</main>

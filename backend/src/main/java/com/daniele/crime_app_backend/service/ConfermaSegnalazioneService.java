@@ -10,6 +10,9 @@ import com.daniele.crime_app_backend.exception.ConflittoException;
 import com.daniele.crime_app_backend.mapper.SegnalazioneMapper;
 import com.daniele.crime_app_backend.repository.ConfermaSegnalazioneRepository;
 import com.daniele.crime_app_backend.repository.UtenteRepository;
+import com.daniele.crime_app_backend.entity.enums.TipoNotifica;
+import com.daniele.crime_app_backend.service.notifiche.EventiNotifica;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +30,7 @@ public class ConfermaSegnalazioneService {
     private final SegnalazioneMapper segnalazioneMapper;
     private final UtenteCorrenteService utenteCorrenteService;
     private final UtenteRepository utenteRepository;
+    private final ApplicationEventPublisher eventi;
     private final int sogliaNonInAtto;
 
     public ConfermaSegnalazioneService(ConfermaSegnalazioneRepository confermaSegnalazioneRepository,
@@ -34,12 +38,14 @@ public class ConfermaSegnalazioneService {
                                         SegnalazioneMapper segnalazioneMapper,
                                         UtenteCorrenteService utenteCorrenteService,
                                         UtenteRepository utenteRepository,
+                                        ApplicationEventPublisher eventi,
                                         @Value("${crimeapp.segnalazioni.soglia-non-in-atto:3}") int sogliaNonInAtto) {
         this.confermaSegnalazioneRepository = confermaSegnalazioneRepository;
         this.segnalazioneService = segnalazioneService;
         this.segnalazioneMapper = segnalazioneMapper;
         this.utenteCorrenteService = utenteCorrenteService;
         this.utenteRepository = utenteRepository;
+        this.eventi = eventi;
         this.sogliaNonInAtto = sogliaNonInAtto;
     }
 
@@ -101,6 +107,7 @@ public class ConfermaSegnalazioneService {
             }
             if (primaConfermaAltrui) {
                 utenteRepository.incrementaSegnalazioniConfermate(autoreId);
+                eventi.publishEvent(new EventiNotifica.SegnalazioneAggiornata(segnalazioneId, TipoNotifica.CONFERMATA));
             }
         } else if (votaAutore) {
             segnalazioneService.concludiDaAutore(segnalazione);

@@ -44,6 +44,20 @@ logging:
     # org.hibernate.orm.jdbc.bind: TRACE
 
 crimeapp:
+  push:
+    vapid:
+      # Chiavi VAPID (P-256, base64url) che firmano le push verso i servizi dei browser. La coppia
+      # qui sotto è SOLO per sviluppo: in produzione vanno fornite da variabili d'ambiente (una
+      # coppia nuova, la privata non va mai pubblicata). Cambiarle invalida le sottoscrizioni esistenti.
+      chiave-pubblica: ${CRIMEAPP_VAPID_PUBBLICA:BEj-BJcjGVn03uYOZriPIVaWvW6QHc0RmtE5IEr6TCBZefl5BpUuVqertLRsv5-GLYH0SEpe19Cnw2mHgEANFQo}
+      chiave-privata: ${CRIMEAPP_VAPID_PRIVATA:cIrxQzhfDqmXfX6F-uR8jjwfrx-H8cJrwRYgyWWZ_1o}
+      # Contatto per i gestori dei servizi push in caso di problemi (mailto: o https:).
+      soggetto: ${CRIMEAPP_VAPID_SOGGETTO:mailto:admin@crime-app.local}
+  notifiche:
+    # Push vere per utente in un'ora; oltre arriva un solo riepilogo che si aggiorna.
+    push-per-ora: 3
+    # Giorni dopo i quali gli avvisi vengono cancellati dalla campanella.
+    giorni-conservazione: 30
   moderazione:
     # Somma dei pesi degli abusi in attesa a cui una Segnalazione viene sospesa automaticamente.
     # Ogni abuso pesa la fiducia del segnalante / 100 (minimo 0.25): 4 utenti con fiducia piena.

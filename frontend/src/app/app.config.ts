@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideLucideIcons } from '@lucide/angular';
 import { provideTransloco } from '@jsverse/transloco';
 import { routes } from './app.routes';
@@ -21,6 +22,12 @@ export const appConfig: ApplicationConfig = {
     { provide: ErrorHandler, useClass: LoggerErrorHandler },
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor, httpLoggingInterceptor])),
+    // Service worker (solo build di produzione): app installabile e notifiche push. Non mette in
+    // cache le API (vedi ngsw-config.json): i dati arrivano sempre freschi dal backend.
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
     provideLucideIcons(...ICONE_CATEGORIA_DISPONIBILI),
     provideTransloco({
       config: {

@@ -40,6 +40,8 @@ class ConfermaSegnalazioneServiceTest {
     private UtenteCorrenteService utenteCorrenteService;
     @Mock
     private UtenteRepository utenteRepository;
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventi;
 
     private final Utente autore = Utente.builder().id(1L).build();
     private final Utente passante = Utente.builder().id(2L).build();
@@ -60,7 +62,7 @@ class ConfermaSegnalazioneServiceTest {
 
     private ConfermaSegnalazioneService service() {
         return new ConfermaSegnalazioneService(confermaRepository, segnalazioneService, segnalazioneMapper,
-                utenteCorrenteService, utenteRepository, SOGLIA);
+                utenteCorrenteService, utenteRepository, eventi, SOGLIA);
     }
 
     @Test

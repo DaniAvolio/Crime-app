@@ -25,6 +25,7 @@ const SEZIONI = [
   { chiave: 'durata', domande: ['scadenza', 'voto', 'cambiareVoto'] },
   { chiave: 'categorie', domande: ['quali'] },
   { chiave: 'account', domande: ['registrazione', 'profilo', 'fiducia'] },
+  { chiave: 'notifiche', domande: ['zone', 'push', 'silenzio', 'mie'] },
   { chiave: 'privacy', domande: ['dati', 'storico', 'moderazione'] },
 ] as const;
 

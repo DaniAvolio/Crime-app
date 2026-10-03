@@ -60,6 +60,27 @@
         {{ t('nav.accedi') }}
       </a>
     } @else {
+      <a
+        routerLink="/notifiche"
+        routerLinkActive="text-gray-900 dark:text-paper"
+        [attr.aria-label]="
+          campanella.nonLette() > 0
+            ? t('nav.notificheNonLette', { numero: campanella.nonLette() })
+            : t('nav.notifiche')
+        "
+        [title]="t('nav.notifiche')"
+        class="relative flex h-8 w-8 items-center justify-center rounded-sm text-gray-500 transition-colors hover:bg-black/5 hover:text-gray-900 dark:text-muted dark:hover:bg-white/10 dark:hover:text-paper"
+      >
+        <svg lucideIcon="bell" class="h-4 w-4"></svg>
+        @if (campanella.nonLette() > 0) {
+          <span
+            class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-allerta px-1 text-[10px] leading-none font-semibold text-white tabular-nums"
+            aria-hidden="true"
+          >
+            {{ campanella.nonLette() > 99 ? '99+' : campanella.nonLette() }}
+          </span>
+        }
+      </a>
       <!-- Profilo: icona standard. Su telefono sostituisce l'ingranaggio: lingua e temi stanno
            nelle Preferenze del profilo. -->
       <a

@@ -501,6 +501,25 @@ html.dark {
   }
 }
 
+/* Nome della zona al centro del suo cerchio (notifiche/editor-zone). */
+.leaflet-tooltip.etichetta-zona {
+  border: 0;
+  background: rgb(255 255 255 / 0.9);
+  box-shadow: none;
+  color: #1e3a8a;
+  font-weight: 600;
+  font-size: 12px;
+
+  &::before {
+    display: none;
+  }
+}
+
+html.dark .leaflet-tooltip.etichetta-zona {
+  background: rgb(27 33 43 / 0.9);
+  color: #bfdbfe;
+}
+
 /* Crediti della mappa in tema scuro. */
 html.dark .crediti-compatti {
   .leaflet-control-attribution.attribuzione-aperta {

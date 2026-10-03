@@ -8,7 +8,9 @@
     "guida": "How it works",
     "guidaBreve": "Guide",
     "statistiche": "Statistics",
-    "statisticheBreve": "Stats"
+    "statisticheBreve": "Stats",
+    "notifiche": "Notifications",
+    "notificheNonLette": "Notifications, {{ numero }} unread"
   },
   "home": {
     "hero": {
@@ -459,6 +461,25 @@
           "r": "Verified identity is shown in your profile. The trust score is an internal value and does not limit use of the app."
         }
       },
+      "notifiche": {
+        "titolo": "Notifications",
+        "zone": {
+          "d": "How do I get alerts about nearby reports?",
+          "r": "In Notifications › Settings save up to 5 areas (e.g. Home, Work) with a radius from 200 m to 5 km. When someone reports something inside an area you get an alert. By default only for high severity; you can include the others or pick categories. You are not alerted about your own reports."
+        },
+        "push": {
+          "d": "Do they arrive when the app is closed?",
+          "r": "Yes, if you turn on notifications for the device (Notifications › Settings). On Android and computers you just grant permission; on iPhone and iPad you must first add Crime to the Home Screen. Alerts are always kept in the bell at the top."
+        },
+        "silenzio": {
+          "d": "Can I avoid being disturbed?",
+          "r": "You can set quiet hours (e.g. 23–7) with no notifications, except serious ones if you choose. In any case you get at most 3 notifications an hour: the rest arrive in a single summary."
+        },
+        "mie": {
+          "d": "Am I told what happens to my reports?",
+          "r": "Yes: when another user confirms one, when it is closed by votes and when moderation suspends or removes it. You can turn this off in the notification settings."
+        }
+      },
       "privacy": {
         "titolo": "Privacy and moderation",
         "dati": {
@@ -548,5 +569,101 @@
     "fascia": "Time slot",
     "meno": "Fewer",
     "piu": "More"
+  },
+  "notifiche": {
+    "titolo": "Notifications",
+    "schede": {
+      "avvisi": "Alerts",
+      "impostazioni": "Settings"
+    },
+    "avviso": {
+      "VICINA": "{{ categoria }} near {{ zona }}",
+      "CONFERMATA": "Your report “{{ categoria }}” was confirmed by another user",
+      "CHIUSA": "Your report “{{ categoria }}” was closed: several users say it is no longer happening",
+      "RIMOSSA": "Your report “{{ categoria }}” was removed by an administrator",
+      "SOSPESA": "Your report “{{ categoria }}” is under review after some problem reports"
+    },
+    "nonPiuAttiva": "no longer active",
+    "nonLetta": "Unread",
+    "segnaTutte": "Mark all as read",
+    "vuoto": "No alerts yet.",
+    "errore": "We could not load your alerts. Please try again.",
+    "caricamento": "Loading…",
+    "altri": "Show more",
+    "nessunaZona": {
+      "titolo": "You have no areas yet",
+      "testo": "Add the places you care about (home, work, school) to be alerted about nearby reports.",
+      "azione": "Add an area"
+    },
+    "dispositivo": {
+      "titolo": "This device",
+      "stato": {
+        "attivo": "Notifications are on: they arrive even when the app is closed.",
+        "spento": "Notifications are off: alerts are only shown here, in the app.",
+        "bloccato": "Notifications are blocked by the browser. Re-enable them in the site settings (icon next to the address).",
+        "daInstallare": "On iPhone and iPad notifications only reach the installed app: tap Share, then “Add to Home Screen”, and open Crime from there.",
+        "nonSupportato": "This browser does not support push notifications. Alerts are still shown here, in the app."
+      },
+      "attiva": "Turn on notifications",
+      "disattiva": "Turn off on this device",
+      "attivate": "Notifications turned on for this device.",
+      "disattivate": "Notifications turned off for this device.",
+      "errore": "We could not turn on notifications. Please try again.",
+      "nota": "This only applies to this browser: notifications are turned on separately on each device."
+    },
+    "zone": {
+      "titolo": "Your areas",
+      "descrizione": "Get an alert when something is reported inside one of these areas (up to 5).",
+      "toccaMappa": "Tap the map to move the centre of the area",
+      "nome": "Name",
+      "nomePlaceholder": "E.g. Home, Work, School",
+      "erroreNome": "Give the area a name.",
+      "raggio": "Radius",
+      "usaPosizione": "Use my location",
+      "localizzando": "Finding your location…",
+      "erroreGps": "Location unavailable: tap the map to choose the point.",
+      "annulla": "Cancel",
+      "salva": "Save area",
+      "salvata": "Area “{{ nome }}” saved.",
+      "errore": "We could not save the area. Please try again.",
+      "entro": "within {{ raggio }}",
+      "modifica": "Edit",
+      "elimina": "Delete",
+      "eliminaTitolo": "Delete the area “{{ nome }}”?",
+      "eliminaMessaggio": "You will no longer get alerts for reports in this area.",
+      "vuoto": "No saved areas.",
+      "aggiungi": "Add area",
+      "massimo": "You have reached the maximum of {{ numero }} areas."
+    },
+    "cosa": {
+      "titolo": "What to receive",
+      "attive": "Alerts on",
+      "attiveAiuto": "When off, you get no alerts at all, neither here nor on your device.",
+      "gravita": "Reports in your areas",
+      "livello": {
+        "1": "All",
+        "2": "Medium and high",
+        "3": "High severity only"
+      },
+      "categorie": "Categories",
+      "categorieTutte": "None selected: you get every category below. Tap some to receive only those.",
+      "categorieScelte": "You only get the selected categories.",
+      "mie": "Updates on my reports",
+      "mieAiuto": "When they are confirmed, closed, suspended or removed."
+    },
+    "silenzio": {
+      "titolo": "Quiet hours",
+      "descrizione": "No device notifications during these hours; alerts are still kept here.",
+      "attiva": "Turn on quiet hours",
+      "da": "From",
+      "a": "to",
+      "gravi": "Still notify me about serious reports",
+      "graviAiuto": "Assaults, robberies, fires and the other high-severity ones."
+    },
+    "salvataggio": {
+      "salvato": "Saved",
+      "errore": "Not saved, try again"
+    },
+    "limite": "To avoid disturbing you, at most 3 notifications an hour: the rest arrive in a single summary and all stay here."
   }
 }

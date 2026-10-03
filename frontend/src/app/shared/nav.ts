@@ -5,6 +5,8 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideDynamicIcon } from '@lucide/angular';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../auth/auth';
+import { CampanellaService } from '../notifiche/campanella';
+import { PushDispositivoService } from '../notifiche/push-dispositivo';
 import { TemaService } from './tema';
 import { ThemeToggle } from './theme-toggle';
 
@@ -38,6 +40,10 @@ export class Nav {
   private readonly tema = inject(TemaService);
   private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
+  /** Badge della campanella; Nav è sempre montata, quindi il conteggio parte all'avvio. */
+  protected readonly campanella = inject(CampanellaService);
+  /** Costruito qui per annullare la sottoscrizione push al logout anche se non si apre /notifiche. */
+  private readonly push = inject(PushDispositivoService);
 
   constructor() {
     // Nav è sempre montata: all'avvio riallinea ruolo e dati dell'utente salvato.

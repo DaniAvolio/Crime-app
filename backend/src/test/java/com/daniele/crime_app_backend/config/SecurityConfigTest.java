@@ -5,6 +5,10 @@ import com.daniele.crime_app_backend.controller.CategoriaController;
 import com.daniele.crime_app_backend.controller.SegnalazioneAbusoController;
 import com.daniele.crime_app_backend.controller.SegnalazioneController;
 import com.daniele.crime_app_backend.controller.StatisticheController;
+import com.daniele.crime_app_backend.controller.NotificheController;
+import com.daniele.crime_app_backend.service.ZoneNotificaService;
+import com.daniele.crime_app_backend.service.notifiche.NotificheService;
+import com.daniele.crime_app_backend.service.push.WebPushClient;
 import com.daniele.crime_app_backend.controller.UtenteController;
 import com.daniele.crime_app_backend.dto.FiltriCategorie;
 import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
@@ -56,7 +60,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Verifica le regole di accesso di SecurityConfig: i service sono mock, conta solo lo status HTTP. */
 @WebMvcTest(controllers = {SegnalazioneController.class, CategoriaController.class, AuthController.class,
-        UtenteController.class, SegnalazioneAbusoController.class, StatisticheController.class})
+        UtenteController.class, SegnalazioneAbusoController.class, StatisticheController.class,
+        NotificheController.class})
 @Import({SecurityConfig.class, ErroriSicurezzaHandler.class, JwtUtenteConverter.class})
 class SecurityConfigTest {
 
@@ -76,6 +81,12 @@ class SecurityConfigTest {
     private SegnalazioneAbusoService segnalazioneAbusoService;
     @MockitoBean
     private StatisticheService statisticheService;
+    @MockitoBean
+    private NotificheService notificheService;
+    @MockitoBean
+    private ZoneNotificaService zoneNotificaService;
+    @MockitoBean
+    private WebPushClient webPushClient;
     @MockitoBean
     private CategoriaService categoriaService;
     @MockitoBean
@@ -119,6 +130,31 @@ class SecurityConfigTest {
                         throw new AssertionError("Accesso negato a un utente autenticato: " + stato);
                     }
                 });
+    }
+
+    @Test
+    void notificheSoloConLoginTranneLaChiavePubblica() throws Exception {
+        when(webPushClient.chiavePubblica()).thenReturn("BAbc");
+        mockMvc.perform(get("/api/push/chiave-pubblica")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.chiave").value("BAbc"));
+        mockMvc.perform(get("/api/utenti/me/notifiche")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/utenti/me/notifiche/non-lette")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/utenti/me/zone-notifica")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/utenti/me/notifiche/non-lette").with(ruolo("UTENTE"))).andExpect(status().isOk());
+        mockMvc.perform(post("/api/utenti/me/zone-notifica").with(ruolo("UTENTE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nome\": \"Casa\", \"lat\": 45.07, \"lng\": 7.68, \"raggioMetri\": 1000}"))
+                .andExpect(status().isCreated());
+        // Raggio fuori dai limiti: 400 dalla validazione.
+        mockMvc.perform(post("/api/utenti/me/zone-notifica").with(ruolo("UTENTE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nome\": \"Casa\", \"lat\": 45.07, \"lng\": 7.68, \"raggioMetri\": 50}"))
+                .andExpect(status().isBadRequest());
+        // Endpoint non https: 400.
+        mockMvc.perform(post("/api/utenti/me/push").with(ruolo("UTENTE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"endpoint\": \"http://x\", \"p256dh\": \"a\", \"auth\": \"b\"}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

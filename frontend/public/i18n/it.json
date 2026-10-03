@@ -8,7 +8,9 @@
     "guida": "Come funziona",
     "guidaBreve": "Guida",
     "statistiche": "Statistiche",
-    "statisticheBreve": "Dati"
+    "statisticheBreve": "Dati",
+    "notifiche": "Notifiche",
+    "notificheNonLette": "Notifiche, {{ numero }} non lette"
   },
   "home": {
     "hero": {
@@ -459,6 +461,25 @@
           "r": "L’identità verificata è indicata nel profilo. Il punteggio di fiducia è un dato interno e non limita l’uso dell’app."
         }
       },
+      "notifiche": {
+        "titolo": "Notifiche",
+        "zone": {
+          "d": "Come ricevo gli avvisi delle segnalazioni vicine?",
+          "r": "In Notifiche › Impostazioni salva fino a 5 zone (es. Casa, Lavoro) con un raggio da 200 m a 5 km. Quando qualcuno segnala qualcosa dentro una zona ricevi un avviso. Di default solo per la gravità alta; puoi includere le altre o scegliere le categorie. Non sei avvisato delle tue segnalazioni."
+        },
+        "push": {
+          "d": "Arrivano anche ad app chiusa?",
+          "r": "Sì, se attivi le notifiche sul dispositivo (Notifiche › Impostazioni). Su Android e computer basta concedere il permesso; su iPhone e iPad bisogna prima aggiungere Crime alla schermata Home. Gli avvisi restano comunque nella campanella in alto."
+        },
+        "silenzio": {
+          "d": "Posso evitare di essere disturbato?",
+          "r": "Puoi impostare le ore di silenzio (es. 23–7), in cui non arrivano notifiche, salvo le gravi se lo scegli. In ogni caso ricevi al massimo 3 notifiche all’ora: le altre arrivano in un unico riepilogo."
+        },
+        "mie": {
+          "d": "Vengo avvisato su ciò che succede alle mie segnalazioni?",
+          "r": "Sì: quando un altro utente la conferma, quando viene chiusa dai voti e quando viene sospesa o rimossa dalla moderazione. Puoi disattivarlo nelle impostazioni delle notifiche."
+        }
+      },
       "privacy": {
         "titolo": "Privacy e moderazione",
         "dati": {
@@ -548,5 +569,101 @@
     "fascia": "Fascia",
     "meno": "Meno",
     "piu": "Più"
+  },
+  "notifiche": {
+    "titolo": "Notifiche",
+    "schede": {
+      "avvisi": "Avvisi",
+      "impostazioni": "Impostazioni"
+    },
+    "avviso": {
+      "VICINA": "{{ categoria }} vicino a {{ zona }}",
+      "CONFERMATA": "La tua segnalazione «{{ categoria }}» è stata confermata da un altro utente",
+      "CHIUSA": "La tua segnalazione «{{ categoria }}» è stata chiusa: diversi utenti indicano che non è più in atto",
+      "RIMOSSA": "La tua segnalazione «{{ categoria }}» è stata rimossa da un amministratore",
+      "SOSPESA": "La tua segnalazione «{{ categoria }}» è in revisione dopo alcune segnalazioni di problemi"
+    },
+    "nonPiuAttiva": "non più attiva",
+    "nonLetta": "Non letta",
+    "segnaTutte": "Segna tutte come lette",
+    "vuoto": "Nessun avviso per ora.",
+    "errore": "Non riusciamo a caricare gli avvisi. Riprova.",
+    "caricamento": "Caricamento…",
+    "altri": "Mostra altri",
+    "nessunaZona": {
+      "titolo": "Non hai ancora zone",
+      "testo": "Aggiungi i posti che ti interessano (casa, lavoro, scuola) per essere avvisato delle segnalazioni vicine.",
+      "azione": "Aggiungi una zona"
+    },
+    "dispositivo": {
+      "titolo": "Questo dispositivo",
+      "stato": {
+        "attivo": "Le notifiche sono attive: arrivano anche ad app chiusa.",
+        "spento": "Le notifiche sono spente: gli avvisi restano visibili solo qui, nell’app.",
+        "bloccato": "Le notifiche sono bloccate dal browser. Riattivale dalle impostazioni del sito (icona accanto all’indirizzo).",
+        "daInstallare": "Su iPhone e iPad le notifiche arrivano solo all’app installata: tocca Condividi e poi «Aggiungi a Home», quindi apri Crime da lì.",
+        "nonSupportato": "Questo browser non supporta le notifiche push. Gli avvisi restano visibili qui, nell’app."
+      },
+      "attiva": "Attiva le notifiche",
+      "disattiva": "Disattiva su questo dispositivo",
+      "attivate": "Notifiche attivate su questo dispositivo.",
+      "disattivate": "Notifiche disattivate su questo dispositivo.",
+      "errore": "Non siamo riusciti ad attivare le notifiche. Riprova.",
+      "nota": "Vale solo per questo browser: su ogni dispositivo le notifiche si attivano a parte."
+    },
+    "zone": {
+      "titolo": "Le tue zone",
+      "descrizione": "Ricevi un avviso quando viene segnalato qualcosa dentro una di queste zone (al massimo 5).",
+      "toccaMappa": "Tocca la mappa per spostare il centro della zona",
+      "nome": "Nome",
+      "nomePlaceholder": "Es. Casa, Lavoro, Scuola",
+      "erroreNome": "Dai un nome alla zona.",
+      "raggio": "Raggio",
+      "usaPosizione": "Usa la mia posizione",
+      "localizzando": "Cerco la tua posizione…",
+      "erroreGps": "Posizione non disponibile: tocca la mappa per scegliere il punto.",
+      "annulla": "Annulla",
+      "salva": "Salva zona",
+      "salvata": "Zona «{{ nome }}» salvata.",
+      "errore": "Non siamo riusciti a salvare la zona. Riprova.",
+      "entro": "entro {{ raggio }}",
+      "modifica": "Modifica",
+      "elimina": "Elimina",
+      "eliminaTitolo": "Eliminare la zona «{{ nome }}»?",
+      "eliminaMessaggio": "Non riceverai più avvisi per le segnalazioni in questa zona.",
+      "vuoto": "Nessuna zona salvata.",
+      "aggiungi": "Aggiungi zona",
+      "massimo": "Hai raggiunto il massimo di {{ numero }} zone."
+    },
+    "cosa": {
+      "titolo": "Cosa ricevere",
+      "attive": "Avvisi attivi",
+      "attiveAiuto": "Spento, non ricevi nessun avviso, né qui né sul dispositivo.",
+      "gravita": "Segnalazioni nelle tue zone",
+      "livello": {
+        "1": "Tutte",
+        "2": "Media e alta",
+        "3": "Solo gravità alta"
+      },
+      "categorie": "Categorie",
+      "categorieTutte": "Nessuna scelta: ricevi tutte le categorie qui sotto. Toccane alcune per limitarti a quelle.",
+      "categorieScelte": "Ricevi solo le categorie selezionate.",
+      "mie": "Aggiornamenti sulle mie segnalazioni",
+      "mieAiuto": "Quando vengono confermate, chiuse, sospese o rimosse."
+    },
+    "silenzio": {
+      "titolo": "Ore di silenzio",
+      "descrizione": "In questa fascia niente notifiche sul dispositivo; gli avvisi restano comunque qui.",
+      "attiva": "Attiva le ore di silenzio",
+      "da": "Dalle",
+      "a": "alle",
+      "gravi": "Avvisami comunque per le segnalazioni gravi",
+      "graviAiuto": "Aggressioni, rapine, incendi e le altre di gravità alta."
+    },
+    "salvataggio": {
+      "salvato": "Salvato",
+      "errore": "Non salvato, riprova"
+    },
+    "limite": "Per non disturbarti, al massimo 3 notifiche all’ora: le altre arrivano in un unico riepilogo e restano tutte qui."
   }
 }

@@ -55,6 +55,8 @@ class SegnalazioneServiceRevisioneTest {
     private UtenteRepository utenteRepository;
     @Mock
     private ValidatoreDescrizione validatore;
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventi;
 
     private final Utente admin = Utente.builder().id(9L).ruolo(RuoloUtente.ADMIN).build();
     private final Utente autore = Utente.builder().id(1L).ruolo(RuoloUtente.UTENTE).build();
@@ -70,7 +72,7 @@ class SegnalazioneServiceRevisioneTest {
 
     private SegnalazioneService service() {
         return new SegnalazioneService(segnalazioneRepository, eventoRepository, confermaRepository, abusoRepository,
-                mapper, categoriaService, utenteCorrenteService, utenteRepository, validatore);
+                mapper, categoriaService, utenteCorrenteService, utenteRepository, validatore, eventi);
     }
 
     @Test

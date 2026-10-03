@@ -1,15 +1,27 @@
 package com.daniele.crime_app_backend.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
-/** Payload in ingresso per creare/aggiornare le PreferenzeNotifica di un Utente. */
+import java.time.LocalTime;
+import java.util.List;
+
+/** Preferenze delle notifiche dell'utente autenticato (sostituisce quelle salvate). */
 public record PreferenzeNotificaRequest(
-        @NotNull(message = "Il raggio di notifica è obbligatorio")
-        @Positive(message = "Il raggio di notifica deve essere maggiore di zero")
-        Integer raggioNotificaMetri,
-
         boolean notificheAttive,
 
-        boolean notificheSoloCategoriePreferite
+        @Min(value = 1, message = "La gravità minima va da 1 a 3")
+        @Max(value = 3, message = "La gravità minima va da 1 a 3")
+        int gravitaMinima,
+
+        @NotNull(message = "L'elenco delle categorie è obbligatorio (vuoto = tutte)")
+        @Size(max = 100, message = "Troppe categorie")
+        List<Long> categorieId,
+
+        LocalTime oreSilenzioDa,
+        LocalTime oreSilenzioA,
+        boolean graviInSilenzio,
+        boolean aggiornamentiMie
 ) {}
