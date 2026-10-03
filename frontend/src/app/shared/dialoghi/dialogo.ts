@@ -9,30 +9,25 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideDynamicIcon } from '@lucide/angular';
-import { DialoghiService, OpzioniRichiesta } from './dialoghi';
+import { CampoDialogo, DialoghiService } from './dialoghi';
 
 const SELETTORE_FOCALIZZABILI =
   'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-const SOLO_NUMERI: ValidatorFn = Validators.pattern(/^-?\d+([.,]\d+)?$/);
+const SOLO_NUMERI = /^-?\d+([.,]\d+)?$/;
 
 /**
  * Unico modal dell'app, montato in app.html e pilotato da DialoghiService. Stile del dialog
  * Soccorsi: pannello dal basso su mobile, centrato su desktop.
+ * I campi di "chiedi" sono input semplici con valori in un signal, senza @angular/forms: il
+ * dialog è sempre caricato e i form reattivi aggiungerebbero ~60 kB al bundle iniziale.
  */
 @Component({
   selector: 'app-dialogo',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslocoDirective, LucideDynamicIcon],
+  imports: [TranslocoDirective, LucideDynamicIcon],
   templateUrl: './dialogo.html',
   host: { '(document:keydown.escape)': 'annulla()' },
 })
@@ -44,8 +39,10 @@ export class Dialogo {
     const aperto = this.aperto();
     return aperto?.tipo === 'chiedi' ? aperto.opzioni.campi : [];
   });
-  /** Form del dialog "chiedi", ricostruito a ogni apertura dai campi richiesti. */
-  protected readonly form = signal(new FormGroup<Record<string, FormControl<string>>>({}));
+  /** Valori dei campi del dialog "chiedi", azzerati a ogni apertura. */
+  protected readonly valori = signal<Record<string, string>>({});
+  /** Campi già lasciati (o tutti, dopo un invio): solo questi mostrano l'errore. */
+  private readonly toccati = signal<ReadonlySet<string>>(new Set());
 
   private readonly riquadro = viewChild<ElementRef<HTMLElement>>('riquadro');
   private readonly injector = inject(Injector);
@@ -62,7 +59,10 @@ export class Dialogo {
       }
       this.focusPrecedente ??= document.activeElement as HTMLElement | null;
       if (aperto.tipo === 'chiedi') {
-        this.form.set(this.creaForm(aperto.opzioni));
+        this.valori.set(
+          Object.fromEntries(aperto.opzioni.campi.map((c) => [c.nome, c.valoreIniziale ?? ''])),
+        );
+        this.toccati.set(new Set());
       }
       afterNextRender(() => this.focusIniziale(), { injector: this.injector });
     });
@@ -75,13 +75,18 @@ export class Dialogo {
       return;
     }
     if (aperto?.tipo === 'chiedi') {
-      const form = this.form();
-      if (form.invalid) {
-        form.markAllAsTouched();
-        this.riquadro()?.nativeElement.querySelector<HTMLElement>('.ng-invalid')?.focus();
+      if (aperto.opzioni.campi.some((campo) => this.errore(campo) !== null)) {
+        this.toccati.set(new Set(aperto.opzioni.campi.map((campo) => campo.nome)));
+        afterNextRender(
+          () =>
+            this.riquadro()
+              ?.nativeElement.querySelector<HTMLElement>('[aria-invalid="true"]')
+              ?.focus(),
+          { injector: this.injector },
+        );
         return;
       }
-      const valori = form.getRawValue();
+      const valori = this.valori();
       aperto.chiudi(
         Object.fromEntries(Object.entries(valori).map(([nome, valore]) => [nome, valore.trim()])),
       );
@@ -97,12 +102,25 @@ export class Dialogo {
     }
   }
 
-  protected erroreCampo(nome: string): 'obbligatorio' | 'numero' | null {
-    const controllo = this.form().controls[nome];
-    if (!controllo?.touched || controllo.valid) {
-      return null;
+  protected aggiorna(nome: string, valore: string): void {
+    this.valori.update((valori) => ({ ...valori, [nome]: valore }));
+  }
+
+  protected tocca(nome: string): void {
+    this.toccati.update((toccati) => new Set(toccati).add(nome));
+  }
+
+  /** Errore da mostrare sotto il campo: solo dopo che l'utente l'ha lasciato o ha inviato. */
+  protected erroreCampo(campo: CampoDialogo): 'obbligatorio' | 'numero' | null {
+    return this.toccati().has(campo.nome) ? this.errore(campo) : null;
+  }
+
+  private errore(campo: CampoDialogo): 'obbligatorio' | 'numero' | null {
+    const valore = (this.valori()[campo.nome] ?? '').trim();
+    if (valore === '') {
+      return campo.obbligatorio ? 'obbligatorio' : null;
     }
-    return controllo.hasError('required') ? 'obbligatorio' : 'numero';
+    return campo.tipo === 'number' && !SOLO_NUMERI.test(valore) ? 'numero' : null;
   }
 
   /** Tab e Maiusc+Tab restano dentro il dialog finché è aperto. */
@@ -145,28 +163,5 @@ export class Dialogo {
           ? '[data-dialogo="annulla"]'
           : '[data-dialogo="conferma"]';
     riquadro.querySelector<HTMLElement>(selettore)?.focus();
-  }
-
-  private creaForm(opzioni: OpzioniRichiesta): FormGroup<Record<string, FormControl<string>>> {
-    return new FormGroup(
-      Object.fromEntries(
-        opzioni.campi.map((campo) => {
-          const validatori: ValidatorFn[] = [];
-          if (campo.obbligatorio) {
-            validatori.push(Validators.required);
-          }
-          if (campo.tipo === 'number') {
-            validatori.push(SOLO_NUMERI);
-          }
-          return [
-            campo.nome,
-            new FormControl(campo.valoreIniziale ?? '', {
-              nonNullable: true,
-              validators: validatori,
-            }),
-          ];
-        }),
-      ),
-    );
   }
 }

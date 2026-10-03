@@ -24,8 +24,10 @@ public interface SegnalazioneAbusoRepository extends JpaRepository<SegnalazioneA
     List<Long> segnalantiInAttesa(@Param("segnalazioneId") Long segnalazioneId);
 
     @Modifying
-    @Query("update SegnalazioneAbuso a set a.esito = :esito where a.segnalazione.id = :segnalazioneId and a.esito is null")
-    void registraEsito(@Param("segnalazioneId") Long segnalazioneId, @Param("esito") EsitoAbuso esito);
+    @Query("update SegnalazioneAbuso a set a.esito = :esito, a.dataEsito = :adesso"
+            + " where a.segnalazione.id = :segnalazioneId and a.esito is null")
+    void registraEsito(@Param("segnalazioneId") Long segnalazioneId, @Param("esito") EsitoAbuso esito,
+                       @Param("adesso") java.time.LocalDateTime adesso);
 
     /** Un utente può segnalare abuso una sola volta per Segnalazione (vedi vincolo DB). */
     boolean existsBySegnalazioneIdAndUtenteId(Long segnalazioneId, Long utenteId);

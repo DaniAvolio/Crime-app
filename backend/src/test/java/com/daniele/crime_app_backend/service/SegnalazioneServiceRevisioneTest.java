@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -80,7 +81,7 @@ class SegnalazioneServiceRevisioneTest {
 
         assertThat(segnalazione.getStato()).isEqualTo(StatoSegnalazione.ATTIVA);
         assertThat(segnalazione.isDaRivedere()).isFalse();
-        verify(abusoRepository).registraEsito(10L, EsitoAbuso.INFONDATO);
+        verify(abusoRepository).registraEsito(eq(10L), eq(EsitoAbuso.INFONDATO), any());
         verify(utenteRepository).modificaFiducia(List.of(2L, 3L), SegnalazioneService.FIDUCIA_ABUSO_INFONDATO);
         verify(segnalazioneRepository).chiudiRevisione(10L);
         verify(utenteRepository, never()).incrementaSegnalazioniRimosse(any());
@@ -94,7 +95,7 @@ class SegnalazioneServiceRevisioneTest {
 
         assertThat(segnalazione.getStato()).isEqualTo(StatoSegnalazione.RIMOSSA);
         assertThat(segnalazione.getDataRimozione()).isNotNull();
-        verify(abusoRepository).registraEsito(10L, EsitoAbuso.FONDATO);
+        verify(abusoRepository).registraEsito(eq(10L), eq(EsitoAbuso.FONDATO), any());
         verify(utenteRepository).modificaFiducia(List.of(2L), SegnalazioneService.FIDUCIA_ABUSO_FONDATO);
         verify(utenteRepository).modificaFiducia(List.of(1L), SegnalazioneService.FIDUCIA_AUTORE_RIMOSSA);
         verify(utenteRepository).incrementaSegnalazioniRimosse(1L);

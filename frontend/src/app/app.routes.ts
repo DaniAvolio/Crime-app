@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Home } from './home/home';
 import { adminGuard, autenticatoGuard, ospiteGuard, paginaInizialeGuard } from './auth/auth.guard';
+import { stiliMappaGuard } from './shared/stili-mappa';
 
 // Solo la home è nel bundle iniziale: le altre pagine si scaricano quando si aprono, così chi
 // guarda solo home e mappa non scarica gestione, profilo e form di accesso.
@@ -9,13 +10,22 @@ export const routes: Routes = [
   { path: '', component: Home, canActivate: [paginaInizialeGuard] },
   // MapLibre GL è pesante e serve solo aprendo la mappa.
   // Pubblica: la consultazione non richiede login, solo pubblicare e votare (vedi Mappa).
-  { path: 'mappa', loadComponent: () => import('./mappa/mappa').then((m) => m.Mappa) },
+  {
+    path: 'mappa',
+    canActivate: [stiliMappaGuard],
+    loadComponent: () => import('./mappa/mappa').then((m) => m.Mappa),
+  },
   // Pubblica: la leggono anche gli ospiti. /faq era il nome precedente.
   {
     path: 'come-funziona',
     loadComponent: () => import('./guida/guida').then((m) => m.Guida),
   },
   { path: 'faq', redirectTo: 'come-funziona', pathMatch: 'full' },
+  {
+    path: 'statistiche',
+    canActivate: [stiliMappaGuard],
+    loadComponent: () => import('./statistiche/statistiche').then((m) => m.Statistiche),
+  },
   {
     path: 'login',
     loadComponent: () => import('./auth/login').then((m) => m.Login),

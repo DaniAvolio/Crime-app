@@ -276,16 +276,10 @@ html.dark {
   --altezza-navbar-mappa: 0px;
 }
 
-.mappa-con-navbar {
-  --altezza-navbar-mappa: calc(4rem + env(safe-area-inset-bottom));
-
-  /* Attribuzione e controlli in basso di Leaflet sopra la navbar, non coperti da essa. */
-  .leaflet-bottom {
-    bottom: var(--altezza-navbar-mappa);
-  }
-
-  /* Crediti compatti (vedi attribuzioneCompatta in mappa.ts): da chiusi solo il pulsante "i",
-     da aperti il testo con i link. */
+/* Crediti compatti delle mappe (vedi attribuzioneCompatta in shared/mappa-base.ts): da chiusi
+   solo il pulsante "i", da aperti il testo con i link. Classe sul contenitore della mappa, nella
+   mappa principale e nelle statistiche. */
+.crediti-compatti {
   .leaflet-control-attribution {
     display: flex;
     align-items: center;
@@ -350,6 +344,15 @@ html.dark {
       outline: 2px solid #2563eb;
       outline-offset: 2px;
     }
+  }
+}
+
+.mappa-con-navbar {
+  --altezza-navbar-mappa: calc(4rem + env(safe-area-inset-bottom));
+
+  /* Attribuzione e controlli in basso di Leaflet sopra la navbar, non coperti da essa. */
+  .leaflet-bottom {
+    bottom: var(--altezza-navbar-mappa);
   }
 
   /* Controlli in alto (zoom) sotto la fila dei filtri di gravità, che occupa il bordo alto:
@@ -499,7 +502,7 @@ html.dark {
 }
 
 /* Crediti della mappa in tema scuro. */
-html.dark .mappa-con-navbar {
+html.dark .crediti-compatti {
   .leaflet-control-attribution.attribuzione-aperta {
     background: rgb(27 33 43 / 0.92) !important;
     color: #d1d5db;

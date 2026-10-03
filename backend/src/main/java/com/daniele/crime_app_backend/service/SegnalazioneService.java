@@ -371,7 +371,7 @@ public class SegnalazioneService {
     private void chiudiRevisione(Segnalazione segnalazione, EsitoAbuso esito) {
         List<Long> segnalanti = segnalazioneAbusoRepository.segnalantiInAttesa(segnalazione.getId());
         if (!segnalanti.isEmpty()) {
-            segnalazioneAbusoRepository.registraEsito(segnalazione.getId(), esito);
+            segnalazioneAbusoRepository.registraEsito(segnalazione.getId(), esito, LocalDateTime.now());
             utenteRepository.modificaFiducia(segnalanti,
                     esito == EsitoAbuso.FONDATO ? FIDUCIA_ABUSO_FONDATO : FIDUCIA_ABUSO_INFONDATO);
         }

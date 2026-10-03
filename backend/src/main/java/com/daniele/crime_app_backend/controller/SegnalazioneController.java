@@ -44,13 +44,13 @@ public class SegnalazioneController {
         return segnalazioneService.trovaPerGestione(filtri, pagina, dimensione, ordina);
     }
 
-    /** Profilo: le mie segnalazioni di una scheda, a pagine (richiede login, vedi SecurityConfig). */
     /** Quante segnalazioni sono in coda "da rivedere" (solo ADMIN, vedi SecurityConfig). */
     @GetMapping("/gestione/da-rivedere")
     public long contaDaRivedere() {
         return segnalazioneService.contaDaRivedere();
     }
 
+    /** Profilo: le mie segnalazioni di una scheda, a pagine (richiede login, vedi SecurityConfig). */
     @GetMapping("/mie")
     public PaginaDto<SegnalazioneDto> mie(@RequestParam GruppoSegnalazioniMie gruppo,
                                           @RequestParam(defaultValue = "0") int pagina,

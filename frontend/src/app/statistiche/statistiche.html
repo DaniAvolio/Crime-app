@@ -1,0 +1,318 @@
+<main *transloco="let t" class="min-h-full bg-white text-gray-900 dark:bg-ink dark:text-paper">
+  <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+    <header class="mb-6">
+      <h1 class="font-display text-2xl font-bold sm:text-3xl">{{ t('statistiche.titolo') }}</h1>
+      <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-muted">
+        {{ t('statistiche.sottotitolo') }}
+      </p>
+    </header>
+
+    <!-- Filtri: una riga sopra tutto ciò che filtrano; prima il periodo. -->
+    <div
+      class="mb-4 flex flex-wrap items-end gap-3"
+      role="group"
+      [attr.aria-label]="t('statistiche.filtri')"
+    >
+      <div class="flex flex-wrap gap-1.5" role="group" [attr.aria-label]="t('statistiche.periodo')">
+        @for (preset of presetDisponibili; track preset) {
+          <button
+            type="button"
+            class="chip-filtro h-8 px-3"
+            [attr.aria-pressed]="preset === this.preset()"
+            (click)="scegliPreset(preset)"
+          >
+            {{ t('statistiche.preset.' + preset) }}
+          </button>
+        }
+      </div>
+      @if (preset() === 'personalizzato') {
+        <div class="flex items-center gap-2 text-sm">
+          <label class="sr-only" for="stat-dal">{{ t('statistiche.dal') }}</label>
+          <input
+            id="stat-dal"
+            type="date"
+            class="h-8 rounded-md border border-gray-300 bg-white px-2 dark:border-line dark:bg-panel"
+            [value]="dalPersonalizzato()"
+            [max]="alPersonalizzato()"
+            (change)="scegliDal($any($event.target).value)"
+          />
+          <span aria-hidden="true">–</span>
+          <label class="sr-only" for="stat-al">{{ t('statistiche.al') }}</label>
+          <input
+            id="stat-al"
+            type="date"
+            class="h-8 rounded-md border border-gray-300 bg-white px-2 dark:border-line dark:bg-panel"
+            [value]="alPersonalizzato()"
+            [min]="dalPersonalizzato()"
+            (change)="scegliAl($any($event.target).value)"
+          />
+        </div>
+      }
+      <div class="flex flex-wrap gap-2">
+        <select
+          class="h-8 rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-line dark:bg-panel"
+          [attr.aria-label]="t('gravita.filtro')"
+          (change)="scegliGravita($any($event.target).value)"
+        >
+          <option value="" [selected]="gravita() === null">
+            {{ t('statistiche.tutteGravita') }}
+          </option>
+          @for (livello of livelliGravita; track livello) {
+            <option [value]="livello" [selected]="gravita() === livello">
+              {{ t(chiaveGravita(livello)) }}
+            </option>
+          }
+        </select>
+        <select
+          class="h-8 max-w-56 rounded-md border border-gray-300 bg-white px-2 text-sm dark:border-line dark:bg-panel"
+          [attr.aria-label]="t('statistiche.categoria')"
+          (change)="scegliCategoria($any($event.target).value)"
+        >
+          <option value="" [selected]="categoriaId() === null">
+            {{ t('statistiche.tutteCategorie') }}
+          </option>
+          @for (gruppo of gruppiCategorie(); track gruppo.gravita) {
+            <optgroup [label]="t(chiaveGravita(gruppo.gravita))">
+              @for (categoria of gruppo.categorie; track categoria.id) {
+                <option [value]="categoria.id" [selected]="categoriaId() === categoria.id">
+                  {{ categoria.nome }}
+                </option>
+              }
+            </optgroup>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (errore()) {
+      <p
+        role="alert"
+        class="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+      >
+        {{ t('statistiche.errore') }}
+      </p>
+    }
+
+    <!-- Mappa di calore + numeri principali dell'area visibile. -->
+    <div class="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <section
+        class="crediti-compatti flex flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-line"
+      >
+        <h2 class="sr-only">{{ t('statistiche.mappa.titolo') }}</h2>
+        <div class="relative h-[55vh] min-h-80 lg:h-auto lg:flex-1">
+          <div
+            class="absolute inset-0"
+            leaflet
+            [leafletOptions]="options"
+            (leafletMapReady)="onMapReady($event)"
+          ></div>
+          @if (riepilogo()?.totale === 0 && !caricando()) {
+            <p
+              class="pointer-events-none absolute inset-x-4 top-4 z-[500] mx-auto max-w-sm rounded-md bg-white/95 px-3 py-2 text-center text-sm shadow dark:bg-panel/95"
+            >
+              {{ t('statistiche.vuoto') }}
+            </p>
+          }
+        </div>
+        <p
+          class="border-t border-gray-200 px-4 py-2 text-xs text-gray-500 dark:border-line dark:text-muted"
+        >
+          {{ t('statistiche.mappa.nota') }}
+        </p>
+      </section>
+
+      <div
+        class="grid content-start gap-3 transition-opacity"
+        [ngClass]="{ 'opacity-50': caricando() }"
+        aria-live="polite"
+      >
+        @if (riepilogo(); as r) {
+          <div class="rounded-xl border border-gray-200 p-4 dark:border-line">
+            <p class="text-sm text-gray-500 dark:text-muted">{{ t('statistiche.kpi.totale') }}</p>
+            <p class="mt-1 text-4xl font-semibold">{{ formattaNumero(r.totale) }}</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-muted">
+              {{ formattaData(r.dal) }} – {{ formattaData(r.al) }}
+            </p>
+            @if (variazione(); as v) {
+              <p class="mt-2 text-sm">
+                <span
+                  class="font-semibold"
+                  [ngClass]="
+                    v > 0
+                      ? 'text-red-700 dark:text-red-300'
+                      : 'text-emerald-700 dark:text-emerald-300'
+                  "
+                >
+                  {{ v > 0 ? '▲ +' : '▼ ' }}{{ v }}%
+                </span>
+                <span class="text-gray-500 dark:text-muted">
+                  {{ t('statistiche.kpi.rispettoPrima') }}</span
+                >
+              </p>
+            } @else if (variazione() === 0) {
+              <p class="mt-2 text-sm text-gray-500 dark:text-muted">
+                {{ t('statistiche.kpi.stabile') }}
+              </p>
+            }
+          </div>
+          <div class="grid grid-cols-2 gap-3 lg:grid-cols-1 xl:grid-cols-2">
+            <div class="rounded-xl border border-gray-200 p-4 dark:border-line">
+              <p class="text-sm text-gray-500 dark:text-muted">{{ t('statistiche.kpi.gravi') }}</p>
+              <p class="mt-1 text-2xl font-semibold">
+                {{ quotaGravi() ?? '—' }}{{ quotaGravi() !== null ? '%' : '' }}
+              </p>
+            </div>
+            <div class="rounded-xl border border-gray-200 p-4 dark:border-line">
+              <p class="text-sm text-gray-500 dark:text-muted">{{ t('statistiche.kpi.giorno') }}</p>
+              <p class="mt-1 text-xl font-semibold first-letter:uppercase">
+                {{ piuARischio() ? nomeGiorno(piuARischio()!.giorno) : '—' }}
+              </p>
+            </div>
+            <div
+              class="col-span-2 rounded-xl border border-gray-200 p-4 lg:col-span-1 xl:col-span-2 dark:border-line"
+            >
+              <p class="text-sm text-gray-500 dark:text-muted">{{ t('statistiche.kpi.ora') }}</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">
+                {{ piuARischio() ? fasciaOraria(piuARischio()!.ora) : '—' }}
+              </p>
+            </div>
+          </div>
+          @if (r.zoneCalde.length > 0) {
+            <div class="rounded-xl border border-gray-200 p-4 dark:border-line">
+              <h3 class="text-sm font-medium">{{ t('statistiche.zone.titolo') }}</h3>
+              <ol class="mt-2 grid gap-1">
+                @for (zona of r.zoneCalde; track $index; let i = $index) {
+                  <li>
+                    <button
+                      type="button"
+                      class="flex w-full items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-panel"
+                      (click)="mostraZona(zona)"
+                    >
+                      <span>{{ t('statistiche.zone.zona', { numero: i + 1 }) }}</span>
+                      <span class="tabular-nums text-gray-700 dark:text-paper">
+                        {{ t('statistiche.zone.segnalazioni', { numero: zona.numero }) }}
+                      </span>
+                    </button>
+                  </li>
+                }
+              </ol>
+            </div>
+          }
+        } @else if (caricando()) {
+          <p class="text-sm text-gray-500 dark:text-muted">{{ t('statistiche.caricamento') }}</p>
+        }
+      </div>
+    </div>
+
+    @if (riepilogo(); as r) {
+      <div class="mt-4 grid gap-4 transition-opacity" [ngClass]="{ 'opacity-50': caricando() }">
+        <section class="rounded-xl border border-gray-200 p-4 dark:border-line">
+          <h2 class="font-semibold">{{ titoloAndamento() }}</h2>
+          <p class="mb-3 text-xs text-gray-500 dark:text-muted">
+            {{ t('statistiche.andamento.nota') }}
+          </p>
+          <app-grafico-andamento
+            [punti]="r.andamento"
+            [granularita]="r.granularita"
+            [titolo]="titoloAndamento()"
+          />
+        </section>
+
+        <div class="grid items-start gap-4 lg:grid-cols-2">
+          <section class="rounded-xl border border-gray-200 p-4 dark:border-line">
+            <h2 class="font-semibold">{{ titoloFasce() }}</h2>
+            <p class="mb-3 text-xs text-gray-500 dark:text-muted">
+              {{ t('statistiche.fasce.nota') }}
+            </p>
+            <app-grafico-fasce-orarie [fasce]="r.fasce" [titolo]="titoloFasce()" />
+          </section>
+          <section class="rounded-xl border border-gray-200 p-4 dark:border-line">
+            <h2 class="mb-3 font-semibold">{{ t('statistiche.categorie.titolo') }}</h2>
+            <app-grafico-categorie [categorie]="r.categorie" />
+          </section>
+        </div>
+      </div>
+    }
+
+    @if (auth.isAdmin() && moderazione(); as m) {
+      <section class="mt-8">
+        <h2 class="text-lg font-semibold">{{ t('statistiche.moderazione.titolo') }}</h2>
+        <p class="mb-3 text-xs text-gray-500 dark:text-muted">
+          {{ t('statistiche.moderazione.nota') }}
+        </p>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          @for (
+            voce of [
+              { chiave: 'inCoda', valore: m.inCodaOra },
+              { chiave: 'rimosse', valore: m.rimosseDaAdmin },
+              { chiave: 'sospese', valore: m.sospese },
+              { chiave: 'automatici', valore: m.controlliAutomatici },
+              { chiave: 'nuoviUtenti', valore: m.nuoviUtenti },
+            ];
+            track voce.chiave
+          ) {
+            <div class="rounded-xl border border-gray-200 p-3 dark:border-line">
+              <p class="text-xs text-gray-500 dark:text-muted">
+                {{ t('statistiche.moderazione.' + voce.chiave) }}
+              </p>
+              <p class="mt-1 text-2xl font-semibold">{{ formattaNumero(voce.valore) }}</p>
+            </div>
+          }
+          <div class="rounded-xl border border-gray-200 p-3 dark:border-line">
+            <p class="text-xs text-gray-500 dark:text-muted">
+              {{ t('statistiche.moderazione.revisione') }}
+            </p>
+            <p class="mt-1 text-2xl font-semibold">
+              @if (m.oreMedieRevisione !== null) {
+                {{ formattaOre(m.oreMedieRevisione) }}
+                <span class="text-sm font-normal text-gray-500 dark:text-muted">{{
+                  t('statistiche.moderazione.ore')
+                }}</span>
+              } @else {
+                —
+              }
+            </p>
+          </div>
+        </div>
+        <div class="mt-3 overflow-x-auto rounded-xl border border-gray-200 dark:border-line">
+          <table class="w-full min-w-[32rem] text-left text-sm tabular-nums">
+            <thead>
+              <tr class="border-b border-gray-200 text-gray-500 dark:border-line dark:text-muted">
+                <th class="px-4 py-2 font-medium">{{ t('statistiche.moderazione.motivo') }}</th>
+                <th class="px-4 py-2 text-right font-medium">
+                  {{ t('statistiche.moderazione.abusi') }}
+                </th>
+                <th class="px-4 py-2 text-right font-medium">
+                  {{ t('statistiche.moderazione.accolti') }}
+                </th>
+                <th class="px-4 py-2 text-right font-medium">
+                  {{ t('statistiche.moderazione.respinti') }}
+                </th>
+                <th class="px-4 py-2 text-right font-medium">
+                  {{ t('statistiche.moderazione.inAttesa') }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (riga of m.abusi; track riga.motivo) {
+                <tr class="border-b border-gray-100 last:border-0 dark:border-line">
+                  <td class="px-4 py-2">{{ t('mappa.abuso.motivi.' + riga.motivo) }}</td>
+                  <td class="px-4 py-2 text-right">{{ riga.totale }}</td>
+                  <td class="px-4 py-2 text-right">{{ riga.accolti }}</td>
+                  <td class="px-4 py-2 text-right">{{ riga.respinti }}</td>
+                  <td class="px-4 py-2 text-right">{{ riga.inAttesa }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="px-4 py-3 text-gray-500 dark:text-muted">
+                    {{ t('statistiche.moderazione.nessunAbuso') }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  </div>
+</main>

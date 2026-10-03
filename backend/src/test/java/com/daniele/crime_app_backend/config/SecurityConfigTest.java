@@ -4,6 +4,7 @@ import com.daniele.crime_app_backend.controller.AuthController;
 import com.daniele.crime_app_backend.controller.CategoriaController;
 import com.daniele.crime_app_backend.controller.SegnalazioneAbusoController;
 import com.daniele.crime_app_backend.controller.SegnalazioneController;
+import com.daniele.crime_app_backend.controller.StatisticheController;
 import com.daniele.crime_app_backend.controller.UtenteController;
 import com.daniele.crime_app_backend.dto.FiltriCategorie;
 import com.daniele.crime_app_backend.dto.FiltriSegnalazioni;
@@ -19,6 +20,7 @@ import com.daniele.crime_app_backend.service.CategoriaService;
 import com.daniele.crime_app_backend.exception.DescrizioneNonValidaException;
 import com.daniele.crime_app_backend.service.SegnalazioneAbusoService;
 import com.daniele.crime_app_backend.service.SegnalazioneService;
+import com.daniele.crime_app_backend.service.StatisticheService;
 import com.daniele.crime_app_backend.service.moderazione.TipoViolazione;
 import com.daniele.crime_app_backend.service.moderazione.Violazione;
 import com.daniele.crime_app_backend.service.UtenteCorrenteService;
@@ -54,7 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Verifica le regole di accesso di SecurityConfig: i service sono mock, conta solo lo status HTTP. */
 @WebMvcTest(controllers = {SegnalazioneController.class, CategoriaController.class, AuthController.class,
-        UtenteController.class, SegnalazioneAbusoController.class})
+        UtenteController.class, SegnalazioneAbusoController.class, StatisticheController.class})
 @Import({SecurityConfig.class, ErroriSicurezzaHandler.class, JwtUtenteConverter.class})
 class SecurityConfigTest {
 
@@ -72,6 +74,8 @@ class SecurityConfigTest {
     private SegnalazioneService segnalazioneService;
     @MockitoBean
     private SegnalazioneAbusoService segnalazioneAbusoService;
+    @MockitoBean
+    private StatisticheService statisticheService;
     @MockitoBean
     private CategoriaService categoriaService;
     @MockitoBean
@@ -115,6 +119,19 @@ class SecurityConfigTest {
                         throw new AssertionError("Accesso negato a un utente autenticato: " + stato);
                     }
                 });
+    }
+
+    @Test
+    void statistichePubblicheEModerazioneSoloAdmin() throws Exception {
+        mockMvc.perform(get("/api/statistiche/mappa").param("zoom", "13")
+                        .param("minLat", "45").param("minLng", "7.6").param("maxLat", "45.1").param("maxLng", "7.8"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/statistiche/riepilogo").param("dal", "2026-09-01")
+                        .param("minLat", "45").param("minLng", "7.6").param("maxLat", "45.1").param("maxLng", "7.8"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/statistiche/moderazione")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/statistiche/moderazione").with(ruolo("UTENTE"))).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/statistiche/moderazione").with(ruolo("ADMIN"))).andExpect(status().isOk());
     }
 
     @Test

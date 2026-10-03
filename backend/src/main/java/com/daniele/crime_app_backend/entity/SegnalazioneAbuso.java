@@ -63,6 +63,10 @@ public class SegnalazioneAbuso {
     @Column(length = 12)
     private EsitoAbuso esito;
 
+    /** Quando l'admin ha deciso (statistiche: tempo medio di revisione). */
+    @Column(name = "data_esito")
+    private LocalDateTime dataEsito;
+
     @CreationTimestamp
     @Column(name = "data_segnalazione", nullable = false, updatable = false)
     private LocalDateTime dataSegnalazione;

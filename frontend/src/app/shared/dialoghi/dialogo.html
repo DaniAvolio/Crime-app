@@ -40,8 +40,7 @@
 
       <form
         class="mt-5 flex flex-col gap-4"
-        [formGroup]="form()"
-        (ngSubmit)="conferma()"
+        (submit)="$event.preventDefault(); conferma()"
         novalidate
       >
         @for (campo of campi(); track campo.nome) {
@@ -52,9 +51,11 @@
             @if (campo.tipo === 'textarea') {
               <textarea
                 [id]="'campo-dialogo-' + campo.nome"
-                [formControlName]="campo.nome"
+                [value]="valori()[campo.nome]"
+                (input)="aggiorna(campo.nome, $any($event.target).value)"
+                (blur)="tocca(campo.nome)"
                 [placeholder]="campo.placeholder ?? ''"
-                [attr.aria-invalid]="erroreCampo(campo.nome) !== null"
+                [attr.aria-invalid]="erroreCampo(campo) !== null"
                 [attr.aria-describedby]="'errore-dialogo-' + campo.nome"
                 rows="3"
                 class="mt-1.5 block w-full resize-y rounded-md border border-neutral-300 bg-white px-3 py-2 text-[15px] placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-ink dark:placeholder:text-muted"
@@ -62,17 +63,19 @@
             } @else {
               <input
                 [id]="'campo-dialogo-' + campo.nome"
-                [formControlName]="campo.nome"
+                [value]="valori()[campo.nome]"
+                (input)="aggiorna(campo.nome, $any($event.target).value)"
+                (blur)="tocca(campo.nome)"
                 [placeholder]="campo.placeholder ?? ''"
                 [attr.inputmode]="campo.tipo === 'number' ? 'decimal' : null"
-                [attr.aria-invalid]="erroreCampo(campo.nome) !== null"
+                [attr.aria-invalid]="erroreCampo(campo) !== null"
                 [attr.aria-describedby]="'errore-dialogo-' + campo.nome"
                 type="text"
                 class="mt-1.5 block h-11 w-full rounded-md border border-neutral-300 bg-white px-3 text-[15px] placeholder:text-neutral-400 focus-visible:border-blue-600 focus-visible:outline-2 focus-visible:outline-blue-600 dark:border-line dark:bg-ink dark:placeholder:text-muted"
               />
             }
             <p [id]="'errore-dialogo-' + campo.nome" class="mt-1 min-h-5 text-sm text-allerta">
-              @switch (erroreCampo(campo.nome)) {
+              @switch (erroreCampo(campo)) {
                 @case ('obbligatorio') {
                   {{ t('condivisi.dialogo.obbligatorio') }}
                 }

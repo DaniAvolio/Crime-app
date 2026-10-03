@@ -23,6 +23,15 @@
       {{ t('nav.mappa') }}
     </a>
     <a
+      routerLink="/statistiche"
+      routerLinkActive="text-gray-900 dark:text-paper"
+      class="transition-colors hover:text-gray-900 dark:hover:text-paper"
+      [attr.aria-label]="t('nav.statistiche')"
+    >
+      <span class="sm:hidden">{{ t('nav.statisticheBreve') }}</span>
+      <span class="max-sm:hidden">{{ t('nav.statistiche') }}</span>
+    </a>
+    <a
       routerLink="/come-funziona"
       routerLinkActive="text-gray-900 dark:text-paper"
       class="transition-colors hover:text-gray-900 dark:hover:text-paper"

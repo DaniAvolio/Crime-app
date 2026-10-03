@@ -6,7 +6,9 @@
     "esci": "Esci",
     "profilo": "Profilo",
     "guida": "Come funziona",
-    "guidaBreve": "Guida"
+    "guidaBreve": "Guida",
+    "statistiche": "Statistiche",
+    "statisticheBreve": "Dati"
   },
   "home": {
     "hero": {
@@ -364,6 +366,10 @@
         "emergenze": {
           "d": "Serve per le emergenze?",
           "r": "No. Crime non sostituisce i soccorsi e le segnalazioni non sono monitorate in tempo reale. In caso di pericolo chiama il 112: il pulsante «Soccorsi» sulla mappa avvia la chiamata dopo una conferma."
+        },
+        "statistiche": {
+          "d": "Cosa mostrano le statistiche?",
+          "r": "Dove e quando vengono segnalati episodi nella zona inquadrata dalla mappa: mappa di calore, andamento nel tempo, giorni e ore più a rischio, categorie. Contano le segnalazioni attive e concluse, anche quelle anonimizzate; non quelle rimosse o sospese. Le posizioni sono raggruppate in celle di almeno 200 m, quindi non indicano un indirizzo."
         }
       },
       "mappa": {
@@ -469,5 +475,78 @@
         }
       }
     }
+  },
+  "statistiche": {
+    "titolo": "Statistiche",
+    "sottotitolo": "Dove e quando vengono segnalati episodi nella zona che stai guardando. I numeri si aggiornano spostando la mappa.",
+    "filtri": "Filtri delle statistiche",
+    "periodo": "Periodo",
+    "preset": {
+      "7": "7 giorni",
+      "30": "30 giorni",
+      "90": "90 giorni",
+      "365": "12 mesi",
+      "personalizzato": "Personalizzato"
+    },
+    "dal": "Dal",
+    "al": "Al",
+    "tutteGravita": "Tutte le gravità",
+    "categoria": "Categoria",
+    "tutteCategorie": "Tutte le categorie",
+    "errore": "Non riusciamo a caricare le statistiche. Riprova tra poco.",
+    "mappa": {
+      "titolo": "Mappa di calore",
+      "nota": "Più è intenso il colore, più segnalazioni ci sono state nella zona. Le posizioni sono raggruppate in celle di almeno 200 m."
+    },
+    "vuoto": "Nessuna segnalazione in questa zona nel periodo scelto.",
+    "caricamento": "Caricamento…",
+    "kpi": {
+      "totale": "Segnalazioni nella zona",
+      "rispettoPrima": "rispetto al periodo precedente",
+      "stabile": "Come nel periodo precedente",
+      "gravi": "Di gravità alta",
+      "giorno": "Giorno più a rischio",
+      "ora": "Fascia oraria più a rischio"
+    },
+    "zone": {
+      "titolo": "Zone con più segnalazioni",
+      "zona": "Zona {{ numero }}",
+      "segnalazioni": "{{ numero }} segnalazioni"
+    },
+    "andamento": {
+      "titoloGIORNO": "Segnalazioni per giorno",
+      "titoloSETTIMANA": "Segnalazioni per settimana",
+      "titoloMESE": "Segnalazioni per mese",
+      "nota": "Nell'area visibile della mappa."
+    },
+    "fasce": {
+      "titolo": "Quando succede",
+      "nota": "Segnalazioni per giorno della settimana e ora del giorno."
+    },
+    "categorie": {
+      "titolo": "Per categoria"
+    },
+    "moderazione": {
+      "titolo": "Moderazione",
+      "nota": "Solo per amministratori. Tutto il territorio, nel periodo scelto.",
+      "inCoda": "Da rivedere ora",
+      "rimosse": "Rimosse da admin",
+      "sospese": "Sospese",
+      "automatici": "Segnalate dai controlli automatici",
+      "nuoviUtenti": "Nuovi utenti",
+      "revisione": "Tempo medio di revisione",
+      "ore": "ore",
+      "motivo": "Motivo",
+      "abusi": "Problemi segnalati",
+      "accolti": "Accolti",
+      "respinti": "Respinti",
+      "inAttesa": "In attesa",
+      "nessunAbuso": "Nessun problema segnalato nel periodo."
+    },
+    "tabella": "Mostra come tabella",
+    "segnalazioni": "Segnalazioni",
+    "fascia": "Fascia",
+    "meno": "Meno",
+    "piu": "Più"
   }
 }

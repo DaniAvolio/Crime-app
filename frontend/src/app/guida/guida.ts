@@ -16,7 +16,7 @@ import { LinguaService } from '../shared/lingua';
  * qui c'è solo l'ordine. Aggiungere una domanda = una chiave qui + il testo nei due JSON.
  */
 const SEZIONI = [
-  { chiave: 'cosa', domande: ['aCosaServe', 'emergenze'] },
+  { chiave: 'cosa', domande: ['aCosaServe', 'emergenze', 'statistiche'] },
   { chiave: 'mappa', domande: ['simboli', 'alone', 'listaRaggio', 'posizione', 'tema'] },
   {
     chiave: 'segnalare',
